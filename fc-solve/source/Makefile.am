@@ -34,16 +34,16 @@ Makefile.win32: gen_makefile.pl
 
 #<<<HEADERS.START
 EXTRA_DIST += alloc.h app_str.h caas.h card.h cl_chop.h
-EXTRA_DIST += config.h fcs_cl.h fcs.h fcs_dm.h fcs_enums.h
-EXTRA_DIST += fcs_hash.h fcs_isa.h fcs_move.h fcs_user.h inline.h
-EXTRA_DIST += jhjtypes.h lookup2.h move.h ms_ca.h prefix.h
-EXTRA_DIST += pqueue.h preset.h rand.h state.h test_arr.h
-EXTRA_DIST += tests.h
+EXTRA_DIST += fcs_cl.h fcs.h fcs_dm.h fcs_enums.h fcs_hash.h
+EXTRA_DIST += fcs_isa.h fcs_move.h fcs_user.h inline.h jhjtypes.h
+EXTRA_DIST += lookup2.h move.h ms_ca.h pqueue.h preset.h
+EXTRA_DIST += rand.h state.h test_arr.h tests.h
 #>>>HEADERS.END
 
 EXTRA_DIST += USAGE CREDITS README.win32.txt
 EXTRA_DIST += gen_makefile.pl Makefile.lite Makefile.gnu Makefile.win32
 EXTRA_DIST += config.h.orig config.h.dkds config.h.freecell config.h.win32
+EXTRA_DIST += prefix.h.freecell
 EXTRA_DIST += devel_docs/ devel_docs/Architecture.summary.txt devel_docs/Architecture.txt devel_docs/strategies.txt devel_docs/variants.txt
 EXTRA_DIST += gen_presets.pl gen_def.sh
 EXTRA_DIST += freecell-solver.def
