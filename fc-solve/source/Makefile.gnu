@@ -4,7 +4,7 @@ CC = gcc
 DEBUG = 1
 
 ifneq ($(DEBUG),0)
-	OFLAGS := -Wall -O2 -g
+	OFLAGS := -Wall -g
 else
 	OFLAGS := -Wall -O3
 endif
