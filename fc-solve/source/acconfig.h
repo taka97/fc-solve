@@ -59,8 +59,7 @@ extern "C" {
 
 #define MAX_NUM_STACKS 10
 /*
- * The maximal number of initial cards that can be found in a stack. The rule
- * of the thumb is that it plus 13 should be a multiple of 4.
+ * The maximal number of initial cards that can be found in a stack.
  * */
 #define MAX_NUM_INITIAL_CARDS_IN_A_STACK 8
 
