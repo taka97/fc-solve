@@ -240,6 +240,12 @@ static void recycle_instance(
     if (user->instances_list[i].ret != FCS_STATE_NOT_BEGAN_YET)
     {
         freecell_solver_recycle_instance(user->instances_list[i].instance);
+        /*
+         * We have to initialize init_num_times to 0 here, because it may not 
+         * get initialized again, and now the num_times of the instance
+         * is equal to 0.
+         * */
+        user->init_num_times = 0;
     }
 
     user->instances_list[i].ret = FCS_STATE_NOT_BEGAN_YET;    
