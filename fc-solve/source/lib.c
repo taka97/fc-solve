@@ -880,91 +880,92 @@ static void freecell_solver_user_iter_handler_wrapper(
 
     user = (fcs_user_t *)user_instance;
 
-    return
-        user->iter_handler(
-            user_instance,
-            iter_num,
-            depth,
-            (void *)ptr_state_with_locations,
-            parent_iter_num,
-            user->iter_handler_context
-            );
+    user->iter_handler(
+        user_instance,
+        iter_num,
+        depth,
+        (void *)ptr_state_with_locations,
+        parent_iter_num,
+        user->iter_handler_context
+        );
+
+    return;
 }
 
 void freecell_solver_user_set_iter_handler(
-    void * user_instance,
-    freecell_solver_user_iter_handler_t iter_handler,
-    void * iter_handler_context
-    )
+void * user_instance,
+freecell_solver_user_iter_handler_t iter_handler,
+void * iter_handler_context
+)
 {
-    fcs_user_t * user;
+fcs_user_t * user;
 
-    user = (fcs_user_t *)user_instance;
+user = (fcs_user_t *)user_instance;
 
-    if (iter_handler == NULL)
-    {
-        user->instance->debug_iter_output = 0;
-    }
-    else
-    {
-        /* Disable it temporarily while we change the settings */
-        user->instance->debug_iter_output = 0;
-        user->iter_handler = iter_handler;
-        user->iter_handler_context = iter_handler_context;
-        user->instance->debug_iter_output_context = user;
-        user->instance->debug_iter_output_func = freecell_solver_user_iter_handler_wrapper;
-        user->instance->debug_iter_output = 1;
-    }
+if (iter_handler == NULL)
+{
+    user->instance->debug_iter_output = 0;
+}
+else
+{
+    /* Disable it temporarily while we change the settings */
+    user->instance->debug_iter_output = 0;
+    user->iter_handler = iter_handler;
+    user->iter_handler_context = iter_handler_context;
+    user->instance->debug_iter_output_context = user;
+    user->instance->debug_iter_output_func = freecell_solver_user_iter_handler_wrapper;
+    user->instance->debug_iter_output = 1;
+}
 }
 
 char * freecell_solver_user_iter_state_as_string(
-    void * user_instance,
-    void * ptr_state,
-    int parseable_output,
-    int canonized_order_output,
-    int display_10_as_t
-    )
+void * user_instance,
+void * ptr_state,
+int parseable_output,
+int canonized_order_output,
+int display_10_as_t
+)
 {
-    fcs_user_t * user;
+fcs_user_t * user;
 
-    user = (fcs_user_t *)user_instance;
+user = (fcs_user_t *)user_instance;
 
-    return
-        freecell_solver_state_as_string(
-            ptr_state,
-            user->instance->freecells_num,
-            user->instance->stacks_num,
-            user->instance->decks_num,
-            parseable_output,
-            canonized_order_output,
-            display_10_as_t
-            );
+return
+    freecell_solver_state_as_string(
+        ptr_state,
+        user->instance->freecells_num,
+        user->instance->stacks_num,
+        user->instance->decks_num,
+        parseable_output,
+        canonized_order_output,
+        display_10_as_t
+        );
 }
 
 void freecell_solver_user_set_random_seed(
-    void * user_instance,
-    int seed
-    )
+void * user_instance,
+int seed
+)
 {
-    fcs_user_t * user;
+fcs_user_t * user;
 
-    user = (fcs_user_t *)user_instance;
+user = (fcs_user_t *)user_instance;
 
-    freecell_solver_rand_srand(user->soft_thread->rand_gen, (user->soft_thread->rand_seed = seed));
+freecell_solver_rand_srand(user->soft_thread->rand_gen, (user->soft_thread->rand_seed = seed));
 }
 
 int freecell_solver_user_get_num_states_in_collection(void * user_instance)
 {
-    fcs_user_t * user;
+fcs_user_t * user;
 
-    user = (fcs_user_t *)user_instance;
+user = (fcs_user_t *)user_instance;
 
-    return user->instance->num_states_in_collection;
+return user->instance->num_states_in_collection;
 }
 
 void freecell_solver_user_limit_num_states_in_collection(
-    void * user_instance,
-    int max_num_states
+void * user_instance,
+int max_num_states
     )
 {
     fcs_user_t * user;
