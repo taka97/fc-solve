@@ -6,8 +6,8 @@ Group: Amusement/Games
 Source: http://vipe.technion.ac.il/~shlomif/freecell-solver/freecell-solver-%{version}.tar.gz
 Buildroot: %{_tmppath}/freecell-solver-root
 URL: http://vipe.technion.ac.il/~shlomif/freecell-solver/
-%define LIBVER 0.5.0
-Serial: 7
+%define LIBVER_MAJOR 0
+%define LIBVER %{LIBVER_MAJOR}.5.0
 Requires: freecell-solver-libs = %{PACKAGE_VERSION}
 Summary: The Freecell Solver Executable
 
@@ -22,7 +22,6 @@ boards of several popular Freecell implementations.
 %package libs
 Summary: The Freecell Solver dynamic libraries for solving Freecell games
 Group: Amusement/Games
-Serial: 4
 
 %description libs
 Contains the Freecell Solver libraries that are used by some programs to solve
@@ -34,7 +33,6 @@ This package is mandatory for the Freecell Solver executable too.
 Summary: The Freecell Solver development tools for solving Freecell games
 Group: Amusement/Games
 Requires: freecell-solver-libs = %{PACKAGE_VERSION}
-Serial: 4
 
 %description devel
 Freecell Solver is a library for automatically solving boards of Freecell and
@@ -69,17 +67,17 @@ strip -R .comments --strip-unneeded $RPM_BUILD_ROOT/usr/lib/libfreecell-solver.s
 strip -R .comments --strip-unneeded $RPM_BUILD_ROOT/usr/bin/fc-solve
 strip -R .comments --strip-unneeded $RPM_BUILD_ROOT/usr/bin/freecell-solver-range-parallel-solve
 strip -R .comments --strip-unneeded $RPM_BUILD_ROOT/usr/lib/libfreecell-solver.a
-
-cd $RPM_BUILD_ROOT/%{_mandir}
-cd man6
-
+rm -f $RPM_BUILD_ROOT/usr/bin/make-microsoft-freecell-board
 
 %post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
 %files libs
+/usr/lib/libfreecell-solver.so
+/usr/lib/libfreecell-solver.so.%{LIBVER_MAJOR}
 /usr/lib/libfreecell-solver.so.%{LIBVER}
+/usr/lib/libfreecell-solver.la
 /usr/share/freecell-solver/presetrc
 /usr/share/freecell-solver/presets/*
 
@@ -107,9 +105,16 @@ cd man6
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Fri Jul 30 2004 Shlomi Fish <shlomif@vipe.technion.ac.il> 2.8.7-1
+- Added some unpackaged files
+- deleted make-microsoft-freecell-board so it won't be reported as
+  unpacked
+- removed some old cd's that are now useless
+- removed the serial tags - they are just trouble.
+
 * Mon Sep 02 2002 Shlomi Fish <shlomif@vipe.technion.ac.il> 2.7.15-1
 - Used strip on the range solver
-- Added the presets' related files.
+- Added the presets' related files
 
 * Sat Feb 16 2002 Shlomi Fish <shlomif@vipe.technion.ac.il> 2.1.10-1
 - updated to version 2.1.10
