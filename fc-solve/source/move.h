@@ -14,6 +14,12 @@
 extern "C" {
 #endif
 
+/*
+ * This include is done to prevent a warning in case stdlib.h defines
+ * max. (which is the case for the Microsoft C Compiler)
+ * */
+#include <stdlib.h>
+
 #include "state.h"
 #include "fcs_move.h"
 
