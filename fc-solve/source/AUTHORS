@@ -27,3 +27,7 @@ wrote the basis for the pqueue.c code.
 
 Stephan Kulow - integrated Freecell Solver into the kpat Solitaire suite for
 KDE 2.1 and onwards; reported several bugs and memory leaks.
+
+Anonymous (on http://xrl.us/h6ex) - for pointing out the malloc.h and 
+leading double underscores problems.
+
