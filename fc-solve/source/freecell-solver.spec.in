@@ -1,7 +1,7 @@
 Name: freecell-solver
 Version: @VERSION@
 Release: 1 
-Copyright: Public Domain
+License: Public Domain
 Group: Amusement/Games
 Source: http://vipe.technion.ac.il/~shlomif/freecell-solver/freecell-solver-%{version}.tar.gz
 Buildroot: %{_tmppath}/freecell-solver-root
@@ -105,6 +105,9 @@ rm -f $RPM_BUILD_ROOT/usr/bin/make-microsoft-freecell-board
 rm -rf $RPM_BUILD_ROOT
 
 %changelog
+* Mon Oct 24 2005 Shlomi Fish <shlomif@vipe.technion.ac.il> 2.8.11-1
+- Changed "Copyright" to "License"
+
 * Fri Jul 30 2004 Shlomi Fish <shlomif@vipe.technion.ac.il> 2.8.7-1
 - Added some unpackaged files
 - deleted make-microsoft-freecell-board so it won't be reported as
