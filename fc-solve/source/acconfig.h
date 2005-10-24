@@ -7,8 +7,8 @@
     (It is not copyrighted).
 */
 
-#ifndef __CONFIG_H
-#define __CONFIG_H
+#ifndef FC_SOLVE__CONFIG_H
+#define FC_SOLVE__CONFIG_H
 
 #ifdef __cplusplus
 extern "C" {

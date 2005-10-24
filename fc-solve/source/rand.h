@@ -1,6 +1,6 @@
 
-#ifndef __RAND_H
-#define __RAND_H
+#ifndef FC_SOLVE__RAND_H
+#define FC_SOLVE__RAND_H
 
 #ifdef __cplusplus
 extern "C" {

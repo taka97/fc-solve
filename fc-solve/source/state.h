@@ -9,8 +9,8 @@
 
 #include "fcs_move.h"
 
-#ifndef __STATE_H
-#define __STATE_H
+#ifndef FC_SOLVE__STATE_H
+#define FC_SOLVE__STATE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -640,4 +640,4 @@ enum FCS_VISITED_T
 };
 
 
-#endif /* __STATE_H */
+#endif /* FC_SOLVE__STATE_H */

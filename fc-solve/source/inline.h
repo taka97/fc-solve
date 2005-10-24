@@ -7,8 +7,8 @@
  * This file is in the public domain (it's uncopyrighted).
  * */
 
-#ifndef __INLINE_H
-#define __INLINE_H
+#ifndef FC_SOLVE__INLINE_H
+#define FC_SOLVE__INLINE_H
 
 #if defined(__GNUC__) || defined(HAVE_C_INLINE)
 #define GCC_INLINE inline
