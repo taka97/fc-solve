@@ -362,7 +362,7 @@ typedef struct binary_output_struct binary_output_t;
 
 void print_int(binary_output_t * bin, int val)
 {
-    unsigned char * buffer = bin->ptr;
+    unsigned char * buffer = (unsigned char *)bin->ptr;
     int p;
             
     for(p=0;p<4;p++)
