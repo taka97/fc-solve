@@ -379,6 +379,16 @@ static void fcs_state_init(
     {
         state->fc_locs[a] = a;
     }
+    state->parent = NULL;
+    state->moves_to_parent = NULL;
+    state->depth = 0;
+    state->visited = 0;
+    state->visited_iter = 0;
+    state->num_active_children = 0;
+    memset(state->scan_visited, '\0', sizeof(state->scan_visited));
+#ifdef INDIRECT_STACK_STATES
+    state->stacks_copy_on_write_flags = 0;
+#endif
 }
 
 
@@ -762,7 +772,6 @@ int freecell_solver_initial_user_state_to_c(
         }
     }
 
-end_of_string:
     *out_state = ret_with_locations;
     return FCS_USER_STATE_TO_C__SUCCESS;
 }
