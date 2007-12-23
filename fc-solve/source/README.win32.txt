@@ -20,8 +20,7 @@ To enable presets (which you should) copy the files under the
 
 Freecell Solver's homepage is at the following URL:
 
-http://vipe.technion.ac.il/~shlomif/freecell-solver/
-
+http://fc-solve.berlios.de/
 
 Enjoy!
 
