@@ -1,4 +1,3 @@
-/* config.h.in.  Generated from configure.ac by autoheader.  */
 /*
     config.h - Configuration file for Freecell Solver
 
@@ -15,9 +14,9 @@
 extern "C" {
 #endif
 
-#undef DEBUG_STATES
-#undef COMPACT_STATES
-#undef INDIRECT_STACK_STATES
+#cmakedefine DEBUG_STATES
+#cmakedefine COMPACT_STATES
+#cmakedefine INDIRECT_STACK_STATES
 
 #undef CARD_DEBUG_PRES
 
