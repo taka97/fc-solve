@@ -49,6 +49,7 @@ INCLUDE(CPack)
 include(CheckFunctionExists)
 
 SUBDIRS(
+    board_gen
     Presets
 )
 
