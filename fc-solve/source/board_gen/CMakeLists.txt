@@ -1,3 +1,5 @@
+INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/../Common.cmake" )
+
 ADD_EXECUTABLE (
     make-gnome-freecell-board
     make_gnome_freecell_board.c

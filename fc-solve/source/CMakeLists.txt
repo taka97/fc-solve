@@ -1,4 +1,4 @@
-INCLUDE ("Common.cmake")
+INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake" )
 # This is the equivalent to perform a "make dist"/"make distdir" etc.
 SET(CPACK_PACKAGE_NAME "freecell-solver")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Freecell Solver")
@@ -60,6 +60,7 @@ include(CheckFunctionExists)
 
 SUBDIRS(
     board_gen
+    man
     Presets
 )
 
