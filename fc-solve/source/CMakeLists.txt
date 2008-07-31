@@ -63,3 +63,12 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/prefix.h.cmake 
     ${CMAKE_CURRENT_SOURCE_DIR}/prefix.h)
 
+INSTALL(
+    TARGETS "fc-solve"
+    DESTINATION "bin"
+)
+
+INSTALL(
+    TARGETS "freecell-solver"
+    DESTINATION "lib"
+)
