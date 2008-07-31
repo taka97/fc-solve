@@ -17,9 +17,11 @@ SET(CPACK_SOURCE_IGNORE_FILES
     "\\\\.o$"
     "~$"
     "/board_gen/(pi-make-microsoft-freecell-board|make-microsoft-freecell-board|make-gnome-freecell-board|make-aisleriot-freecell-board)$"
-    "^fc-solve$"
+    "/fc-solve$"
     "\\\\.so$"
     "/.svn/"
+    "/CMakeCache.txt$"
+    "/Makefile$"
 )
 
 
