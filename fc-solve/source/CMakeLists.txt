@@ -12,7 +12,8 @@ SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSIO
 SET(CPACK_SOURCE_IGNORE_FILES
     "freecell-solver-.*\\\\.tar\\\\.(gz|bz2|Z|lzma)$"
     "/_CPack_Packages/"
-    "^freecell-solver-.*Source$"
+    "/CMakeFiles/"
+    "/freecell-solver-.*Source/"
     "\\\\.o$"
     "~$"
     "/board_gen/(pi-make-microsoft-freecell-board|make-microsoft-freecell-board|make-gnome-freecell-board|make-aisleriot-freecell-board)$"
