@@ -10,7 +10,7 @@ SET(CPACK_PACKAGE_VERSION_PATCH "3")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
 
 SET(CPACK_SOURCE_IGNORE_FILES
-    "\\\\.tar\\\\.(gz|bz2|Z|lzma)$"
+    "freecell-solver-.*\\\\.tar\\\\.(gz|bz2|Z|lzma)$"
     "/_CPack_Packages/"
     "^freecell-solver-.*Source$"
     "\\\\.o$"
