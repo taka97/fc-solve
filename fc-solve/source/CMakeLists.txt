@@ -9,6 +9,17 @@ SET(CPACK_PACKAGE_VERSION_MINOR "11")
 SET(CPACK_PACKAGE_VERSION_PATCH "3")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
 
+SET(CPACK_SOURCE_IGNORE_FILES
+    "\\\\.tar\\\\.(gz|bz2)$"
+    "/_CPack_Packages/"
+    "^freecell-solver-.*Source$"
+    "\\\\.o$"
+    "~$"
+    "^board_gen/(pi-make-microsoft-freecell-board|make-microsoft-freecell-board|make-gnome-freecell-board|make-aisleriot-freecell-board)$"
+    "^fc-solve$"
+    "\\\\.so$"
+    "/.svn/"
+)
 
 
 IF(WIN32 AND NOT UNIX)
