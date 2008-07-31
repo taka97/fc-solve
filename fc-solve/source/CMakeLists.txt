@@ -1,12 +1,22 @@
+INCLUDE ("Common.cmake")
 # This is the equivalent to perform a "make dist"/"make distdir" etc.
 SET(CPACK_PACKAGE_NAME "freecell-solver")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Freecell Solver")
 SET(CPACK_PACKAGE_VENDOR "Shlomi Fish")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-SET(CPACK_PACKAGE_VERSION_MAJOR "2")
-SET(CPACK_PACKAGE_VERSION_MINOR "11")
-SET(CPACK_PACKAGE_VERSION_PATCH "3")
+
+# Process and extract the version number.
+FILE( READ "ver.txt" VERSION)
+
+CHOMP (VERSION)
+
+STRING (REGEX MATCHALL "\\d+" VERSION_DIGITS "${VERSION}")
+
+LIST(GET "${VERSION_DIGITS}" 0 CPACK_PACKAGE_VERSION_MAJOR)
+LIST(GET "${VERSION_DIGITS}" 1 CPACK_PACKAGE_VERSION_MINOR)
+LIST(GET "${VERSION_DIGITS}" 2 CPACK_PACKAGE_VERSION_PATCH)
+
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
 
 SET(CPACK_SOURCE_IGNORE_FILES
@@ -86,4 +96,31 @@ INSTALL(
 INSTALL(
     TARGETS "freecell-solver"
     DESTINATION "lib"
+)
+
+RUN_POD2MAN(
+    "fc-solve.pod"
+    "fc-solve.6"
+    "6"
+    "Freecell Solver"
+    "Freecell Solver ${VERSION}"
+)
+
+INSTALL(
+    FILES
+        "fc-solve.6"
+    DESTINATION
+        "share/man/man6"
+)
+
+INSTALL(
+    FILES
+        "USAGE"
+        "TODO"
+        "README"
+        "README.win32.txt"
+        "INSTALL"
+        "CREDITS"
+    DESTINATION
+        "share/doc/freecell-solver-${VERSION}/"
 )
