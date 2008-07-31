@@ -58,11 +58,9 @@ INCLUDE(CPack)
 
 include(CheckFunctionExists)
 
-SUBDIRS(
-    board_gen
-    man
-    Presets
-)
+ADD_SUBDIRECTORY ("board_gen")
+ADD_SUBDIRECTORY ("man")
+ADD_SUBDIRECTORY ("Presets")
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
