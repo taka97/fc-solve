@@ -15,7 +15,7 @@ SET(CPACK_SOURCE_IGNORE_FILES
     "^freecell-solver-.*Source$"
     "\\\\.o$"
     "~$"
-    "^board_gen/(pi-make-microsoft-freecell-board|make-microsoft-freecell-board|make-gnome-freecell-board|make-aisleriot-freecell-board)$"
+    "/board_gen/(pi-make-microsoft-freecell-board|make-microsoft-freecell-board|make-gnome-freecell-board|make-aisleriot-freecell-board)$"
     "^fc-solve$"
     "\\\\.so$"
     "/.svn/"
