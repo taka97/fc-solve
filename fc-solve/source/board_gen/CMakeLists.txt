@@ -25,3 +25,20 @@ ADD_CUSTOM_COMMAND(
     COMMAND rm -f fc-solve.pod
     DEPENDS fc-solve-board_gen.pod ../ver.txt
 )
+
+INSTALL(
+    TARGETS
+        "make-gnome-freecell-board"
+        "pi-make-microsoft-freecell-board"
+        "make-aisleriot-freecell-board"
+        "make-microsoft-freecell-board"
+    DESTINATION
+        "bin"
+)
+
+INSTALL(
+    PROGRAMS
+        "make_pysol_freecell_board.py"
+    DESTINATION
+        "bin"
+)
