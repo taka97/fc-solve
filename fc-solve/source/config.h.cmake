@@ -91,12 +91,6 @@ extern "C" {
 
 #endif
 
-/* Define to 1 if you have the <dlfcn.h> header file. */
-#undef HAVE_DLFCN_H
-
-/* Define to 1 if you have the <inttypes.h> header file. */
-#undef HAVE_INTTYPES_H
-
 /* Define to 1 if you have the `avl' library (-lavl). */
 #undef HAVE_LIBAVL
 
