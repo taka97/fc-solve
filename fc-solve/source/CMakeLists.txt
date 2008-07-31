@@ -121,12 +121,7 @@ RUN_POD2MAN(
     "Freecell Solver ${VERSION}"
 )
 
-INSTALL(
-    FILES
-        "fc-solve.6"
-    DESTINATION
-        "share/man/man6"
-)
+INSTALL_MAN ("fc-solve.6" 6)
 
 INSTALL(
     FILES

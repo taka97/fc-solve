@@ -80,3 +80,11 @@ MACRO(CHOMP VAR)
     STRING(REGEX REPLACE "[\r\n]+$" "" ${VAR} "${${VAR}}")
 ENDMACRO(CHOMP)
 
+MACRO(INSTALL_MAN SOURCE SECTION)
+    INSTALL(
+        FILES
+            ${SOURCE}
+        DESTINATION
+            "share/man/man${SECTION}"
+   )
+ENDMACRO(INSTALL_MAN)

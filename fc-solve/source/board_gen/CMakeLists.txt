@@ -28,6 +28,8 @@ RUN_POD2MAN(
     "board_gen ${VERSION}"
 )
 
+INSTALL_MAN("fc-solve-board_gen.6" 6)
+
 INSTALL(
     TARGETS
         "make-gnome-freecell-board"
@@ -44,3 +46,4 @@ INSTALL(
     DESTINATION
         "bin"
 )
+

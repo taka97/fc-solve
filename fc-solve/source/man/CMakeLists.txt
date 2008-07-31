@@ -12,9 +12,4 @@ RUN_POD2MAN(
     "Freecell Solver ${VERSION}"
 )
 
-INSTALL(
-    FILES
-        "freecell-solver-range-parallel-solve.6"
-    DESTINATION
-        "share/man/man6"
-)
+INSTALL_MAN ( "freecell-solver-range-parallel-solve.6" 6)
