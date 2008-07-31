@@ -124,3 +124,5 @@ INSTALL(
     DESTINATION
         "share/doc/freecell-solver-${VERSION}/"
 )
+
+FINALIZE_PODS()
