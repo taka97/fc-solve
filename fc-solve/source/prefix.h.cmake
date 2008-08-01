@@ -1,4 +1,4 @@
-#define FREECELL_SOLVER_PREFIX "@prefix@"
+#define FREECELL_SOLVER_PREFIX "@CMAKE_INSTALL_PREFIX@"
 
-#define FREECELL_SOLVER_PKG_DATA_DIR "@datadir@/freecell-solver/"
+#define FREECELL_SOLVER_PKG_DATA_DIR "@PKGDATADIR@"
 

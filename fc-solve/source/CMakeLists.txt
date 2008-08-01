@@ -134,3 +134,10 @@ INSTALL(
     DESTINATION
         "share/doc/freecell-solver-${VERSION}/"
 )
+
+ENABLE_TESTING()
+
+ADD_TEST(
+    tap-tests
+    perl run-tests.pl
+)

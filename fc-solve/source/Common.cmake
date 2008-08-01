@@ -88,3 +88,11 @@ MACRO(INSTALL_MAN SOURCE SECTION)
             "share/man/man${SECTION}"
    )
 ENDMACRO(INSTALL_MAN)
+
+
+# Configure paths.
+SET (DATADIR "${CMAKE_INSTALL_PREFIX}/share"
+    CACHE PATH "The data dir"
+)
+
+SET (PKGDATADIR "${DATADIR}/freecell-solver")

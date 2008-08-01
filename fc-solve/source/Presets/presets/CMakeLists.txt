@@ -9,5 +9,5 @@ INSTALL(
         "rin-tin-tin.sh"
         "yellow-brick-road.sh"
     DESTINATION
-        "share/data/freecell-solver-presets"
+        "${PKGDATADIR}/presets"
 )
