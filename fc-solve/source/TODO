@@ -6,6 +6,9 @@
 
 * Update the NEWS file.
 
+* Make sure one does not need "make install" to run "make test"
+or "ctest -v".
+
 --- Non-pressing ---
 
 * Integrate the patsolve's prioritization and mixed BFS/DFS scan.
