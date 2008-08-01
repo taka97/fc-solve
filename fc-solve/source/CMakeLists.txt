@@ -21,18 +21,20 @@ LIST(GET VERSION_DIGITS 2 CPACK_PACKAGE_VERSION_PATCH)
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
 
 SET(CPACK_SOURCE_IGNORE_FILES
-    "freecell-solver-.*\\\\.tar\\\\.(gz|bz2|Z|lzma)$"
     "/_CPack_Packages/"
     "/CMakeFiles/"
-    "/freecell-solver-.*Source/"
+    "freecell-solver-[0-9]+\\\\.[0-9]+\\\\.[0-9]+-(Source|Linux)(/|\\\\.(sh|tar\\\\.(gz|bz2|Z|lzma))$)"
     "\\\\.o$"
     "~$"
     "/board_gen/(pi-make-microsoft-freecell-board|make-microsoft-freecell-board|make-gnome-freecell-board|make-aisleriot-freecell-board)$"
     "/fc-solve$"
     "\\\\.so$"
     "/.svn/"
+    "/t/t/.*\\\\.exe$"
     "/CMakeCache.txt$"
     "/Makefile$"
+    "/CTestTestfile.cmake$"
+    "/CPackConfig.cmake$"
 )
 
 
@@ -125,12 +127,12 @@ INSTALL_MAN ("fc-solve.6" 6)
 
 INSTALL(
     FILES
-        "USAGE"
-        "TODO"
+        "AUTHORS"
+        "INSTALL"
         "README"
         "README.win32.txt"
-        "INSTALL"
-        "CREDITS"
+        "TODO"
+        "USAGE"
     DESTINATION
         "share/doc/freecell-solver-${VERSION}/"
 )
