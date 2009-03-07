@@ -1259,8 +1259,16 @@ label_next_state:
             fcs_standalone_state_ptrs_t * pack;
 
             pack = fc_solve_PQueuePop(a_star_pqueue);
-            ptr_state_with_locations_key = pack->key;
-            ptr_state_with_locations_val = pack->val;
+            if (pack)
+            {
+                ptr_state_with_locations_key = pack->key;
+                ptr_state_with_locations_val = pack->val;
+            }
+            else
+            {
+                ptr_state_with_locations_key = NULL;
+                ptr_state_with_locations_val = NULL;
+            }
 
             free(pack);
         }
