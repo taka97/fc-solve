@@ -36,32 +36,29 @@
 
 static pq_rating_t fc_solve_a_star_rate_state(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_with_locations_t * ptr_state_with_locations);
+    fcs_state_t * ptr_state_with_locations_key,
+    fcs_state_extra_info_t * ptr_state_with_locations_val
+    );
 
-#define fc_solve_a_star_enqueue_state(soft_thread,ptr_state_with_locations) \
-    {        \
-        fc_solve_PQueuePush(        \
-            a_star_pqueue,       \
-            ptr_state_with_locations,            \
-            fc_solve_a_star_rate_state(soft_thread, ptr_state_with_locations)   \
-            );       \
-    }
+#define fc_solve_a_star_enqueue_state(soft_thread,ptr_state_with_locations_key, ptr_state_with_locations_val) \
 
 
-#define fc_solve_bfs_enqueue_state(soft_thread, state) \
+#define fc_solve_bfs_enqueue_state(soft_thread, state_key, state_val) \
     {    \
         fcs_states_linked_list_item_t * last_item_next;      \
         last_item_next = bfs_queue_last_item->next = (fcs_states_linked_list_item_t*)malloc(sizeof(fcs_states_linked_list_item_t));      \
-        bfs_queue_last_item->s = state;     \
+        bfs_queue_last_item->s.key = state_key;     \
+        bfs_queue_last_item->s.val = state_val;     \
         last_item_next->next = NULL;     \
         bfs_queue_last_item = last_item_next; \
     }
 
-#define the_state (ptr_state_with_locations->s)
+#define the_state (*ptr_state_with_locations_key)
 
 int fc_solve_hard_dfs_solve_for_state(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_with_locations_t * ptr_state_with_locations,
+    fcs_state_t * ptr_state_with_locations_key,
+    fcs_state_extra_info_t * ptr_state_with_locations_val,
     int depth,
     int ignore_osins
     )
@@ -104,7 +101,7 @@ int fc_solve_hard_dfs_solve_for_state(
      * resumed run consistent with the output of a normal (all-in-one-time)
      * run.
      * */
-    if (!is_scan_visited(ptr_state_with_locations, soft_thread->id))
+    if (!is_scan_visited(ptr_state_with_locations_key, ptr_state_with_locations_val, soft_thread->id))
     {
         if (instance->debug_iter_output)
         {
@@ -113,18 +110,19 @@ int fc_solve_hard_dfs_solve_for_state(
                     iter_num,
                     depth,
                     (void*)instance,
-                    ptr_state_with_locations,
+                    ptr_state_with_locations_key,
+                    ptr_state_with_locations_val,
                     0  /* It's a temporary kludge */
                     );
         }
         /* Increase the number of iterations */
         instance->num_times++;
         hard_thread->num_times++;
-        ptr_state_with_locations->visited_iter = iter_num;
+        ptr_state_with_locations_val->visited_iter = iter_num;
     }
 
     /* Mark this state as visited, so it won't be recursed into again. */
-    set_scan_visited(ptr_state_with_locations, soft_thread->id);
+    set_scan_visited(ptr_state_with_locations_key, ptr_state_with_locations_val, soft_thread->id);
 
     /* Count the free-cells */
     num_freecells = 0;
@@ -151,13 +149,17 @@ int fc_solve_hard_dfs_solve_for_state(
     /* Let's check if this state is finished, and if so return 0; */
     if ((num_freestacks == stacks_num) && (num_freecells == freecells_num))
     {
-        instance->final_state = ptr_state_with_locations;
+        instance->final_state_key = ptr_state_with_locations_key;
+        instance->final_state_val = ptr_state_with_locations_val;
 
         ret_value = FCS_STATE_WAS_SOLVED;
         goto free_derived;
     }
 
-    calculate_real_depth(ptr_state_with_locations);
+    calculate_real_depth(
+        ptr_state_with_locations_key, 
+        ptr_state_with_locations_val
+    );
 
     for(a=0 ;
         a < soft_thread->tests_order.num;
@@ -168,7 +170,8 @@ int fc_solve_hard_dfs_solve_for_state(
         check =
             fc_solve_sfs_tests[soft_thread->tests_order.tests[a] & FCS_TEST_ORDER_NO_FLAGS_MASK ] (
                 soft_thread,
-                ptr_state_with_locations,
+                ptr_state_with_locations_key,
+                ptr_state_with_locations_val,
                 num_freestacks,
                 num_freecells,
                 &derived,
@@ -185,7 +188,8 @@ int fc_solve_hard_dfs_solve_for_state(
                 soft_thread->soft_dfs_info = malloc(sizeof(soft_thread->soft_dfs_info[0]) * soft_thread->num_solution_states);
             }
 
-            soft_thread->soft_dfs_info[depth].state = ptr_state_with_locations;
+            soft_thread->soft_dfs_info[depth].state_key = ptr_state_with_locations_key;
+            soft_thread->soft_dfs_info[depth].state_val = ptr_state_with_locations_val;
 
             ret_value = FCS_STATE_SUSPEND_PROCESS;
 
@@ -195,11 +199,12 @@ int fc_solve_hard_dfs_solve_for_state(
         for(derived_state_index=0;derived_state_index<derived.num_states;derived_state_index++)
         {
             if (
-                (! (derived.states[derived_state_index]->visited &
+                (! (derived.states[derived_state_index].val->visited &
                     FCS_VISITED_DEAD_END)
                 ) &&
                 (! is_scan_visited(
-                    derived.states[derived_state_index],
+                    derived.states[derived_state_index].key,
+                    derived.states[derived_state_index].val,
                     soft_thread->id)
                 )
                )
@@ -207,7 +212,8 @@ int fc_solve_hard_dfs_solve_for_state(
                 check =
                     fc_solve_hard_dfs_solve_for_state(
                         soft_thread,
-                        derived.states[derived_state_index],
+                        derived.states[derived_state_index].key,
+                        derived.states[derived_state_index].val,
                         depth+1,
                         ignore_osins
                         );
@@ -216,7 +222,8 @@ int fc_solve_hard_dfs_solve_for_state(
                     (check == FCS_STATE_BEGIN_SUSPEND_PROCESS))
                 {
 
-                    soft_thread->soft_dfs_info[depth].state = ptr_state_with_locations;
+                    soft_thread->soft_dfs_info[depth].state_key = ptr_state_with_locations_key;
+                    soft_thread->soft_dfs_info[depth].state_val = ptr_state_with_locations_val;
 
                     ret_value =  FCS_STATE_SUSPEND_PROCESS;
 
@@ -240,7 +247,8 @@ int fc_solve_hard_dfs_solve_for_state(
         soft_thread->soft_dfs_info = malloc(sizeof(soft_thread->soft_dfs_info[0]) * soft_thread->num_solution_states);
         
 
-        soft_thread->soft_dfs_info[depth].state = ptr_state_with_locations;
+        soft_thread->soft_dfs_info[depth].state_key = ptr_state_with_locations_key;
+        soft_thread->soft_dfs_info[depth].state_val = ptr_state_with_locations_val;
 
         ret_value = FCS_STATE_SUSPEND_PROCESS;
 
@@ -251,7 +259,10 @@ int fc_solve_hard_dfs_solve_for_state(
 
     if (soft_thread->is_a_complete_scan)
     {
-        mark_as_dead_end(ptr_state_with_locations);
+        mark_as_dead_end(
+            ptr_state_with_locations_key,
+            ptr_state_with_locations_val
+        );
     }
 
 
@@ -270,10 +281,12 @@ int fc_solve_hard_dfs_resume_solution(
     int depth
     )
 {
-    fcs_state_with_locations_t * ptr_state_with_locations;
+    fcs_state_t * ptr_state_with_locations_key;
+    fcs_state_extra_info_t * ptr_state_with_locations_val;
     int check;
 
-    ptr_state_with_locations = soft_thread->soft_dfs_info[depth].state;
+    ptr_state_with_locations_key = soft_thread->soft_dfs_info[depth].state_key;
+    ptr_state_with_locations_val = soft_thread->soft_dfs_info[depth].state_val;
 
     if (depth < soft_thread->num_solution_states-1)
     {
@@ -293,7 +306,8 @@ int fc_solve_hard_dfs_resume_solution(
     {
         check = fc_solve_hard_dfs_solve_for_state(
             soft_thread,
-            ptr_state_with_locations,
+            ptr_state_with_locations_key,
+            ptr_state_with_locations_val,
             depth,
             1);
     }
@@ -306,7 +320,8 @@ int fc_solve_hard_dfs_resume_solution(
         if ((check == FCS_STATE_SUSPEND_PROCESS) || (check == FCS_STATE_WAS_SOLVED))
         {
 
-            soft_thread->soft_dfs_info[depth].state = ptr_state_with_locations;
+            soft_thread->soft_dfs_info[depth].state_key = ptr_state_with_locations_key;
+            soft_thread->soft_dfs_info[depth].state_val = ptr_state_with_locations_val;
         }
     }
 
@@ -337,7 +352,8 @@ static void fc_solve_increase_dfs_max_depth(
 
     for(d=soft_thread->dfs_max_depth ; d<new_dfs_max_depth; d++)
     {
-        soft_thread->soft_dfs_info[d].state = NULL;
+        soft_thread->soft_dfs_info[d].state_key = NULL;
+        soft_thread->soft_dfs_info[d].state_val = NULL;
         soft_thread->soft_dfs_info[d].derived_states_list.max_num_states = 0;
         soft_thread->soft_dfs_info[d].test_index = 0;
         soft_thread->soft_dfs_info[d].current_state_index = 0;
@@ -356,7 +372,7 @@ static void fc_solve_increase_dfs_max_depth(
     without procedural recursion
     by using some dedicated stacks for the traversal.
   */
-#define the_state (ptr_state_with_locations->s)
+#define the_state (*ptr_state_with_locations_key)
 
 #define myreturn(ret_value) \
     soft_thread->num_solution_states = depth+1;     \
@@ -364,7 +380,8 @@ static void fc_solve_increase_dfs_max_depth(
 
 int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_with_locations_t * ptr_state_with_locations_orig,
+    fcs_state_t * ptr_state_with_locations_orig_key,
+    fcs_state_extra_info_t * ptr_state_with_locations_orig_val,
     int resume,
     int to_randomize
     )
@@ -373,8 +390,10 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
     fc_solve_instance_t * instance = hard_thread->instance;
 
     int depth;
-    fcs_state_with_locations_t * ptr_state_with_locations,
-        * ptr_recurse_into_state_with_locations;
+    fcs_state_t * ptr_state_with_locations_key;
+    fcs_state_extra_info_t * ptr_state_with_locations_val;
+    fcs_state_t * ptr_recurse_into_state_with_locations_key;
+    fcs_state_extra_info_t * ptr_recurse_into_state_with_locations_val;
     int a;
     int check;
     int do_first_iteration;
@@ -406,11 +425,13 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
         fc_solve_increase_dfs_max_depth(soft_thread);
 
         /* Initialize the initial state to indicate it is the first */
-        ptr_state_with_locations_orig->parent = NULL;
-        ptr_state_with_locations_orig->moves_to_parent = NULL;
-        ptr_state_with_locations_orig->depth = 0;
+        ptr_state_with_locations_orig_val->parent_key = NULL;
+        ptr_state_with_locations_orig_val->parent_val = NULL;
+        ptr_state_with_locations_orig_val->moves_to_parent = NULL;
+        ptr_state_with_locations_orig_val->depth = 0;
 
-        soft_thread->soft_dfs_info[0].state = ptr_state_with_locations_orig;
+        soft_thread->soft_dfs_info[0].state_key = ptr_state_with_locations_orig_key;
+        soft_thread->soft_dfs_info[0].state_val = ptr_state_with_locations_orig_val;
     }
     else
     {
@@ -426,10 +447,14 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
     dfs_max_depth = soft_thread->dfs_max_depth;
     test_index = the_soft_dfs_info->test_index;
     current_state_index = the_soft_dfs_info->current_state_index;
-    ptr_state_with_locations = the_soft_dfs_info->state;
+    ptr_state_with_locations_key = the_soft_dfs_info->state_key;
+    ptr_state_with_locations_val = the_soft_dfs_info->state_val;
     derived_states_list = &(the_soft_dfs_info->derived_states_list);
 
-    calculate_real_depth(ptr_state_with_locations);
+    calculate_real_depth(
+        ptr_state_with_locations_key,
+        ptr_state_with_locations_val
+    );
     
     /*
         The main loop.
@@ -461,8 +486,11 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
 
                 if (is_a_complete_scan)
                 {
-                    ptr_state_with_locations->visited |= FCS_VISITED_ALL_TESTS_DONE;
-                    mark_as_dead_end(ptr_state_with_locations);
+                    ptr_state_with_locations_val->visited |= FCS_VISITED_ALL_TESTS_DONE;
+                    mark_as_dead_end(
+                        ptr_state_with_locations_key,
+                        ptr_state_with_locations_val
+                    );
                 }
 
                 depth--;
@@ -484,7 +512,8 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                     test_index = the_soft_dfs_info->test_index;
                     current_state_index = the_soft_dfs_info->current_state_index;
                     derived_states_list = &(the_soft_dfs_info->derived_states_list);
-                    ptr_state_with_locations = the_soft_dfs_info->state;
+                    ptr_state_with_locations_key = the_soft_dfs_info->state_key;
+                    ptr_state_with_locations_val = the_soft_dfs_info->state_val;
                 }
                 continue; /* Just to make sure depth is not -1 now */
             }
@@ -507,10 +536,11 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                         instance->num_times,
                         depth,
                         (void*)instance,
-                        ptr_state_with_locations,
+                        ptr_state_with_locations_key,
+                        ptr_state_with_locations_val,
                         ((depth == 0) ?
                             0 :
-                            soft_thread->soft_dfs_info[depth-1].state->visited_iter
+                            soft_thread->soft_dfs_info[depth-1].state_val->visited_iter
                         )
                         );
                 }
@@ -539,7 +569,8 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                 /* Check if we have reached the empty state */
                 if ((num_freestacks == stacks_num) && (num_freecells == freecells_num))
                 {
-                    instance->final_state = ptr_state_with_locations;
+                    instance->final_state_key = ptr_state_with_locations_key;
+                    instance->final_state_val = ptr_state_with_locations_val;
 
                     myreturn(FCS_STATE_WAS_SOLVED);
                 }
@@ -578,7 +609,8 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                         test_index
                     ] & FCS_TEST_ORDER_NO_FLAGS_MASK] (
                         soft_thread,
-                        ptr_state_with_locations,
+                        ptr_state_with_locations_key,
+                        ptr_state_with_locations_val,
                         the_soft_dfs_info->num_freestacks,
                         the_soft_dfs_info->num_freecells,
                         derived_states_list,
@@ -658,26 +690,34 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
 
         {
             int num_states = derived_states_list->num_states;
-            fcs_state_with_locations_t * * derived_states = derived_states_list->states;
+            fcs_derived_state_keyval_pair_t * derived_states = derived_states_list->states;
+            fcs_derived_state_keyval_pair_t * single_derived_state; 
             int * rand_array = the_soft_dfs_info->derived_states_random_indexes;
 
             while (current_state_index <
                    num_states)
             {
-                ptr_recurse_into_state_with_locations =
-                    (derived_states[
+                single_derived_state = &(derived_states[
                         rand_array[
                             current_state_index
                         ]
                     ]);
 
+                ptr_recurse_into_state_with_locations_key
+                    = single_derived_state->key;
+
+                ptr_recurse_into_state_with_locations_val
+                    = single_derived_state->val;
+
                 current_state_index++;
+
                 if (
-                    (! (ptr_recurse_into_state_with_locations->visited &
+                    (! (ptr_recurse_into_state_with_locations_val->visited &
                         FCS_VISITED_DEAD_END)
                     ) &&
                     (! is_scan_visited(
-                        ptr_recurse_into_state_with_locations,
+                        ptr_recurse_into_state_with_locations_key,
+                        ptr_recurse_into_state_with_locations_val,
                         soft_thread_id)
                     )
                    )
@@ -688,9 +728,13 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                     the_soft_dfs_info->test_index = test_index;
                     the_soft_dfs_info->current_state_index = current_state_index;
 
-                    set_scan_visited(ptr_recurse_into_state_with_locations, soft_thread_id);
+                    set_scan_visited(
+                        ptr_recurse_into_state_with_locations_key, 
+                        ptr_recurse_into_state_with_locations_val, 
+                        soft_thread_id
+                    );
 
-                    ptr_recurse_into_state_with_locations->visited_iter = instance->num_times;
+                    ptr_recurse_into_state_with_locations_val->visited_iter = instance->num_times;
 #if 0
                     ptr_recurse_into_state_with_locations->parent = ptr_state_with_locations;
 #endif
@@ -701,15 +745,22 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                     */
                     depth++;
                     the_soft_dfs_info++;
-                    the_soft_dfs_info->state = 
-                        ptr_state_with_locations = 
-                        ptr_recurse_into_state_with_locations;
+                    the_soft_dfs_info->state_key =
+                        ptr_state_with_locations_key =
+                        ptr_recurse_into_state_with_locations_key;
+                    the_soft_dfs_info->state_val =
+                        ptr_state_with_locations_val =
+                        ptr_recurse_into_state_with_locations_val;
+
                     test_index = 0;
                     current_state_index = 0;
                     derived_states_list = &(the_soft_dfs_info->derived_states_list);
                     derived_states_list->num_states = 0;
 
-                    calculate_real_depth(ptr_recurse_into_state_with_locations);
+                    calculate_real_depth(
+                        ptr_recurse_into_state_with_locations_key,
+                        ptr_recurse_into_state_with_locations_val
+                    );
 
                     break;
                 }
@@ -729,11 +780,12 @@ int fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
 #define FCS_A_STAR_CARDS_UNDER_SEQUENCES_EXPONENT 1.3
 #define FCS_A_STAR_SEQS_OVER_RENEGADE_CARDS_EXPONENT 1.3
 
-#define state (ptr_state_with_locations->s)
+#define state (*ptr_state_with_locations_key)
 
 void fc_solve_a_star_initialize_rater(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_with_locations_t * ptr_state_with_locations
+    fcs_state_t * ptr_state_with_locations_key,
+    fcs_state_extra_info_t * ptr_state_with_locations_val
     )
 {
     fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
@@ -774,7 +826,8 @@ void fc_solve_a_star_initialize_rater(
 
 static pq_rating_t fc_solve_a_star_rate_state(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_with_locations_t * ptr_state_with_locations
+    fcs_state_t * ptr_state_with_locations_key,
+    fcs_state_extra_info_t * ptr_state_with_locations_val
     )
 {
     fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
@@ -881,9 +934,9 @@ static pq_rating_t fc_solve_a_star_rate_state(
 
     ret += (temp * a_star_weights[FCS_A_STAR_WEIGHT_MAX_SEQUENCE_MOVE]);
 
-    if (ptr_state_with_locations->depth <= 20000)
+    if (ptr_state_with_locations_val->depth <= 20000)
     {
-        ret += ((20000 - ptr_state_with_locations->depth)/20000.0) * a_star_weights[FCS_A_STAR_WEIGHT_DEPTH];
+        ret += ((20000 - ptr_state_with_locations_val->depth)/20000.0) * a_star_weights[FCS_A_STAR_WEIGHT_DEPTH];
     }
 
     return (int)(ret*INT_MAX);
@@ -917,14 +970,16 @@ static pq_rating_t fc_solve_a_star_rate_state(
 
 int fc_solve_a_star_or_bfs_do_solve_or_resume(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_with_locations_t * ptr_state_with_locations_orig,
+    fcs_state_t * ptr_state_with_locations_orig_key,
+    fcs_state_extra_info_t * ptr_state_with_locations_orig_val,
     int resume
     )
 {
     fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
     fc_solve_instance_t * instance = hard_thread->instance;
 
-    fcs_state_with_locations_t * ptr_state_with_locations;
+    fcs_state_t * ptr_state_with_locations_key;
+    fcs_state_extra_info_t * ptr_state_with_locations_val;
     int num_freestacks, num_freecells;
     fcs_states_linked_list_item_t * save_item;
     int a;
@@ -958,12 +1013,14 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
     if (!resume)
     {
         /* Initialize the first element to indicate it is the first */
-        ptr_state_with_locations_orig->parent = NULL;
-        ptr_state_with_locations_orig->moves_to_parent = NULL;
-        ptr_state_with_locations_orig->depth = 0;
+        ptr_state_with_locations_orig_val->parent_key = NULL;
+        ptr_state_with_locations_orig_val->parent_val = NULL;
+        ptr_state_with_locations_orig_val->moves_to_parent = NULL;
+        ptr_state_with_locations_orig_val->depth = 0;
     }
 
-    ptr_state_with_locations = ptr_state_with_locations_orig;
+    ptr_state_with_locations_key = ptr_state_with_locations_orig_key;
+    ptr_state_with_locations_val = ptr_state_with_locations_orig_val;
 
     method = soft_thread->method;
     freecells_num = instance->freecells_num;
@@ -971,13 +1028,13 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
 
     /* Continue as long as there are states in the queue or
        priority queue. */
-    while ( ptr_state_with_locations != NULL)
+    while ( ptr_state_with_locations_key != NULL)
     {
         /*
          * If this is an optimization scan and the state being checked is not
          * in the original solution path - move on to the next state
          * */
-        if ((method == FCS_METHOD_OPTIMIZE) && (!(ptr_state_with_locations->visited & FCS_VISITED_IN_SOLUTION_PATH)))
+        if ((method == FCS_METHOD_OPTIMIZE) && (!(ptr_state_with_locations_val->visited & FCS_VISITED_IN_SOLUTION_PATH)))
         {
             goto label_next_state;
         }
@@ -987,9 +1044,9 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
          * state.
          * */
         if ((method == FCS_METHOD_OPTIMIZE) ?
-                (ptr_state_with_locations->visited & FCS_VISITED_IN_OPTIMIZED_PATH) :
-                ((ptr_state_with_locations->visited & FCS_VISITED_DEAD_END) ||
-                 (is_scan_visited(ptr_state_with_locations, soft_thread_id)))
+                (ptr_state_with_locations_val->visited & FCS_VISITED_IN_OPTIMIZED_PATH) :
+                ((ptr_state_with_locations_val->visited & FCS_VISITED_DEAD_END) ||
+                 (is_scan_visited(ptr_state_with_locations_key, ptr_state_with_locations_val, soft_thread_id)))
                 )
         {
             goto label_next_state;
@@ -1024,12 +1081,13 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
             instance->debug_iter_output_func(
                     (void*)instance->debug_iter_output_context,
                     instance->num_times,
-                    ptr_state_with_locations->depth,
+                    ptr_state_with_locations_val->depth,
                     (void*)instance,
-                    ptr_state_with_locations,
-                    ((ptr_state_with_locations->parent == NULL) ?
+                    ptr_state_with_locations_key,
+                    ptr_state_with_locations_val,
+                    ((ptr_state_with_locations_val->parent_key == NULL) ?
                         0 :
-                        ptr_state_with_locations->parent->visited_iter
+                        ptr_state_with_locations_val->parent_val->visited_iter
                     )
                     );
         }
@@ -1037,12 +1095,16 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
 
         if ((num_freestacks == stacks_num) && (num_freecells == freecells_num))
         {
-            instance->final_state = ptr_state_with_locations;
+            instance->final_state_key = ptr_state_with_locations_key;
+            instance->final_state_val = ptr_state_with_locations_val;
 
             myreturn(FCS_STATE_WAS_SOLVED);
         }
 
-        calculate_real_depth(ptr_state_with_locations);
+        calculate_real_depth(
+            ptr_state_with_locations_key,
+            ptr_state_with_locations_val
+        );
 
         /* Do all the tests at one go, because that the way it should be
            done for BFS and A*
@@ -1054,7 +1116,8 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
         {
             check = fc_solve_sfs_tests[tests_order_tests[a] & FCS_TEST_ORDER_NO_FLAGS_MASK] (
                     soft_thread,
-                    ptr_state_with_locations,
+                    ptr_state_with_locations_key,
+                    ptr_state_with_locations_val,
                     num_freestacks,
                     num_freecells,
                     &derived,
@@ -1069,7 +1132,8 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
                 (check == FCS_STATE_SUSPEND_PROCESS))
             {
                 /* Save the current position in the scan */
-                soft_thread->first_state_to_check = ptr_state_with_locations;
+                soft_thread->first_state_to_check_key = ptr_state_with_locations_key;
+                soft_thread->first_state_to_check_val = ptr_state_with_locations_val;
 
                 myreturn(FCS_STATE_SUSPEND_PROCESS);
             }
@@ -1078,7 +1142,8 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
         if (check_if_limits_exceeded())
                     
         {
-            soft_thread->first_state_to_check = ptr_state_with_locations;
+            soft_thread->first_state_to_check_key = ptr_state_with_locations_key;
+            soft_thread->first_state_to_check_val = ptr_state_with_locations_val;
 
             myreturn(FCS_STATE_SUSPEND_PROCESS);
         }
@@ -1086,7 +1151,7 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
 
         if (is_a_complete_scan)
         {
-            ptr_state_with_locations->visited |= FCS_VISITED_ALL_TESTS_DONE;
+            ptr_state_with_locations_val->visited |= FCS_VISITED_ALL_TESTS_DONE;
         }
 
         /* Increase the number of iterations by one . 
@@ -1102,38 +1167,54 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
         {
             if (method == FCS_METHOD_A_STAR)
             {
-                fc_solve_a_star_enqueue_state(
-                    soft_thread,
-                    derived.states[derived_index]
+                fcs_standalone_state_ptrs_t * pack;
+                
+                pack = (fcs_standalone_state_ptrs_t *)malloc(sizeof(*pack));
+
+                pack->key = ptr_state_with_locations_key;
+                pack->val = ptr_state_with_locations_val;
+
+                fc_solve_PQueuePush(
+                    a_star_pqueue,
+                    (void *)pack,
+                    fc_solve_a_star_rate_state(soft_thread, ptr_state_with_locations_key, ptr_state_with_locations_val)
                     );
             }
             else
             {
                 fc_solve_bfs_enqueue_state(
                     soft_thread,
-                    derived.states[derived_index]
+                    derived.states[derived_index].key,
+                    derived.states[derived_index].val
                     );
             }
         }
 
         if (method == FCS_METHOD_OPTIMIZE)
         {
-            ptr_state_with_locations->visited |= FCS_VISITED_IN_OPTIMIZED_PATH;
+            ptr_state_with_locations_val->visited |= FCS_VISITED_IN_OPTIMIZED_PATH;
         }
         else
         {
-            set_scan_visited(ptr_state_with_locations, soft_thread_id);
+            set_scan_visited(
+                    ptr_state_with_locations_key,
+                    ptr_state_with_locations_val,
+                    soft_thread_id
+                    );
 
             if (derived.num_states == 0)
             {
                 if (is_a_complete_scan)
                 {
-                    mark_as_dead_end(ptr_state_with_locations);
+                    mark_as_dead_end(
+                            ptr_state_with_locations_key,
+                            ptr_state_with_locations_val
+                            );
                 }
             }
         }
 
-        ptr_state_with_locations->visited_iter = instance->num_times-1;
+        ptr_state_with_locations_val->visited_iter = instance->num_times-1;
 
 label_next_state:
 
@@ -1145,19 +1226,27 @@ label_next_state:
             save_item = bfs_queue->next;
             if (save_item != bfs_queue_last_item)
             {
-                ptr_state_with_locations = save_item->s;
+                ptr_state_with_locations_key = save_item->s.key;
+                ptr_state_with_locations_val = save_item->s.val;
                 bfs_queue->next = save_item->next;
                 free(save_item);
             }
             else
             {
-                ptr_state_with_locations = NULL;
+                ptr_state_with_locations_key = NULL;
+                ptr_state_with_locations_val = NULL;
             }
         }
         else
         {
             /* It is an A* scan */
-            ptr_state_with_locations = fc_solve_PQueuePop(a_star_pqueue);
+            fcs_standalone_state_ptrs_t * pack;
+
+            pack = fc_solve_PQueuePop(a_star_pqueue);
+            ptr_state_with_locations_key = pack->key;
+            ptr_state_with_locations_val = pack->val;
+
+            free(pack);
         }
         resume = 0;
     }

@@ -76,7 +76,7 @@ extern "C" {
  * */
 struct fcs_states_linked_list_item_struct
 {
-    fcs_state_t * s;
+    fcs_standalone_state_ptrs_t s;
     struct fcs_states_linked_list_item_struct * next;
 };
 
