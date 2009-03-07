@@ -28,12 +28,14 @@ while (<>)
         PARAM_LOOP:
         while(<>)
         {
+            chomp;
             if (m{\A\{})
             {
                 print "$_\n";
                 FUNC_LOOP:
                 while (<>)
                 {
+                    chomp;
                     if (m{\A\}})
                     {
                         print "$_\n";
@@ -42,6 +44,7 @@ while (<>)
                     else
                     {
                         s[$ident->(\w+)][process($ident, $1)]ge;
+                        print "$_\n";
                     }
                 }
                 last PARAM_LOOP;
