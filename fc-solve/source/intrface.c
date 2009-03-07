@@ -774,7 +774,7 @@ static void trace_solution(
     /*
         Trace the solution.
     */
-    fcs_state_with_locations_t * s1;
+    fcs_state_extra_info_t * s1_val;
     fcs_move_stack_t * solution_moves;
     int move_idx;
     fcs_move_stack_t * stack;
@@ -789,16 +789,16 @@ static void trace_solution(
     fcs_move_stack_alloc_into_var(solution_moves);
     instance->solution_moves = solution_moves;
 
-    s1 = instance->final_state;
+    s1_val = instance->final_state_val;
 
     /* Retrace the step from the current state to its parents */
-    while (s1->parent != NULL)
+    while (s1_val->parent_val != NULL)
     {
         /* Mark the state as part of the non-optimized solution */
-        s1->visited |= FCS_VISITED_IN_SOLUTION_PATH;
+        s1_val->visited |= FCS_VISITED_IN_SOLUTION_PATH;
         /* Duplicate the move stack */
         {
-            stack = s1->moves_to_parent;
+            stack = s1_val->moves_to_parent;
             moves = stack->moves;
             for(move_idx=stack->num_moves-1;move_idx>=0;move_idx--)
             {
@@ -808,10 +808,10 @@ static void trace_solution(
         /* Duplicate the state to a freshly malloced memory */
 
         /* Move to the parent state */
-        s1 = s1->parent;
+        s1_val = s1_val->parent_val;
     }
     /* There's one more state than there are move stacks */
-    s1->visited |= FCS_VISITED_IN_SOLUTION_PATH;
+    s1_val->visited |= FCS_VISITED_IN_SOLUTION_PATH;
 }
 
 
@@ -869,7 +869,8 @@ static int fc_solve_optimize_solution(
     return 
         fc_solve_a_star_or_bfs_do_solve_or_resume(
             optimization_thread->soft_threads[0],
-            instance->state_copy_ptr,
+            instance->state_copy_ptr_key,
+            instance->state_copy_ptr_val,            
             0
             );
 
@@ -878,168 +879,39 @@ static int fc_solve_optimize_solution(
 
 extern void fc_solve_cache_talon(
     fc_solve_instance_t * instance,
-    fcs_state_with_locations_t * new_state
+    fcs_state_t * new_state_key,
+    fcs_state_extra_info_t * new_state_val
+
     );
 
+
+
 /*
+
     This function starts the solution process _for the first time_. If one
+
     wishes to proceed after the iterations limit was reached, one should
+
     use fc_solve_resume_instance.
 
+
+
   */
+
 int fc_solve_solve_instance(
+
     fc_solve_instance_t * instance,
-    fcs_state_with_locations_t * init_state
+
+    fcs_state_t * init_state_key,
+
+    fcs_state_extra_info_t * init_state_val
+
     )
+
 {
-    fcs_state_with_locations_t * state_copy_ptr;
 
-    /* Allocate the first state and initialize it to init_state */
-    fcs_state_ia_alloc_into_var(state_copy_ptr, instance->hard_threads[0]);
-
-    fcs_duplicate_state(*state_copy_ptr, *init_state);
-
-    {
-        int a;
-        for(a=0;a<instance->stacks_num;a++)
-        {
-            fcs_copy_stack(*state_copy_ptr, a, instance->hard_threads[0]->indirect_stacks_buffer);
-        }
-    }
-
-    /* Initialize the state to be a base state for the game tree */
-    state_copy_ptr->depth = 0;
-    state_copy_ptr->moves_to_parent = NULL;
-    state_copy_ptr->visited = 0;
-    state_copy_ptr->parent = NULL;
-    memset(&(state_copy_ptr->scan_visited), '\0', sizeof(state_copy_ptr->scan_visited));
-
-    instance->state_copy_ptr = state_copy_ptr;
-
-    /* Initialize the data structure that will manage the state collection */
-#if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBREDBLACK_TREE)
-    instance->tree = rbinit(fc_solve_state_compare_with_context, NULL);
-#elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBAVL_AVL_TREE)
-    instance->tree = avl_create(fc_solve_state_compare_with_context, NULL);
-#elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBAVL_REDBLACK_TREE)
-    instance->tree = rb_create(fc_solve_state_compare_with_context, NULL);
-#elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GLIB_TREE)
-    instance->tree = g_tree_new(fc_solve_state_compare);
-#endif
-
-#if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GLIB_HASH)
-    instance->hash = g_hash_table_new(
-        fc_solve_hash_function,
-        fc_solve_state_compare_equal
-        );
-#elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_INTERNAL_HASH)
-    instance->hash = fc_solve_hash_init(
-            2048,
-            fc_solve_state_compare_with_context,
-            NULL
-       );
-#endif
-
-    /****************************************************/
-
-#ifdef INDIRECT_STACK_STATES
-    /* Initialize the data structure that will manage the stack
-       collection */
-#if FCS_STACK_STORAGE == FCS_STACK_STORAGE_INTERNAL_HASH
-    instance->stacks_hash = fc_solve_hash_init(
-            2048,
-            fcs_stack_compare_for_comparison_with_context,
-            NULL
-        );
-#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBAVL_AVL_TREE)
-    instance->stacks_tree = avl_create(
-            fcs_stack_compare_for_comparison_with_context,
-            NULL
-            );
-#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBAVL_REDBLACK_TREE)
-    instance->stacks_tree = rb_create(
-            fcs_stack_compare_for_comparison_with_context,
-            NULL
-            );
-#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBREDBLACK_TREE)
-    instance->stacks_tree = rbinit(
-        fcs_stack_compare_for_comparison_with_context,
-        NULL
-        );
-#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_GLIB_TREE)
-    instance->stacks_tree = g_tree_new(fcs_stack_compare_for_comparison);
-#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_GLIB_HASH)
-    instance->stacks_hash = g_hash_table_new(
-        fc_solve_glib_hash_stack_hash_function,
-        fc_solve_glib_hash_stack_compare
-        );
-#endif
-#endif
-
-    /***********************************************/
-
-#ifdef FCS_WITH_TALONS
-    /* Initialize the Talon's Cache */
-    if (instance->talon_type == FCS_TALON_KLONDIKE)
-    {
-        instance->talons_hash = fc_solve_hash_init(
-            512,
-            fcs_talon_compare_with_context,
-            NULL
-            );
-
-        fc_solve_cache_talon(instance, instance->state_copy_ptr);
-    }
-#endif
-
-#if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_DB_FILE)
-    /* Not working - ignore */
-    db_open(
-        NULL,
-        DB_BTREE,
-        O_CREAT|O_RDWR,
-        0777,
-        NULL,
-        NULL,
-        &(instance->db)
-        );
-#endif
-
-    {
-        fcs_state_with_locations_t * no_use;
-
-        fc_solve_check_and_add_state(
-            instance->hard_threads[0]->soft_threads[0],
-            state_copy_ptr,
-            &no_use
-            );
-
-    }
-
-    instance->ht_idx = 0;
-    {
-        int ht_idx;
-        for(ht_idx=0; ht_idx < instance->num_hard_threads ; ht_idx++)
-        {
-            fc_solve_hard_thread_t * hard_thread;
-            hard_thread = instance->hard_threads[ht_idx];
-            
-            if (hard_thread->prelude != NULL)
-            {
-                hard_thread->prelude_idx = 0;
-                hard_thread->st_idx = hard_thread->prelude[hard_thread->prelude_idx].scan_idx;
-                hard_thread->num_times_left_for_soft_thread = hard_thread->prelude[hard_thread->prelude_idx].quota;
-                hard_thread->prelude_idx++;
-            }
-            else
-            {
-                hard_thread->st_idx = 0;
-            }
-        }
-    }
-
-    return fc_solve_resume_instance(instance);
 }
+
 
 
 static int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
@@ -1126,7 +998,8 @@ static int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
             {
                 ret = fc_solve_hard_dfs_solve_for_state(
                     soft_thread,
-                    instance->state_copy_ptr,
+                    instance->state_copy_ptr_key,
+                    instance->state_copy_ptr_val,
                     0,
                     0);
 
@@ -1145,7 +1018,8 @@ static int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
                 ret = 
                     fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                         soft_thread,
-                        instance->state_copy_ptr,
+                        instance->state_copy_ptr_key,
+                        instance->state_copy_ptr_val,
                         0,
                         0
                         );
@@ -1156,6 +1030,7 @@ static int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
                 ret = 
                     fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                         soft_thread,
+                        NULL,
                         NULL,
                         1,
                         0
@@ -1170,7 +1045,8 @@ static int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
                 ret = 
                     fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                         soft_thread,
-                        instance->state_copy_ptr,
+                        instance->state_copy_ptr_key,
+                        instance->state_copy_ptr_val,
                         0,
                         1
                         );
@@ -1182,6 +1058,7 @@ static int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
                 ret = 
                     fc_solve_soft_dfs_or_random_dfs_do_solve_or_resume(
                         soft_thread,
+                        NULL,
                         NULL,
                         1,
                         1
@@ -1198,13 +1075,15 @@ static int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
                 {
                     fc_solve_a_star_initialize_rater(
                         soft_thread,
-                        instance->state_copy_ptr
+                        instance->state_copy_ptr_key,
+                        instance->state_copy_ptr_val
                         );
                 }
 
                 ret = fc_solve_a_star_or_bfs_do_solve_or_resume(
                     soft_thread,
-                    instance->state_copy_ptr,
+                    instance->state_copy_ptr_key,
+                    instance->state_copy_ptr_val,
                     0
                 );
 
@@ -1215,7 +1094,8 @@ static int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
                 ret =
                     fc_solve_a_star_or_bfs_do_solve_or_resume(
                         soft_thread,
-                        soft_thread->first_state_to_check,
+                        soft_thread->first_state_to_check_key,
+                        soft_thread->first_state_to_check_val,
                         1
                         );
             }
@@ -1330,7 +1210,8 @@ int fc_solve_resume_instance(
         ret =
             fc_solve_a_star_or_bfs_do_solve_or_resume(
                 instance->optimization_thread->soft_threads[0],
-                instance->optimization_thread->soft_threads[0]->first_state_to_check,
+                instance->optimization_thread->soft_threads[0]->first_state_to_check_key,
+                instance->optimization_thread->soft_threads[0]->first_state_to_check_val,
                 1
                 );
     }
@@ -1518,15 +1399,17 @@ static void fc_solve_glib_hash_foreach_destroy_stack_action
 
 
 void fc_solve_destroy_move_stack_of_state(
-        fcs_state_with_locations_t * ptr_state_with_locations,
+        fcs_state_t * ptr_state_with_locations_key,
+        fcs_state_extra_info_t * ptr_state_with_locations_val,
+
         void * context
+
         )
+
 {
-    if (ptr_state_with_locations->moves_to_parent != NULL)
-    {
-        fcs_move_stack_destroy(ptr_state_with_locations->moves_to_parent);
-    }
+
 }
+
 
 /*
     This function should be called after the user has retrieved the
