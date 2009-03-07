@@ -287,15 +287,136 @@
 #ifdef INDIRECT_STACK_STATES
 static void GCC_INLINE fc_solve_cache_stacks(
         fc_solve_hard_thread_t * hard_thread,
-        fcs_state_t * new_state_key,
-        fcs_state_extra_info_t * new_state_val
-
+        fcs_state_with_locations_t * new_state
         )
-
 {
+    int a;
+#if (FCS_STACK_STORAGE == FCS_STACK_STORAGE_INTERNAL_HASH)
+    SFO_hash_value_t hash_value_int;
+#endif
+    void * cached_stack;
+    char * new_ptr;
+    fc_solve_instance_t * instance = hard_thread->instance;
+    int stacks_num = instance->stacks_num;
+    
 
+    for(a=0 ; a<stacks_num ; a++)
+    {
+        /* 
+         * If the stack is not a copy - it is already cached so skip
+         * to the next stack
+         * */
+        if (! (new_state->stacks_copy_on_write_flags & (1 << a)))
+        {
+            continue;
+        }
+        /* new_state->s.stacks[a] = realloc(new_state->s.stacks[a], fcs_stack_len(new_state->s, a)+1); */
+        fcs_compact_alloc_typed_ptr_into_var(new_ptr, char, hard_thread->stacks_allocator, (fcs_stack_len(new_state->s, a)+1));
+        memcpy(new_ptr, new_state->s.stacks[a], (fcs_stack_len(new_state->s, a)+1));
+        new_state->s.stacks[a] = new_ptr;
+
+#if FCS_STACK_STORAGE == FCS_STACK_STORAGE_INTERNAL_HASH
+        /* Calculate the hash value for the stack */
+        /* This hash function was ripped from the Perl source code.
+         * (It is not derived work however). */
+        {
+            const char * s_ptr = (char*)(new_state->s.stacks[a]);
+            const char * s_end = s_ptr+fcs_stack_len(new_state->s, a)+1;
+            hash_value_int = 0;
+            while (s_ptr < s_end)
+            {
+                hash_value_int += (hash_value_int << 5) + *(s_ptr++);
+            }
+            hash_value_int += (hash_value_int >> 5);
+        }
+
+        if (hash_value_int < 0)
+        {
+            /*
+             * This is a bit mask that nullifies the sign bit of the
+             * number so it will always be positive
+             * */
+            hash_value_int &= (~(1<<((sizeof(hash_value_int)<<3)-1)));
+        }
+
+        cached_stack = (void *)fc_solve_hash_insert(
+            instance->stacks_hash,
+            new_state->s.stacks[a],
+            freecell_solver_lookup2_hash_function(
+                (ub1 *)new_state->s.stacks[a],
+                (fcs_stack_len(new_state->s, a)+1),
+                24
+                ),
+            hash_value_int,
+            1
+            );
+
+#define replace_with_cached(condition_expr) \
+        if (cached_stack != NULL)     \
+        {      \
+            fcs_compact_alloc_release(hard_thread->stacks_allocator);    \
+            new_state->s.stacks[a] = cached_stack;       \
+        }
+
+        replace_with_cached(cached_stack != NULL);
+        
+#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBAVL_AVL_TREE) || (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBAVL_REDBLACK_TREE)
+        cached_stack =
+#if (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBAVL_AVL_TREE)
+            avl_insert(
+#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBAVL_REDBLACK_TREE)
+            rb_insert(
+#endif
+            instance->stacks_tree,
+            new_state->s.stacks[a]
+            );
+#if 0
+            )        /* In order to settle gvim and other editors that
+                         are keen on parenthesis matching */
+#endif
+
+        replace_with_cached(cached_stack != NULL);
+
+#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBREDBLACK_TREE)
+        cached_stack = (void *)rbsearch(
+            new_state->s.stacks[a],
+            instance->stacks_tree
+            );
+
+        replace_with_cached(cached_stack != new_state->s.stacks[a]);
+#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_GLIB_TREE)
+        cached_stack = g_tree_lookup(
+             instance->stacks_tree,
+             (gpointer)new_state->s.stacks[a]
+             );
+
+        /* replace_with_cached contains an if statement */
+        replace_with_cached(cached_stack != NULL)
+        else
+        {
+            g_tree_insert(
+                instance->stacks_tree,
+                (gpointer)new_state->s.stacks[a],
+                (gpointer)new_state->s.stacks[a]
+                );
+        }
+#elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_GLIB_HASH)
+        cached_stack = g_hash_table_lookup(
+            instance->stacks_hash,
+            (gconstpointer)new_state->s.stacks[a]
+            );
+        replace_with_cached(cached_stack != NULL)
+        else
+        {
+            g_hash_table_insert(
+                instance->stacks_hash,
+                (gpointer)new_state->s.stacks[a],
+                (gpointer)new_state->s.stacks[a]
+                );
+        }
+#endif
+    }
 }
-
 #else
 #define fc_solve_cache_stacks(instance, new_state)
 #endif
@@ -304,15 +425,37 @@ static void GCC_INLINE fc_solve_cache_stacks(
 #ifdef FCS_WITH_TALONS
 void fc_solve_cache_talon(
     fc_solve_instance_t * instance,
-    fcs_state_t * new_state_key,
-    fcs_state_extra_info_t * new_state_val
-
+    fcs_state_with_locations_t * new_state
     )
-
 {
+    void * cached_talon;
+    int hash_value_int;
 
+    new_state->s.talon = realloc(new_state->s.talon, fcs_klondike_talon_len(new_state->s)+1);
+#error Add Hash Code
+    hash_value_int = *(SFO_hash_value_t*)instance->hash_value;
+    if (hash_value_int < 0)
+    {
+        /*
+         * This is a bit mask that nullifies the sign bit of the
+         * number so it will always be positive
+         * */
+        hash_value_int &= (~(1<<((sizeof(hash_value_int)<<3)-1)));
+    }
+
+    cached_talon = (void *)fc_solve_hash_insert(
+        instance->talons_hash,
+        new_state->s.talon,
+        hash_value_int,
+        1
+        );
+
+    if (cached_talon != NULL)
+    {
+        free(new_state->s.talon);
+        new_state->s.talon = cached_talon;
+    }
 }
-
 #endif
 
 
@@ -357,19 +500,57 @@ guint fc_solve_hash_function(gconstpointer key)
 
 GCC_INLINE int fc_solve_check_and_add_state(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_t * new_state_key,
-    fcs_state_extra_info_t * new_state_val,
-
-    fcs_state_t * * existing_state_key,
-
-    fcs_state_extra_info_t * * existing_state_val
-
+    fcs_state_with_locations_t * new_state,
+    fcs_state_with_locations_t * * existing_state
     )
-
 {
+#if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_INTERNAL_HASH)
+    SFO_hash_value_t hash_value_int;
+#endif
+#if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_INDIRECT)
+    fcs_state_with_locations_t * * pos_ptr;
+    int found;
+#endif
+    fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
+    fc_solve_instance_t * instance = hard_thread->instance;
 
+    int check;
+
+    if (check_if_limits_exceeded())
+    {
+        return FCS_STATE_BEGIN_SUSPEND_PROCESS;
+    }
+
+    fc_solve_cache_stacks(hard_thread, new_state);
+
+    fcs_canonize_state(new_state, instance->freecells_num, instance->stacks_num);
+
+    fcs_caas_check_and_insert();
+    if (check)
+    {
+        /* The new state was not found in the cache, and it was already inserted */
+        if (new_state->parent)
+        {
+            new_state->parent->num_active_children++;
+        }
+        instance->num_states_in_collection++;
+
+        if (new_state->moves_to_parent != NULL)
+        {
+            new_state->moves_to_parent = 
+                fc_solve_move_stack_compact_allocate(
+                    hard_thread, 
+                    new_state->moves_to_parent
+                    );
+        }
+
+        return FCS_STATE_DOES_NOT_EXIST;
+    }
+    else
+    {
+        return FCS_STATE_ALREADY_EXISTS;
+    }
 }
-
 
 
 
@@ -399,7 +580,7 @@ int fc_solve_check_and_add_state(fc_solve_instance_t * instance, fcs_state_with_
         return FCS_STATE_EXCEEDS_MAX_DEPTH;
     }
 
-    fc_solve_canonize_state(new_state, instance->freecells_num, instance->stacks_num);
+    fcs_canonize_state(new_state, instance->freecells_num, instance->stacks_num);
 
     fc_solve_cache_stacks(instance, new_state);
 
