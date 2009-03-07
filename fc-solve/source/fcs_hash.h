@@ -75,6 +75,9 @@ SFO_hash_t * fc_solve_hash_init(
 void * fc_solve_hash_insert(
     SFO_hash_t * hash,
     void * key,
+    void * val,
+    void * * existing_key,
+    void * * existing_val,
     SFO_hash_value_t hash_value,
     SFO_hash_value_t secondary_hash_value,
     int optimize_for_caching
