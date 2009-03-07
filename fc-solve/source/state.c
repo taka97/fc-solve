@@ -362,7 +362,7 @@ static void fcs_state_init(
     )
 {
     int a;
-    memset((void*)&(state_key), 0, sizeof(fcs_state_t));
+    memset(state_key, 0, sizeof(fcs_state_t));
     for(a=0;a<MAX_NUM_STACKS;a++)
     {
         state_val->stack_locs[a] = a;

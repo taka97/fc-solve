@@ -135,25 +135,6 @@ fcs_move_stack_t * fcs_move_stack_duplicate(
 }
 #endif
 
-#if 0
-extern void fcs_derived_states_list_add_state(
-    fcs_derived_states_list_t * list,
-    fcs_state_t * state_key,
-    fcs_state_extra_info_t * state_val,
-    fcs_move_stack_t * move_stack
-    )
-{
-    if (list->num_states == list->max_num_states)
-    {
-        list->max_num_states += 16;
-        list->states = realloc(list->states, sizeof(list->states[0]) * list->max_num_states);
-        list->move_stacks = realloc(list->move_stacks, sizeof(list->move_stacks[0]) * list->max_num_states);
-    }
-    list->states[list->num_states] = state;
-    list->move_stacks[list->num_states] = move_stack;
-    list->num_states++;
-}
-#endif
 /*
     This function performs a given move on a state
 

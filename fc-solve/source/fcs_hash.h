@@ -76,7 +76,8 @@ SFO_hash_t * fc_solve_hash_init(
 
 /*
  * Returns 0 if the key is new and the key/val pair was inserted.
- *      - in that case *existing_key / *existing_val will be set to NULL.
+ *      - in that case *existing_key / *existing_val will be set to key
+ *      and val respectively.
  * Returns 1 if the key is not new and *existing_key / *existing_val
  * was set to it.
  */

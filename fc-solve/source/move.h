@@ -117,15 +117,6 @@ struct fcs_derived_states_list_struct
 
 typedef struct fcs_derived_states_list_struct fcs_derived_states_list_t;
 
-#if 0
-extern void fcs_derived_states_list_add_state(
-    fcs_derived_states_list_t * list,
-    fcs_state_t * state_key,
-    fcs_state_extra_info_t * state_val,
-    fcs_move_stack_t * move_stack
-    );
-#endif
-
 #ifndef max
 #define max(a,b) (((a)>(b))?(a):(b))
 #endif
@@ -169,7 +160,8 @@ extern void fcs_derived_states_list_add_state(
             \
 }
 
-#define fcs_derived_states_list_add_state(list,state_key,state_val) \
+#if 0
+#define fc_solve_derived_states_list_add_state(list,state_key,state_val) \
     \
 {       \
     if ((list)->num_states == (list)->max_num_states)  \
@@ -182,7 +174,13 @@ extern void fcs_derived_states_list_add_state(
     (list)->num_states++;        \
 }
 
-
+#else
+extern void fc_solve_derived_states_list_add_state(
+        fcs_derived_states_list_t * list,
+        fcs_state_t * state_key,
+        fcs_state_extra_info_t * state_val
+        );
+#endif
 
 
 #ifdef __cplusplus

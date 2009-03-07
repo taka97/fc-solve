@@ -136,7 +136,7 @@ fcs_move_stack_push(moves, temp_move);                                    \
             existing_state_val->parent_val = ptr_state_val;               \
             existing_state_val->depth = ptr_state_val->depth + 1;  \
         }                                                                 \
-        fcs_derived_states_list_add_state(                                \
+        fc_solve_derived_states_list_add_state(                                \
             derived_states_list,                                          \
             existing_state_key,                                           \
             existing_state_val                                            \
@@ -144,7 +144,7 @@ fcs_move_stack_push(moves, temp_move);                                    \
     }                                                                     \
     else                                                                  \
     {                                                                     \
-        fcs_derived_states_list_add_state(                                \
+        fc_solve_derived_states_list_add_state(                                \
             derived_states_list,                                          \
             ptr_new_state_key,                                            \
             ptr_new_state_val                                             \

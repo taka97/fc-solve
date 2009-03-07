@@ -68,7 +68,7 @@
          * */            \
         hash_value_int &= (~(1<<((sizeof(hash_value_int)<<3)-1)));     \
     }    \
-    check = ((*existing_state = fc_solve_hash_insert(          \
+    is_state_new = ((*existing_state = fc_solve_hash_insert(          \
         instance->hash,              \
         new_state,                   \
         hash_value_int,              \
@@ -99,7 +99,7 @@
     }                                                                   \
     {         \
         void * existing_key_void, * existing_val_void;             \
-    check = (fc_solve_hash_insert(            \
+    is_state_new = (fc_solve_hash_insert(            \
         instance->hash,                                                 \
         new_state_key,                                                  \
         new_state_val,                                                  \
@@ -112,9 +112,12 @@
             ),                                                          \
         hash_value_int,                                                 \
         1                                                               \
-        ));          \
-        existing_state_key = existing_key_void;      \
-        existing_state_val = existing_val_void;       \
+        ) == 0);          \
+        if (! is_state_new)    \
+        {       \
+            *existing_state_key = existing_key_void;      \
+            *existing_state_val = existing_val_void;       \
+        } \
     }
     
 
@@ -140,7 +143,7 @@
                              \
         if (found)                \
         {                             \
-            check = 0;                   \
+            is_state_new = 0;                   \
             *existing_state = *pos_ptr;     \
         }                                 \
         else                               \
@@ -183,21 +186,21 @@
                           \
                 instance->num_prev_states_margin=0;           \
             }                  \
-            check = 1;               \
+            is_state_new = 1;               \
         }                  \
                     \
     }                   \
     else                 \
     {         \
         *existing_state = *pos_ptr; \
-        check = 0;          \
+        is_state_new = 0;          \
     }
 
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBREDBLACK_TREE)
 
 #define fcs_caas_check_and_insert()               \
     *existing_state = (fcs_state_with_locations_t *)rbsearch(new_state, instance->tree); \
-    check = ((*existing_state) == new_state);
+    is_state_new = ((*existing_state) == new_state);
 
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBAVL_AVL_TREE) || (FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBAVL_REDBLACK_TREE)
 
@@ -209,7 +212,7 @@
 
 #define fcs_caas_check_and_insert()       \
     *existing_state = fcs_libavl_states_tree_insert(instance->tree, new_state); \
-    check = (*existing_state == NULL);
+    is_state_new = (*existing_state == NULL);
 
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GLIB_TREE)
 #define fcs_caas_check_and_insert()       \
@@ -224,11 +227,11 @@
             (gpointer)new_state,              \
             (gpointer)new_state                 \
             );                         \
-        check = 1;                  \
+        is_state_new = 1;                  \
     }              \
     else        \
     {          \
-        check = 0;     \
+        is_state_new = 0;     \
     }
 
 
@@ -247,11 +250,11 @@
             (gpointer)new_state            \
         \
             );           \
-        check = 1;              \
+        is_state_new = 1;              \
     }          \
     else        \
     {          \
-        check = 0;     \
+        is_state_new = 0;     \
     }
 
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_DB_FILE)
@@ -280,11 +283,11 @@
                 &key,         \
                 &value,         \
                 0);             \
-            check = 1;        \
+            is_state_new = 1;        \
         }         \
         else         \
         {         \
-            check = 0;        \
+            is_state_new = 0;        \
             *existing_state = (fcs_state_with_locations_t *)(value.data);     \
         }         \
     }
@@ -352,7 +355,9 @@ static void GCC_INLINE fc_solve_cache_stacks(
 
         {
             void * dummy;
-            fc_solve_hash_insert(
+            int verdict;
+
+            verdict = fc_solve_hash_insert(
                 instance->stacks_hash,
                 new_state_key->stacks[a],
                 new_state_key->stacks[a],
@@ -366,7 +371,6 @@ static void GCC_INLINE fc_solve_cache_stacks(
                 hash_value_int,
                 1
                 );
-        }
 
 #define replace_with_cached(condition_expr) \
         if (cached_stack != NULL)     \
@@ -375,7 +379,9 @@ static void GCC_INLINE fc_solve_cache_stacks(
             new_state_key->stacks[a] = cached_stack;       \
         }
 
-        replace_with_cached(cached_stack != NULL);
+            replace_with_cached(verdict);        
+        }
+
         
 #elif (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBAVL_AVL_TREE) || (FCS_STACK_STORAGE == FCS_STACK_STORAGE_LIBAVL_REDBLACK_TREE)
         cached_stack =
@@ -534,7 +540,7 @@ GCC_INLINE int fc_solve_check_and_add_state(
     fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
     fc_solve_instance_t * instance = hard_thread->instance;
 
-    int check;
+    int is_state_new;
 
     if (check_if_limits_exceeded())
     {
@@ -546,7 +552,7 @@ GCC_INLINE int fc_solve_check_and_add_state(
     fc_solve_canonize_state(new_state_key, new_state_val, instance->freecells_num, instance->stacks_num);
 
     fcs_caas_check_and_insert();
-    if (check)
+    if (is_state_new)
     {
         /* The new state was not found in the cache, and it was already inserted */
         if (new_state_val->parent_val)
