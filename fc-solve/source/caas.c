@@ -399,7 +399,7 @@ int fc_solve_check_and_add_state(fc_solve_instance_t * instance, fcs_state_with_
         return FCS_STATE_EXCEEDS_MAX_DEPTH;
     }
 
-    fcs_canonize_state(new_state, instance->freecells_num, instance->stacks_num);
+    fc_solve_canonize_state(new_state, instance->freecells_num, instance->stacks_num);
 
     fc_solve_cache_stacks(instance, new_state);
 

@@ -595,6 +595,11 @@ typedef struct
     fcs_state_extra_info_t info;
 } fcs_state_keyval_pair_t;
 
+typedef struct {
+    fcs_state_t * key;
+    fcs_state_extra_info_t * val;
+} fcs_standalone_state_ptrs_t;
+
 extern fcs_card_t fc_solve_empty_card;
 #define fcs_empty_card fc_solve_empty_card
 
@@ -636,8 +641,6 @@ extern void fc_solve_canonize_state(
     int freecells_num,
     int stacks_num
     );
-
-#define fcs_canonize_state(state,freecells_num,stacks_num) fc_solve_canonize_state((state),(freecells_num),(stacks_num))
 
 #if (FCS_STATE_STORAGE != FCS_STATE_STORAGE_INDIRECT)
 

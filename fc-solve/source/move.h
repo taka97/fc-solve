@@ -106,10 +106,7 @@ extern char * fc_solve_move_to_string_w_state(
         int standard_notation
         );
 
-typedef struct {
-    fcs_state_t * key;
-    fcs_state_extra_info_t * val;
-} fcs_derived_state_keyval_pair_t;
+typedef fcs_standalone_state_ptrs_t fcs_derived_state_keyval_pair_t;
 
 struct fcs_derived_states_list_struct
 {

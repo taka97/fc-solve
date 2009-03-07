@@ -248,7 +248,7 @@ void fc_solve_apply_move(fcs_state_with_locations_t * state_with_locations, fcs_
 
         case FCS_MOVE_TYPE_CANONIZE:
         {
-            fcs_canonize_state(state_with_locations, freecells_num, stacks_num);
+            fc_solve_canonize_state(state_with_locations, freecells_num, stacks_num);
         }
         break;
 
