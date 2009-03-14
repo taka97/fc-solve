@@ -1074,8 +1074,8 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
     fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
     fc_solve_instance_t * instance = hard_thread->instance;
 
-    fcs_state_t * ptr_state_with_locations_key;
-    fcs_state_extra_info_t * ptr_state_with_locations_val;
+    fcs_state_t * ptr_state_with_locations_key, * ptr_new_state_key;
+    fcs_state_extra_info_t * ptr_state_with_locations_val, * ptr_new_state_val;
     int num_freestacks, num_freecells;
     fcs_states_linked_list_item_t * save_item;
     int a;
@@ -1264,18 +1264,18 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
 
         for(derived_index = 0 ; derived_index < derived.num_states ; derived_index++)
         {
+            ptr_new_state_key = derived.states[derived_index].key;
+            ptr_new_state_val = derived.states[derived_index].val;
+            
             if (method == FCS_METHOD_A_STAR)
             {
-                fcs_standalone_state_ptrs_t * pack;
-                
-                pack = (fcs_standalone_state_ptrs_t *)malloc(sizeof(*pack));
-
                 fc_solve_PQueuePush(
                     a_star_pqueue,
-                    (void *)pack,
+                    ptr_new_state_key,
+                    ptr_new_state_val,
                     fc_solve_a_star_rate_state(soft_thread, 
-                        (pack->key = derived.states[derived_index].key),
-                        (pack->val = derived.states[derived_index].val)
+                        ptr_new_state_key,
+                        ptr_new_state_val
                         )
                     );
             }
@@ -1283,8 +1283,8 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
             {
                 fc_solve_bfs_enqueue_state(
                     soft_thread,
-                    derived.states[derived_index].key,
-                    derived.states[derived_index].val
+                    ptr_new_state_key,
+                    ptr_new_state_val
                     );
             }
         }
@@ -1339,21 +1339,10 @@ label_next_state:
         else
         {
             /* It is an A* scan */
-            fcs_standalone_state_ptrs_t * pack;
-
-            pack = fc_solve_PQueuePop(a_star_pqueue);
-            if (pack)
-            {
-                ptr_state_with_locations_key = pack->key;
-                ptr_state_with_locations_val = pack->val;
-            }
-            else
-            {
-                ptr_state_with_locations_key = NULL;
-                ptr_state_with_locations_val = NULL;
-            }
-
-            free(pack);
+            fc_solve_PQueuePop(a_star_pqueue, 
+                &ptr_state_with_locations_key,
+                &ptr_state_with_locations_val 
+                );
         }
         resume = 0;
     }
