@@ -40,9 +40,6 @@ static pq_rating_t fc_solve_a_star_rate_state(
     fcs_state_extra_info_t * ptr_state_with_locations_val
     );
 
-#define fc_solve_a_star_enqueue_state(soft_thread,ptr_state_with_locations_key, ptr_state_with_locations_val) \
-
-
 #define fc_solve_bfs_enqueue_state(soft_thread, state_key, state_val) \
     {    \
         fcs_states_linked_list_item_t * last_item_next;      \
@@ -877,6 +874,27 @@ void fc_solve_a_star_initialize_rater(
     soft_thread->a_star_initial_cards_under_sequences = cards_under_sequences;
 }
 
+#undef TRACE0
+
+#ifdef DEBUG
+
+#define TRACE0(message) \
+        { \
+            if (getenv("FCS_TRACE")) \
+            { \
+            printf("BestFS(rate_state) - %s ; rating=%.40f .\n", \
+                    message, \
+                    ret \
+                    );  \
+            fflush(stdout); \
+            } \
+        }
+
+#else
+
+#define TRACE0(no_use) {}
+
+#endif
 
 static pq_rating_t fc_solve_a_star_rate_state(
     fc_solve_soft_thread_t * soft_thread,
@@ -992,6 +1010,8 @@ static pq_rating_t fc_solve_a_star_rate_state(
     {
         ret += ((20000 - ptr_state_with_locations_val->depth)/20000.0) * a_star_weights[FCS_A_STAR_WEIGHT_DEPTH];
     }
+
+    TRACE0("Before return");
 
     return (int)(ret*INT_MAX);
 }
@@ -1250,13 +1270,13 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
                 
                 pack = (fcs_standalone_state_ptrs_t *)malloc(sizeof(*pack));
 
-                pack->key = derived.states[derived_index].key;
-                pack->val = derived.states[derived_index].val;
-
                 fc_solve_PQueuePush(
                     a_star_pqueue,
                     (void *)pack,
-                    fc_solve_a_star_rate_state(soft_thread, ptr_state_with_locations_key, ptr_state_with_locations_val)
+                    fc_solve_a_star_rate_state(soft_thread, 
+                        (pack->key = derived.states[derived_index].key),
+                        (pack->val = derived.states[derived_index].val)
+                        )
                     );
             }
             else
