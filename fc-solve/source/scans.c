@@ -1250,8 +1250,8 @@ int fc_solve_a_star_or_bfs_do_solve_or_resume(
                 
                 pack = (fcs_standalone_state_ptrs_t *)malloc(sizeof(*pack));
 
-                pack->key = ptr_state_with_locations_key;
-                pack->val = ptr_state_with_locations_val;
+                pack->key = derived.states[derived_index].key;
+                pack->val = derived.states[derived_index].val;
 
                 fc_solve_PQueuePush(
                     a_star_pqueue,
