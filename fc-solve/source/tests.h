@@ -80,8 +80,8 @@ extern "C" {
 
 extern int fc_solve_sfs_check_state_begin(
     fc_solve_hard_thread_t * hard_thread,
-    fcs_state_extra_info_t * * out_ptr_new_state_val,
     fcs_state_t * * out_ptr_state_key,
+    fcs_state_extra_info_t * * out_ptr_new_state_val,
     fcs_state_extra_info_t * ptr_state_val,
     fcs_move_stack_t * moves
     );
@@ -89,8 +89,8 @@ extern int fc_solve_sfs_check_state_begin(
 #define sfs_check_state_begin()                                     \
     {         \
         fc_solve_sfs_check_state_begin(hard_thread,  \
-                &ptr_new_state_val,                  \
                 &ptr_new_state_key,                  \
+                &ptr_new_state_val,                  \
                 ptr_state_val,                       \
                 moves);                              \
     }

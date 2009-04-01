@@ -63,8 +63,8 @@
 
 int fc_solve_sfs_check_state_begin(
     fc_solve_hard_thread_t * hard_thread,
-    fcs_state_extra_info_t * * out_ptr_new_state_val,
     fcs_state_t * * out_ptr_new_state_key,
+    fcs_state_extra_info_t * * out_ptr_new_state_val,
     fcs_state_extra_info_t * ptr_state_val,
     fcs_move_stack_t * moves
     )
