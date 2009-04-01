@@ -118,7 +118,6 @@ int fc_solve_sfs_check_state_end(
     int scans_synergy;
 
     hard_thread = soft_thread->hard_thread;
-    scans_synergy = hard_thread->instance->scans_synergy;
     calc_real_depth = hard_thread->instance->calc_real_depth;
 
     /* The last move in a move stack should be FCS_MOVE_TYPE_CANONIZE
