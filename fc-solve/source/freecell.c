@@ -141,7 +141,6 @@ int fc_solve_sfs_check_state_end(
             /* This state is not going to be used, so
              * let's clean it. */
             fcs_state_ia_release(hard_thread);
-            return check;
         }
         else if (check == FCS_STATE_ALREADY_EXISTS)
         {
