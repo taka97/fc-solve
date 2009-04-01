@@ -189,7 +189,6 @@ int fc_solve_sfs_check_state_end(
     fcs_state_extra_info_t * ptr_new_state_val; \
     fcs_move_stack_t * moves;                                  \
     char * indirect_stacks_buffer;                             \
-    int calc_real_depth;                                       \
     tests_declare_accessors_freecell_only()
 
 #ifdef FCS_FREECELL_ONLY
@@ -230,7 +229,6 @@ int fc_solve_sfs_check_state_end(
     instance = hard_thread->instance;                             \
     moves = hard_thread->reusable_move_stack;                     \
     indirect_stacks_buffer = hard_thread->indirect_stacks_buffer; \
-    calc_real_depth = instance->calc_real_depth;                  \
     tests_define_accessors_freecell_only()
 
 extern int fc_solve_sfs_simple_simon_move_sequence_to_founds(
