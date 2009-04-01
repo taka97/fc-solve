@@ -61,6 +61,47 @@
  * sequences_are_built_by - the type of sequences of this board.
  * */
 
+int fc_solve_sfs_check_state_begin(
+    fc_solve_hard_thread_t * hard_thread,
+    fcs_state_extra_info_t * * out_ptr_new_state_val,
+    fcs_state_t * * out_ptr_new_state_key,
+    fcs_state_extra_info_t * ptr_state_val,
+    fcs_move_stack_t * moves
+    )
+{
+    fcs_state_extra_info_t * ptr_new_state_val;
+
+    fcs_state_ia_alloc_into_var(ptr_new_state_val, hard_thread);
+    *(out_ptr_new_state_key) = ptr_new_state_val->key;
+    fcs_duplicate_state(
+            (*(out_ptr_new_state_key)),
+            ptr_new_state_val,
+            ptr_state_val->key, 
+            ptr_state_val
+    );
+    /* Some A* and BFS parameters that need to be initialized in
+     * the derived state.
+     * */
+    ptr_new_state_val->parent_val = ptr_state_val;
+    ptr_new_state_val->moves_to_parent = moves;
+    /* Make sure depth is consistent with the game graph.
+     * I.e: the depth of every newly discovered state is derived from
+     * the state from which it was discovered. */
+    ptr_new_state_val->depth = ptr_new_state_val->depth + 1;
+    /* Mark this state as a state that was not yet visited */
+    ptr_new_state_val->visited = 0;
+    /* It's a newly created state which does not have children yet. */
+    ptr_new_state_val->num_active_children = 0;
+    memset(ptr_new_state_val->scan_visited, '\0',
+        sizeof(ptr_new_state_val->scan_visited)
+        );
+    fcs_move_stack_reset(moves);
+
+    *out_ptr_new_state_val = ptr_new_state_val;
+
+    return 0;
+}
+
 /*
  * This function tries to move stack cards that are present at the
  * top of stacks to the foundations.
