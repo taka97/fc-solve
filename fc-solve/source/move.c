@@ -174,9 +174,11 @@ void fc_solve_apply_move(
     int src_stack, dest_stack;
     int src_freecell, dest_freecell;
     int src_stack_len;
+    fcs_cards_column_t col;
 
     fcs_state_t * state_key = state_val->key;
 
+    /*  TODO : unify to a single dest/src. */
     dest_stack = fcs_move_get_dest_stack(move);
     src_stack = fcs_move_get_src_stack(move);
     dest_freecell = fcs_move_get_dest_freecell(move);
@@ -187,7 +189,8 @@ void fc_solve_apply_move(
     {
         case FCS_MOVE_TYPE_STACK_TO_STACK:
         {
-            src_stack_len = fcs_stack_len(*state_key, src_stack);
+            col = fcs_state_get_col(*state_key, src_stack);
+            src_stack_len = fcs_cards_column_len(col);
             for(a=0 ; a<fcs_move_get_num_cards_in_seq(move) ; a++)
             {
                 fcs_push_stack_card_into_stack(
@@ -251,7 +254,9 @@ void fc_solve_apply_move(
 
         case FCS_MOVE_TYPE_FLIP_CARD:
         {
-            fcs_flip_stack_card(*state_key, src_stack, fcs_stack_len(*state_key, src_stack)-1);
+            col = fcs_state_get_col(*state_key, src_stack);
+            src_stack_len = fcs_cards_column_len(col);
+            fcs_flip_stack_card(*state_key, src_stack, src_stack_len-1);
         }
         break;
 
@@ -424,7 +429,7 @@ char * fc_solve_move_to_string_w_state(
                 /* More than one card was moved */
                 (fcs_move_get_num_cards_in_seq(move) > 1) &&
                 /* It was a move to an empty stack */
-                (fcs_stack_len(*state_key, fcs_move_get_dest_stack(move)) ==
+                (fcs_cards_column_len(fcs_state_get_col(*state_key, fcs_move_get_dest_stack(move))) ==
                  fcs_move_get_num_cards_in_seq(move))
                )
             {

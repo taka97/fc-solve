@@ -119,24 +119,23 @@ int fc_solve_sfs_check_state_end(
     This macro checks if the top card in the stack is a flipped card
     , and if so flips it so its face is up.
   */
-#define fcs_flip_top_card(stack)                                   \
+#define fcs_flip_top_card(stack_idx)                                   \
 {                                                                  \
     int cards_num;                                                 \
-    cards_num = fcs_stack_len(new_state,stack);                    \
+    fcs_cards_column_t col;                                        \
+    col = fcs_state_get_col(new_state, stack_idx);                 \
+    cards_num = fcs_cards_column_len(col);                         \
                                                                    \
     if (cards_num > 0)                                             \
     {                                                              \
         if (fcs_card_get_flipped(                                  \
-                fcs_stack_card(                                    \
-                    new_state,                                     \
-                    stack,                                         \
-                    cards_num-1)                                   \
+                fcs_cards_column_get_card(col, cards_num-1)        \
                 ) == 1                                             \
            )                                                       \
         {                                                          \
-            fcs_flip_stack_card(new_state,stack,cards_num-1);      \
+            fcs_flip_stack_card(new_state,stack_idx,cards_num-1);      \
             fcs_move_set_type(temp_move, FCS_MOVE_TYPE_FLIP_CARD); \
-            fcs_move_set_src_stack(temp_move, stack);              \
+            fcs_move_set_src_stack(temp_move, stack_idx);              \
                                                                    \
             fcs_move_stack_push(moves, temp_move);                 \
         }                                                          \

@@ -51,6 +51,13 @@
         (fcs_suit_is_ss_true_parent(fcs_card_suit(parent),fcs_card_suit(child))) \
     )
 
+/*
+ * TODO : change when I have some spare cycles.
+ */
+#define fcs_stack_len(s, col_idx) (_fcs_stack_len((s), (col_idx)))
+#define fcs_stack_card(s, col_idx, card_idx) (_fcs_stack_card((s), (col_idx), (card_idx)))
+#define fcs_stack_card_num(s, col_idx, card_idx) (_fcs_stack_card_num((s), (col_idx), (card_idx)))
+
 int fc_solve_sfs_simple_simon_move_sequence_to_founds(
         fc_solve_soft_thread_t * soft_thread,
         fcs_state_extra_info_t * ptr_state_val,
