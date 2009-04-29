@@ -252,10 +252,11 @@ typedef char fcs_locs_t;
                                       */
 
 typedef char fcs_card_t;
+typedef fcs_card_t * fcs_card_column_t;
 
 struct fcs_struct_state_t
 {
-    fcs_card_t * stacks[MAX_NUM_STACKS];
+    fcs_card_column_t stacks[MAX_NUM_STACKS];
     fcs_card_t freecells[MAX_NUM_FREECELLS];
     char foundations[MAX_NUM_DECKS*4];
 #ifdef FCS_WITH_TALONS
