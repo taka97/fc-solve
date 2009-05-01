@@ -2540,10 +2540,6 @@ int fc_solve_sfs_atomic_move_card_to_parent(
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
 
-/* TODO: Remove later */
-#define fcs_pop_stack_card(state,s,into) \
-    _fcs_pop_stack_card(state, s, into)
-
 int fc_solve_sfs_atomic_move_card_to_freecell(
         fc_solve_soft_thread_t * soft_thread,
         fcs_state_extra_info_t * ptr_state_val,
@@ -2558,7 +2554,7 @@ int fc_solve_sfs_atomic_move_card_to_freecell(
     int freecells_num;
 #endif
     int stack_idx, cards_num, ds;
-    fcs_card_t card, temp_card;
+    fcs_card_t card;
     fcs_move_t temp_move;
     int check;
     int num_vacant_freecells;
@@ -2601,11 +2597,13 @@ int fc_solve_sfs_atomic_move_card_to_freecell(
 
             /* Let's move it */
             {
+                fcs_cards_column_t new_src_col;
                 sfs_check_state_begin();
 
                 my_copy_stack(stack_idx);
+                new_src_col = fcs_state_get_col(new_state, stack_idx);
 
-                fcs_pop_stack_card(new_state, stack_idx, temp_card);
+                fcs_col_pop_top(new_src_col);
 
                 fcs_put_card_in_freecell(new_state, ds, card);
 
