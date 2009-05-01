@@ -208,8 +208,8 @@ void fc_solve_apply_move(
         break;
         case FCS_MOVE_TYPE_FREECELL_TO_STACK:
         {
-            card = fcs_freecell_card(*state_key, src_freecell);
-            fcs_push_card_into_stack(*state_key, dest_stack, card);
+            col = fcs_state_get_col(*state_key, dest_stack);
+            fcs_col_push_card(col, fcs_freecell_card(*state_key, src_freecell));
             fcs_empty_freecell(*state_key, src_freecell);
         }
         break;

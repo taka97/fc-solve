@@ -367,15 +367,21 @@ typedef char fcs_locs_t;
         fcs_col_pop_top(col); \
     }
 
-#define fcs_push_card_into_stack(state, ds, from) \
-    {            \
-        _fcs_stack_card((state), (ds), \
-            ((_fcs_stack_len((state), (ds)))++) \
-        ) = (from); \
-    }
+#define fcs_col_push_card(col, from) \
+{ \
+  fcs_cards_column_get_card((col), ((fcs_cards_column_len(col))++)) = (from); \
+}
+
+#define _fcs_push_card_into_stack(state, ds, from) \
+{  \
+    fcs_cards_column_t temp_col;      \
+           \
+    temp_col = fcs_state_get_col((state), (ds)); \
+    fcs_col_push_card(temp_col, from); \
+}
 
 #define fcs_push_stack_card_into_stack(state, ds, ss, sc) \
-    fcs_push_card_into_stack((state), (ds), _fcs_stack_card((state), (ss), (sc)))
+    _fcs_push_card_into_stack((state), (ds), _fcs_stack_card((state), (ss), (sc)))
 
 #define fcs_duplicate_state(ptr_dest_key, ptr_dest_val, ptr_src_key, ptr_src_val) \
     { \

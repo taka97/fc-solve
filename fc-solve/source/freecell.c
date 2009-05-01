@@ -355,6 +355,10 @@ static int derived_states_compare_callback(
     return ((a < b) ? (-1) : (a > b) ? (1) : 0);
 }
 
+/*  TODO : Remove later. */
+#define fcs_push_card_into_stack(s, d, c) \
+    _fcs_push_card_into_stack((s), (d), (c))
+
 int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
         fc_solve_soft_thread_t * soft_thread,
         fcs_state_extra_info_t * ptr_state_val,

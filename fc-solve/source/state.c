@@ -470,6 +470,7 @@ int fc_solve_initial_user_state_to_c(
     int s,c;
     const char * str;
     fcs_card_t card;
+    fcs_cards_column_t col;
     int first_line;
 
     int prefix_found;
@@ -756,6 +757,7 @@ int fc_solve_initial_user_state_to_c(
         }
 #endif
 
+        col = fcs_state_get_col(ret, s);
         for(c=0 ; c < MAX_NUM_CARDS_IN_A_STACK ; c++)
         {
             /* Move to the next card */
@@ -781,13 +783,14 @@ int fc_solve_initial_user_state_to_c(
             {
                 str++;
             }
+            /*  TODO : handle end-of-string. */
             if ((*str == '\n') || (*str == '\r'))
             {
                 break;
             }
             card = fcs_card_user2perl(str);
 
-            fcs_push_card_into_stack(ret, s, card);
+            fcs_col_push_card(col, card);
         }
     }
 
