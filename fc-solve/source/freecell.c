@@ -209,7 +209,7 @@ int fc_solve_sfs_move_top_stack_cards_to_founds(
 {
     tests_declare_accessors();
     int stack_idx;
-    fcs_cards_column_t current_col;
+    fcs_cards_column_t col;
     int cards_num;
     int deck;
     fcs_card_t card;
@@ -231,12 +231,12 @@ int fc_solve_sfs_move_top_stack_cards_to_founds(
 
     for( stack_idx=0 ; stack_idx < LOCAL_STACKS_NUM ; stack_idx++)
     {
-        current_col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(current_col);
+        col = fcs_state_get_col(state, stack_idx);
+        cards_num = fcs_cards_column_len(col);
         if (cards_num)
         {
             /* Get the top card in the stack */
-            card = fcs_cards_column_get_card(current_col, cards_num-1);
+            card = fcs_cards_column_get_card(col, cards_num-1);
             for(deck=0;deck < INSTANCE_DECKS_NUM;deck++)
             {
                 if (fcs_foundation_value(state, deck*4+fcs_card_suit(card)) == fcs_card_card_num(card) - 1)
