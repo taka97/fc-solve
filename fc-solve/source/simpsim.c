@@ -51,12 +51,6 @@
         (fcs_suit_is_ss_true_parent(fcs_card_suit(parent),fcs_card_suit(child))) \
     )
 
-/*
- * TODO : change when I have some spare cycles.
- */
-#define fcs_stack_len(s, col_idx) (_fcs_stack_len((s), (col_idx)))
-#define fcs_stack_card(s, col_idx, card_idx) (_fcs_stack_card((s), (col_idx), (card_idx)))
-#define fcs_stack_card_num(s, col_idx, card_idx) (_fcs_stack_card_num((s), (col_idx), (card_idx)))
 
 int fc_solve_sfs_simple_simon_move_sequence_to_founds(
         fc_solve_soft_thread_t * soft_thread,
@@ -80,6 +74,7 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
      * a - the height of the card
      * */
     int stack_idx, cards_num, suit, a;
+    fcs_cards_column_t col;
     /*
      * card - the current card (at height a)
      * above_card - the card above it.
@@ -99,16 +94,18 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
 
     for(stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
     {
-        cards_num = fcs_stack_len(state, stack_idx);
+        col = fcs_state_get_col(state, stack_idx);
+        cards_num = fcs_cards_column_len(col);
+
         if (cards_num >= 13)
         {
-            card = fcs_stack_card(state,stack_idx,cards_num-1);
+            card = fcs_cards_column_get_card(col, cards_num-1);
 
             /* Check if the top 13 cards are a sequence */
 
             for(a=2;a<=13;a++)
             {
-                above_card = fcs_stack_card(state,stack_idx,cards_num-a);
+                above_card = fcs_cards_column_get_card(col, cards_num-a);
                 if (fcs_is_ss_true_parent(above_card, card))
                 {
                     /* Do nothing - the card is OK for a propert sequence*/
@@ -147,6 +144,13 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
 
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
+
+/*
+ * TODO : change when I have some spare cycles.
+ */
+#define fcs_stack_len(s, col_idx) (_fcs_stack_len((s), (col_idx)))
+#define fcs_stack_card(s, col_idx, card_idx) (_fcs_stack_card((s), (col_idx), (card_idx)))
+#define fcs_stack_card_num(s, col_idx, card_idx) (_fcs_stack_card_num((s), (col_idx), (card_idx)))
 
 int fc_solve_sfs_simple_simon_move_sequence_to_true_parent(
         fc_solve_soft_thread_t * soft_thread,
