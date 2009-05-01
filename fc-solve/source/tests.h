@@ -135,7 +135,7 @@ int fc_solve_sfs_check_state_end(
                 ) == 1                                             \
            )                                                       \
         {                                                          \
-            fcs_flip_stack_card(new_state,stack_idx,cards_num-1);      \
+            fcs_col_flip_card(col, cards_num-1);                   \
             fcs_move_set_type(temp_move, FCS_MOVE_TYPE_FLIP_CARD); \
             fcs_move_set_src_stack(temp_move, stack_idx);              \
                                                                    \

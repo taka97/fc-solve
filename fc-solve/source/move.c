@@ -257,7 +257,7 @@ void fc_solve_apply_move(
         {
             col = fcs_state_get_col(*state_key, src_stack);
             src_stack_len = fcs_cards_column_len(col);
-            fcs_flip_stack_card(*state_key, src_stack, src_stack_len-1);
+            fcs_col_flip_card(col, src_stack_len-1);
         }
         break;
 

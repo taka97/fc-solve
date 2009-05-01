@@ -308,9 +308,8 @@ typedef struct fcs_struct_state_t fcs_state_t;
     ((state).talon[pos])
 #endif
 
-#define fcs_flip_stack_card(state, s, c) \
-    (fcs_card_set_flipped(_fcs_stack_card(state,s,c), ((fcs_card_t)0) ))
-
+#define fcs_col_flip_card(col, c) \
+    (fcs_card_set_flipped(fcs_cards_column_get_card((col), (c)), ((fcs_card_t)0)))
 
 #define fcs_copy_stack(state_key, state_val, idx, buffer) \
     {     \
