@@ -594,10 +594,6 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
 
-/* TODO: Remove later */
-#define fcs_pop_stack_card(state,s,into) \
-    _fcs_pop_stack_card(state, s, into)
-
 int fc_solve_sfs_move_non_top_stack_cards_to_founds(
         fc_solve_soft_thread_t * soft_thread,
         fcs_state_extra_info_t * ptr_state_val,
@@ -611,7 +607,7 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
     int stack_idx;
     int cards_num;
     int c, a, b;
-    fcs_card_t temp_card, card;
+    fcs_card_t top_card, card;
     fcs_cards_column_t col;
     int deck;
 #ifndef HARD_CODED_NUM_STACKS
@@ -665,12 +661,14 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
                         ))
                             >= cards_num-(c+1))
                     {
+                        fcs_cards_column_t new_src_col;
                         /* We can move it */
 
                         sfs_check_state_begin()
 
                         my_copy_stack(stack_idx);
 
+                        new_src_col = fcs_state_get_col(new_state, stack_idx);
 
                         /* Fill the freecells with the top cards */
                         for(a=0 ; a<min(num_vacant_freecells, cards_num-(c+1)) ; a++)
@@ -683,9 +681,9 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
                                     break;
                                 }
                             }
-                            fcs_pop_stack_card(new_state, stack_idx, temp_card);
+                            fcs_col_pop_card(new_src_col, top_card);
 
-                            fcs_put_card_in_freecell(new_state, b, temp_card);
+                            fcs_put_card_in_freecell(new_state, b, top_card);
 
                             fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_FREECELL);
                             fcs_move_set_src_stack(temp_move,stack_idx);
@@ -715,8 +713,8 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
 
                             my_copy_stack(b);
 
-                            fcs_pop_stack_card(new_state, stack_idx, temp_card);
-                            fcs_push_card_into_stack(new_state, b, temp_card);
+                            fcs_col_pop_card(new_src_col, top_card);
+                            fcs_push_card_into_stack(new_state, b, top_card);
 
                             fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_STACK);
                             fcs_move_set_src_stack(temp_move,stack_idx);
@@ -728,12 +726,12 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
                             fcs_flip_top_card(stack_idx);
                         }
 
-                        fcs_pop_stack_card(new_state, stack_idx, temp_card);
-                        fcs_increment_foundation(new_state, deck*4+fcs_card_suit(temp_card));
+                        fcs_col_pop_card(new_src_col, top_card);
+                        fcs_increment_foundation(new_state, deck*4+fcs_card_suit(top_card));
 
                         fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_FOUNDATION);
                         fcs_move_set_src_stack(temp_move,stack_idx);
-                        fcs_move_set_foundation(temp_move,deck*4+fcs_card_suit(temp_card));
+                        fcs_move_set_foundation(temp_move,deck*4+fcs_card_suit(top_card));
 
                         fcs_move_stack_push(moves, temp_move);
 
@@ -764,7 +762,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
 
     int stack_idx, c, cards_num, a, dc,b;
     int is_seq_in_dest;
-    fcs_card_t card, temp_card, prev_card;
+    fcs_card_t card, top_card, prev_card;
     fcs_card_t dest_below_card, dest_card;
     int freecells_to_fill, freestacks_to_fill;
     int num_cards_to_relocate;
@@ -865,16 +863,19 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
 
                                 sfs_check_state_begin()
 
-
                                 {
                                     int i_card_pos;
                                     fcs_card_t moved_card;
                                     int source_type, source_index;
+                                    fcs_cards_column_t new_dest_col;
 
                                     i_card_pos = cards_num-1;
                                     a = 0;
 
                                     my_copy_stack(ds);
+
+                                    new_dest_col = fcs_state_get_col(new_state, ds);
+
                                     while(i_card_pos>c)
                                     {
                                         if (a < freecells_to_fill)
@@ -886,8 +887,8 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                                     break;
                                                 }
                                             }
-                                            fcs_pop_stack_card(new_state, ds, temp_card);
-                                            fcs_put_card_in_freecell(new_state, b, temp_card);
+                                            fcs_col_pop_card(new_dest_col, top_card);
+                                            fcs_put_card_in_freecell(new_state, b, top_card);
 
                                             fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_FREECELL);
                                             fcs_move_set_src_stack(temp_move,ds);
@@ -914,8 +915,8 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
 
                                             my_copy_stack(b);
 
-                                            fcs_pop_stack_card(new_state, ds, temp_card);
-                                            fcs_push_card_into_stack(new_state, b, temp_card);
+                                            fcs_col_pop_card(new_dest_col, top_card);
+                                            fcs_push_card_into_stack(new_state, b, top_card);
 
                                             fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_STACK);
                                             fcs_move_set_src_stack(temp_move,ds);
@@ -929,7 +930,9 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
 
                                         i_card_pos--;
                                     }
-                                    fcs_pop_stack_card(new_state, ds, moved_card);
+
+                                    fcs_col_pop_card(new_dest_col, moved_card);
+
                                     if (a < freecells_to_fill)
                                     {
                                         for(b=0;b<LOCAL_FREECELLS_NUM;b++)
@@ -989,8 +992,8 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                                     break;
                                                 }
                                             }
-                                            fcs_pop_stack_card(new_state, ds, temp_card);
-                                            fcs_put_card_in_freecell(new_state, b, temp_card);
+                                            fcs_col_pop_card(new_dest_col, top_card);
+                                            fcs_put_card_in_freecell(new_state, b, top_card);
 
                                             fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_FREECELL);
                                             fcs_move_set_src_stack(temp_move,ds);
@@ -1014,9 +1017,9 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                                 }
                                             }
 
-                                            fcs_pop_stack_card(new_state, ds, temp_card);
+                                            fcs_col_pop_card(new_dest_col, top_card);
                                             my_copy_stack(b);
-                                            fcs_push_card_into_stack(new_state, b, temp_card);
+                                            fcs_push_card_into_stack(new_state, b, top_card);
 
                                             fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_STACK);
                                             fcs_move_set_src_stack(temp_move,ds);
@@ -1043,8 +1046,13 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                     }
                                     else
                                     {
+                                        fcs_cards_column_t new_source_col;
+
                                         my_copy_stack(source_index);
-                                        fcs_pop_stack_card(new_state, source_index, moved_card);
+
+                                        new_source_col = fcs_state_get_col(new_state, source_index);
+
+                                        fcs_col_pop_card(new_source_col, moved_card);
 
                                         fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_STACK);
                                         fcs_move_set_src_stack(temp_move,source_index);
@@ -1071,6 +1079,9 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
 #undef dest_col
 #undef dest_cards_num
 
+/* TODO: Remove later */
+#define fcs_pop_stack_card(state,s,into) \
+    _fcs_pop_stack_card(state, s, into)
 
 int fc_solve_sfs_move_stack_cards_to_different_stacks(
         fc_solve_soft_thread_t * soft_thread,
