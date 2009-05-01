@@ -154,6 +154,7 @@ typedef int fcs_locs_t;
 
 
 typedef char fcs_card_t;
+typedef fcs_card_t * fcs_cards_column_t;
 /*
  * Card:
  * Bits 0-3 - Card Number
@@ -163,7 +164,7 @@ typedef char fcs_card_t;
 
 struct fcs_struct_state_t
 {
-    char data[MAX_NUM_STACKS*(MAX_NUM_CARDS_IN_A_STACK+1)+MAX_NUM_FREECELLS+4*MAX_NUM_DECKS];
+    fcs_card_t data[MAX_NUM_STACKS*(MAX_NUM_CARDS_IN_A_STACK+1)+MAX_NUM_FREECELLS+4*MAX_NUM_DECKS];
 #ifdef FCS_WITH_TALON
     fcs_card_t * talon;
     char talon_params[4];
@@ -210,11 +211,8 @@ typedef struct fcs_struct_state_with_locations_t fcs_state_with_locations_t;
 #endif
 typedef char fcs_locs_t;
 
-#define _fcs_stack_len(state, s) \
-    ( (state).data[s*(MAX_NUM_CARDS_IN_A_STACK+1)] )
-
-#define _fcs_stack_card(state, s, c) \
-    ( (state).data[(s)*(MAX_NUM_CARDS_IN_A_STACK+1)+(c)+1] )
+#define fcs_state_get_col(state, col_idx) \
+    ( (state).data + ((col_idx)*(MAX_NUM_CARDS_IN_A_STACK+1)) )
 
 
 #define FCS_FREECELLS_OFFSET ((MAX_NUM_STACKS)*(MAX_NUM_CARDS_IN_A_STACK+1))
@@ -267,14 +265,7 @@ typedef struct fcs_struct_state_t fcs_state_t;
 #define fcs_state_get_col(state, col_idx) \
     ( (state).stacks[(col_idx)] )
 
-#define fcs_col_len(col) \
-    ( (int)((col)[0]) )
 
-#define fcs_col_get_card(col, c_idx) \
-    ((col)[(c_idx)+1])
-
-#define fcs_col_get_card_num(col, c_idx) \
-    fcs_card_card_num(fcs_col_get_card((col), (c_idx)))
 
 #define fcs_freecell_card(state, f) \
     ( (state).freecells[(f)] )
@@ -295,9 +286,6 @@ typedef struct fcs_struct_state_t fcs_state_t;
 #define fcs_get_talon_card(state, pos) \
     ((state).talon[pos])
 #endif
-
-#define fcs_col_flip_card(col, c) \
-    (fcs_card_set_flipped(fcs_col_get_card((col), (c)), ((fcs_card_t)0)))
 
 #define fcs_copy_stack(state_key, state_val, idx, buffer) \
     {     \
@@ -327,6 +315,9 @@ typedef char fcs_locs_t;
         */
 
 /* These are macros that are common to all three _STATES types. */
+
+#define fcs_col_get_card_num(col, c_idx) \
+    fcs_card_card_num(fcs_col_get_card((col), (c_idx)))
 
 #define fcs_freecell_card_num(state, f) \
     ( fcs_card_card_num(fcs_freecell_card((state),(f))) )
@@ -386,6 +377,12 @@ typedef char fcs_locs_t;
  * INDIRECT_STACK_STATES */
 #if defined(COMPACT_STATES) || defined(INDIRECT_STACK_STATES)
 
+#define fcs_col_len(col) \
+    ( (int)((col)[0]) )
+
+#define fcs_col_get_card(col, c_idx) \
+    ((col)[(c_idx)+1])
+
 #define fcs_card_card_num(card) \
     ( (card) & 0x0F )
 
@@ -403,6 +400,9 @@ typedef char fcs_locs_t;
 
 #define fcs_card_set_flipped(card, flipped) \
     (card) = (((card)&((fcs_card_t)0x3F))|((fcs_card_t)((flipped)<<6)))
+
+#define fcs_col_flip_card(col, c) \
+    (fcs_card_set_flipped(fcs_col_get_card((col), (c)), ((fcs_card_t)0)))
 
 #endif
 
