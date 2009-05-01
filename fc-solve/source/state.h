@@ -356,13 +356,19 @@ typedef char fcs_locs_t;
 #define fcs_set_foundation(state, found, value) \
     ( (fcs_foundation_value((state), (d))) = (value) )
 
-#define fcs_pop_stack_card(state, s, into) \
-    {         \
-        into = _fcs_stack_card((state), (s), (_fcs_stack_len((state), (s))-1)); \
-        _fcs_stack_card((state), (s),  \
-                (-- _fcs_stack_len((state), (s)))) = fcs_empty_card; \
+#define fcs_col_pop_card(col, into) \
+    {   \
+        into = fcs_cards_column_get_card((col), (fcs_cards_column_len(col)-1)); \
+        fcs_cards_column_get_card((col), (--fcs_cards_column_len(col))) = fcs_empty_card; \
     }
 
+#define fcs_pop_stack_card(state, s, into) \
+{ \
+    fcs_cards_column_t temp_col_jUnK; \
+    temp_col_jUnK = fcs_state_get_col((state), (s)); \
+    fcs_col_pop_card(temp_col_jUnK, into); \
+}
+   
 #define fcs_push_card_into_stack(state, ds, from) \
     {            \
         _fcs_stack_card((state), (ds), \
