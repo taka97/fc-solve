@@ -276,12 +276,6 @@ typedef struct fcs_struct_state_t fcs_state_t;
 #define fcs_col_get_card_num(col, c_idx) \
     fcs_card_card_num(fcs_col_get_card((col), (c_idx)))
 
-#define _fcs_stack_len(state, s) \
-    (fcs_col_len(fcs_state_get_col((state), (s))))
-
-#define _fcs_stack_card(state, s, c) \
-    (fcs_col_get_card(fcs_state_get_col((state), (s)), (c)))
-
 #define fcs_freecell_card(state, f) \
     ( (state).freecells[(f)] )
 
@@ -360,14 +354,6 @@ typedef char fcs_locs_t;
 #define fcs_col_push_card(col, from) \
 { \
   fcs_col_get_card((col), ((fcs_col_len(col))++)) = (from); \
-}
-
-#define _fcs_push_card_into_stack(state, ds, from) \
-{  \
-    fcs_cards_column_t temp_col;      \
-           \
-    temp_col = fcs_state_get_col((state), (ds)); \
-    fcs_col_push_card(temp_col, from); \
 }
 
 #define fcs_col_push_col_card(dest_col, src_col, card_idx) \
