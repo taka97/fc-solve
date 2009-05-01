@@ -72,6 +72,7 @@ struct fcs_struct_stack_t
 };
 
 typedef struct fcs_struct_stack_t fc_stack_t;
+typedef fc_stack_t * fcs_cards_column_t;
 
 struct fcs_struct_state_t
 {
@@ -86,30 +87,16 @@ struct fcs_struct_state_t
 
 typedef struct fcs_struct_state_t fcs_state_t;
 
-#if 0
-struct fcs_struct_state_with_locations_t
-{
-    fcs_state_t s;
-    int stack_locs[MAX_NUM_STACKS];
-    int fc_locs[MAX_NUM_FREECELLS];
-    struct fcs_struct_state_with_locations_t * parent;
-    fcs_move_stack_t * moves_to_parent;
-    int depth;
-    int visited;
-    int visited_iter;
-    int num_active_children;
-    int scan_visited[MAX_NUM_SCANS_BUCKETS];
-};
-
-typedef struct fcs_struct_state_with_locations_t fcs_state_with_locations_t;
-#endif
 typedef int fcs_locs_t;
 
-#define _fcs_stack_len(state, s) \
-    ( (state).stacks[(s)].num_cards )
+#define fcs_state_get_col(state, col_idx) \
+    (&((state).stacks[(col_idx)]))
 
-#define _fcs_stack_card(state, s, c) \
-    ( (state).stacks[(s)].cards[(c)] )
+#define fcs_col_len(col) \
+    ((col)->num_cards)
+
+#define fcs_col_get_card(col, c) \
+    ((col)->cards[(c)] )
 
 #define fcs_card_card_num(card) \
     ( (card).card_num )
@@ -373,6 +360,10 @@ typedef char fcs_locs_t;
 #define fcs_empty_freecell(state, f) \
     fcs_put_card_in_freecell((state), (f), fcs_empty_card)
 
+#define fcs_col_flip_card(col, c) \
+    (fcs_card_set_flipped(fcs_col_get_card((col), (c)), 0))
+
+
 /* These are macros that are common to COMPACT_STATES and 
  * INDIRECT_STACK_STATES */
 #if defined(COMPACT_STATES) || defined(INDIRECT_STACK_STATES)
@@ -400,9 +391,6 @@ typedef char fcs_locs_t;
 
 #define fcs_card_set_flipped(card, flipped) \
     (card) = (((card)&((fcs_card_t)0x3F))|((fcs_card_t)((flipped)<<6)))
-
-#define fcs_col_flip_card(col, c) \
-    (fcs_card_set_flipped(fcs_col_get_card((col), (c)), ((fcs_card_t)0)))
 
 #endif
 

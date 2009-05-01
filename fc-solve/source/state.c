@@ -857,7 +857,7 @@ int fc_solve_check_state_validity(
         for(c=0;c<col_len;c++)
         {
             card = fcs_col_get_card(col,c);
-            if (card == 0)
+            if (fcs_card_card_num(card) == 0)
             {
                 *misplaced_card = fcs_empty_card;
                 return 3;
