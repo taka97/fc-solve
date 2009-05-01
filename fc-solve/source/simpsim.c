@@ -928,15 +928,6 @@ int fc_solve_sfs_simple_simon_move_sequence_with_some_cards_above_to_true_parent
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
 
-/*
- * TODO : change when I have some spare cycles.
- */
-#define fcs_stack_len(s, col_idx) (_fcs_stack_len((s), (col_idx)))
-#define fcs_stack_card(s, col_idx, card_idx) (_fcs_stack_card((s), (col_idx), (card_idx)))
-#define fcs_stack_card_num(s, col_idx, card_idx) (_fcs_stack_card_num((s), (col_idx), (card_idx)))
-
-
-
 int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_with_some_cards_above(
         fc_solve_soft_thread_t * soft_thread,
         fcs_state_extra_info_t * ptr_state_val,
@@ -995,6 +986,9 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
 #endif
     int num_vacant_stacks;
 
+    fcs_cards_column_t col;
+    fcs_cards_column_t dest_col;
+    fcs_cards_column_t clear_junk_dest_col;
     tests_define_accessors();
 
 #ifndef HARD_CODED_NUM_STACKS
@@ -1004,10 +998,11 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
 
     for(stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
     {
-        cards_num = fcs_stack_len(state, stack_idx);
+        col = fcs_state_get_col(state, stack_idx);
+        cards_num = fcs_cards_column_len(col);
         if (cards_num > 0)
         {
-            card = fcs_stack_card(state,stack_idx,cards_num-1);
+            card = fcs_cards_column_get_card(col, cards_num-1);
             card_num = fcs_card_card_num(card);
             suit = fcs_card_suit(card);
             num_src_junk_true_seqs = 1;
@@ -1019,7 +1014,7 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
                 {
                     break;
                 }
-                card = fcs_stack_card(state, stack_idx, h);
+                card = fcs_cards_column_get_card(col, h);
                 if (fcs_card_card_num(card) != card_num+1)
                 {
                     break;
@@ -1043,7 +1038,7 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
                     {
                         break;
                     }
-                    card = fcs_stack_card(state,stack_idx,h);
+                    card = fcs_cards_column_get_card(col, h);
                     if (fcs_card_card_num(card) != card_num+1)
                     {
                         break;
@@ -1066,7 +1061,8 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
                         continue;
                     }
 
-                    dest_cards_num = fcs_stack_len(state,ds);
+                    dest_col = fcs_state_get_col(state, ds);
+                    dest_cards_num = fcs_cards_column_len(dest_col);
                     /* At least a card with another card above it */
                     if (dest_cards_num > 1)
                     {
@@ -1075,7 +1071,7 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
                          * */
                         for(dc=dest_cards_num-2;dc>=0;dc--)
                         {
-                            dest_card = fcs_stack_card(state, ds, dc);
+                            dest_card = fcs_cards_column_get_card(dest_col, dc);
                             if ((fcs_card_suit(dest_card) == suit) &&
                                 (fcs_card_card_num(dest_card) == (card_num+1))
                                )
@@ -1085,14 +1081,14 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
                                 fcs_card_t above_card, up_above_card;
 
                                 num_separate_false_seqs = 0;
-                                above_card = fcs_stack_card(state, ds, dest_cards_num-1);
+                                above_card = fcs_cards_column_get_card(dest_col, dest_cards_num-1);
                                 above_num_true_seqs[num_separate_false_seqs] = 1;
                                 for(above_c = dest_cards_num-2 ;
                                     above_c > dc ;
                                     above_c--
                                     )
                                 {
-                                    up_above_card = fcs_stack_card(state, ds, above_c);
+                                    up_above_card = fcs_cards_column_get_card(dest_col, above_c);
                                     if (! fcs_is_ss_false_parent(up_above_card, above_card))
                                     {
                                         seq_points[num_separate_false_seqs++] = above_c+1;
@@ -1124,8 +1120,8 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
                                     fcs_card_t the_card =
                                         (
                                             (false_seq_index == num_separate_false_seqs) ?
-                                                (fcs_stack_card(state, stack_idx, end_of_junk+1)) :
-                                                (fcs_stack_card(state, ds, seq_points[false_seq_index]))
+                                                (fcs_cards_column_get_card(col, end_of_junk+1)) :
+                                                (fcs_cards_column_get_card(dest_col, seq_points[false_seq_index]))
                                         );
 
                                     int the_num_true_seqs =
@@ -1142,13 +1138,14 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
                                        )
                                     {
                                         int clear_junk_stack_len;
-                                        clear_junk_stack_len = fcs_stack_len(state, clear_junk_dest_stack);
+                                        clear_junk_dest_col = fcs_state_get_col(state, clear_junk_dest_stack);
+                                        clear_junk_stack_len = fcs_cards_column_len(clear_junk_dest_col);
 
                                         if ((clear_junk_stack_len > 0) && (stacks_map[clear_junk_dest_stack] == 0))
                                         {
                                             fcs_card_t clear_junk_dest_card;
 
-                                            clear_junk_dest_card = fcs_stack_card(state, clear_junk_dest_stack, clear_junk_stack_len-1);
+                                            clear_junk_dest_card = fcs_cards_column_get_card(clear_junk_dest_col, clear_junk_stack_len-1);
                                             if (fcs_is_ss_false_parent(clear_junk_dest_card, the_card))
                                             {
                                                 if (calc_max_sequence_move(0, after_junk_num_freestacks) >= the_num_true_seqs)
@@ -1179,7 +1176,8 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
                                                     clear_junk_dest_stack++
                                                    )
                                                 {
-                                                    if ((fcs_stack_len(state, clear_junk_dest_stack) == 0) && (stacks_map[clear_junk_dest_stack] == 0))
+                                                    clear_junk_dest_col = fcs_state_get_col(state, clear_junk_dest_stack);
+                                                    if ((fcs_cards_column_len(clear_junk_dest_col) == 0) && (stacks_map[clear_junk_dest_stack] == 0))
                                                     {
                                                         stacks_map[clear_junk_dest_stack] = 1;
                                                         break;
@@ -1257,6 +1255,13 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
 
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
+
+/*
+ * TODO : change when I have some spare cycles.
+ */
+#define fcs_stack_len(s, col_idx) (_fcs_stack_len((s), (col_idx)))
+#define fcs_stack_card(s, col_idx, card_idx) (_fcs_stack_card((s), (col_idx), (card_idx)))
+#define fcs_stack_card_num(s, col_idx, card_idx) (_fcs_stack_card_num((s), (col_idx), (card_idx)))
 
 int fc_solve_sfs_simple_simon_move_whole_stack_sequence_to_false_parent_with_some_cards_above(
         fc_solve_soft_thread_t * soft_thread,
