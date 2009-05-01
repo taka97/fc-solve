@@ -310,10 +310,13 @@ typedef struct fcs_struct_state_t fcs_state_t;
         if (! ((state_val).stacks_copy_on_write_flags & (1 << idx)))        \
         {          \
             int stack_len;      \
+            fcs_cards_column_t col; \
+                                    \
             (state_val).stacks_copy_on_write_flags |= (1 << idx);       \
-            stack_len = _fcs_stack_len((state_key),idx);     \
-            memcpy(&buffer[idx << 7], (state_key).stacks[idx], stack_len+1); \
-            (state_key).stacks[idx] = &buffer[idx << 7];     \
+            col = fcs_state_get_col(state_key, idx); \
+            stack_len = fcs_col_len(col);            \
+            memcpy(&buffer[idx << 7], col, stack_len+1); \
+            fcs_state_get_col(state_key, idx) = &buffer[idx << 7];     \
         }     \
     }
 
