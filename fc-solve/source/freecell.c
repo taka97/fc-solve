@@ -2232,8 +2232,14 @@ int fc_solve_sfs_deal_gypsy_talon(
         sfs_check_state_begin()
         for(a=0;a<LOCAL_STACKS_NUM;a++)
         {
+            fcs_cards_column_t new_a_col;
+
             temp_card = fcs_get_talon_card(new_state, fcs_talon_pos(new_state)+a);
-            fcs_push_card_into_stack(new_state,a,temp_card);
+            my_copy_stack(a);
+
+            new_a_col = fcs_state_get_col(new_state, a);
+
+            fcs_col_push_card(new_a_col,temp_card);
         }
         fcs_talon_pos(new_state) += LOCAL_STACKS_NUM;
         fcs_move_set_type(temp_move, FCS_MOVE_TYPE_DEAL_GYPSY_TALON);
@@ -2337,11 +2343,16 @@ int fc_solve_sfs_get_card_from_klondike_talon(
             top_card = fcs_cards_column_get_card(col, cards_num-1);
             if (fcs_is_parent_card(card_to_check, top_card))
             {
+                fcs_cards_column_t new_s_col;
                 /* 
                  * We have a card in the talon that we can move
                  * to the column, so let's move it 
                  * */
                 sfs_check_state_begin()
+
+                my_copy_stack(s);
+
+                new_s_col = fcs_state_get_col(new_state, s);
 
                 new_state.talon = malloc(fcs_klondike_talon_len(talon_temp->s)+1);
                 memcpy(
@@ -2367,7 +2378,7 @@ int fc_solve_sfs_get_card_from_klondike_talon(
                         fcs_move_stack_push(moves,temp_move);
                     }
                 }
-                fcs_push_card_into_stack(new_state, s, fcs_klondike_talon_get_top_card(new_state));
+                fcs_col_push_card(new_s_col, fcs_klondike_talon_get_top_card(new_state));
                 fcs_move_set_type(temp_move, FCS_MOVE_TYPE_KLONDIKE_TALON_TO_STACK);
                 fcs_move_set_dest_stack(temp_move, s);
                 fcs_klondike_talon_decrement_stack(new_state);
@@ -2569,10 +2580,6 @@ int fc_solve_sfs_atomic_move_card_to_parent(
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
 
-/*  TODO : Remove later. */
-#define fcs_push_card_into_stack(s, d, c) \
-    _fcs_push_card_into_stack((s), (d), (c))
-
 int fc_solve_sfs_atomic_move_card_to_freecell(
         fc_solve_soft_thread_t * soft_thread,
         fcs_state_extra_info_t * ptr_state_val,
@@ -2704,13 +2711,16 @@ int fc_solve_sfs_atomic_move_freecell_card_to_parent(
                 {
                     /* Let's move it */
                     {
+                        fcs_cards_column_t new_dest_col;
                         sfs_check_state_begin();
 
                         my_copy_stack(ds);
 
+                        new_dest_col = fcs_state_get_col(new_state, ds);
+
                         fcs_empty_freecell(new_state, fc);
 
-                        fcs_push_card_into_stack(new_state, ds, card);
+                        fcs_col_push_card(new_dest_col, card);
 
                         fcs_move_set_type(temp_move, FCS_MOVE_TYPE_FREECELL_TO_STACK);
                         fcs_move_set_src_freecell(temp_move, fc);
@@ -2800,13 +2810,17 @@ int fc_solve_sfs_atomic_move_freecell_card_to_empty_stack(
         }
 
         {
+            fcs_cards_column_t new_dest_col;
+
             sfs_check_state_begin();
 
             my_copy_stack(ds);
 
+            new_dest_col = fcs_state_get_col(new_state, ds);
+
             fcs_empty_freecell(new_state, fc);
 
-            fcs_push_card_into_stack(new_state, ds, card);
+            fcs_col_push_card(new_dest_col, card);
 
             fcs_move_set_type(temp_move, FCS_MOVE_TYPE_FREECELL_TO_STACK);
             fcs_move_set_src_freecell(temp_move, fc);
@@ -2824,7 +2838,6 @@ int fc_solve_sfs_atomic_move_freecell_card_to_empty_stack(
 
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
-
 
 #undef state_with_locations
 #undef state
