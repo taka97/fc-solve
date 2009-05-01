@@ -189,28 +189,6 @@ static GCC_INLINE void fc_solve_move_sequence_function(
         fc_solve_move_sequence_function(ptr_new_state_key, moves, dest_idx, source_idx, start_idx, end_idx); \
     }
 
-#if 0
-#define fcs_move_sequence(dest, source, start, end, a)              \
-{                                                                   \
-    for ( a = (start) ; a <= (end) ; a++)                           \
-    {                                                               \
-        fcs_push_stack_card_into_stack(new_state, dest, source, a); \
-    }                                                               \
-                                                                    \
-    for ( a = (start) ; a <= (end) ; a++)                           \
-    {                                                               \
-        fcs_pop_stack_card(new_state, source, temp_card);           \
-    }                                                               \
-                                                                    \
-    fcs_move_set_type(temp_move, FCS_MOVE_TYPE_STACK_TO_STACK);     \
-    fcs_move_set_src_stack(temp_move, source);                      \
-    fcs_move_set_dest_stack(temp_move, dest);                       \
-    fcs_move_set_num_cards_in_seq(temp_move, (end)-(start)+1);      \
-                                                                    \
-    fcs_move_stack_push(moves, temp_move);                          \
-}
-#endif
-
 #ifdef FCS_FREECELL_ONLY
 #define tests_declare_accessors_freecell_only()
 #else
