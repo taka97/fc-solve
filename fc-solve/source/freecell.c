@@ -355,10 +355,6 @@ static int derived_states_compare_callback(
     return ((a < b) ? (-1) : (a > b) ? (1) : 0);
 }
 
-/*  TODO : Remove later. */
-#define fcs_push_card_into_stack(s, d, c) \
-    _fcs_push_card_into_stack((s), (d), (c))
-
 int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
         fc_solve_soft_thread_t * soft_thread,
         fcs_state_extra_info_t * ptr_state_val,
@@ -529,6 +525,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                             /* Fill the free stacks with the cards below them */
                             for(a=0; a < freestacks_to_fill ; a++)
                             {
+                                fcs_cards_column_t new_b_col;
                                 /* Find a vacant stack */
                                 for(b=0;b<LOCAL_STACKS_NUM;b++)
                                 {
@@ -541,8 +538,11 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                                 }
                                 my_copy_stack(b);
 
+                                new_b_col = fcs_state_get_col(new_state, b);
+
                                 fcs_col_pop_card(new_dest_col, top_card);
-                                fcs_push_card_into_stack(new_state, b, top_card);
+                                fcs_col_push_card(new_b_col, top_card);
+
                                 fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_STACK);
                                 fcs_move_set_src_stack(temp_move,ds);
                                 fcs_move_set_dest_stack(temp_move,b);
@@ -552,8 +552,9 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
 
                             /* Now put the freecell card on top of the stack */
 
-                            fcs_push_card_into_stack(new_state, ds, src_card);
+                            fcs_col_push_card(new_dest_col, src_card);
                             fcs_empty_freecell(new_state, fc);
+
                             fcs_move_set_type(temp_move,FCS_MOVE_TYPE_FREECELL_TO_STACK);
                             fcs_move_set_src_freecell(temp_move,fc);
                             fcs_move_set_dest_stack(temp_move,ds);
@@ -597,6 +598,11 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
 
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
+
+/*  TODO : Remove later. */
+#define fcs_push_card_into_stack(s, d, c) \
+    _fcs_push_card_into_stack((s), (d), (c))
+
 
 int fc_solve_sfs_move_non_top_stack_cards_to_founds(
         fc_solve_soft_thread_t * soft_thread,
