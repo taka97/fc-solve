@@ -362,7 +362,7 @@ typedef char fcs_locs_t;
         fcs_cards_column_get_card((col), (--fcs_cards_column_len(col))) = fcs_empty_card; \
     }
 
-#define fcs_pop_stack_card(state, s, into) \
+#define _fcs_pop_stack_card(state, s, into) \
 { \
     fcs_cards_column_t temp_col_jUnK; \
     temp_col_jUnK = fcs_state_get_col((state), (s)); \

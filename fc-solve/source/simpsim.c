@@ -118,16 +118,18 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
             }
             if (a == 14)
             {
+                fcs_cards_column_t new_src_col;
                 /* We can move this sequence up there */
 
                 sfs_check_state_begin();
 
                 my_copy_stack(stack_idx);
 
+                new_src_col = fcs_state_get_col(new_state, stack_idx);
                 suit = fcs_card_suit(card);
                 for(a=0;a<13;a++)
                 {
-                    fcs_pop_stack_card(new_state, stack_idx, temp_card);
+                    fcs_col_pop_card(new_src_col, temp_card);
                     fcs_increment_foundation(new_state, suit);
                 }
 
@@ -145,6 +147,9 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
 
+/* TODO: Remove later */
+#define fcs_pop_stack_card(state,s,into) \
+    _fcs_pop_stack_card(state, s, into)
 
 int fc_solve_sfs_simple_simon_move_sequence_to_true_parent(
         fc_solve_soft_thread_t * soft_thread,

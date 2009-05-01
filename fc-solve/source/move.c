@@ -202,11 +202,7 @@ void fc_solve_apply_move(
             }
             for(a=0 ; a<fcs_move_get_num_cards_in_seq(move) ; a++)
             {
-                fcs_pop_stack_card(
-                    *state_key,
-                    src_stack,
-                    temp_card
-                    );
+                fcs_col_pop_card(col, temp_card);
             }
         }
         break;
@@ -226,13 +222,15 @@ void fc_solve_apply_move(
         break;
         case FCS_MOVE_TYPE_STACK_TO_FREECELL:
         {
-            fcs_pop_stack_card(*state_key, src_stack, temp_card);
+            col = fcs_state_get_col(*state_key, src_stack);
+            fcs_col_pop_card(col, temp_card);
             fcs_put_card_in_freecell(*state_key, dest_freecell, temp_card);
         }
         break;
         case FCS_MOVE_TYPE_STACK_TO_FOUNDATION:
         {
-            fcs_pop_stack_card(*state_key, src_stack, temp_card);
+            col = fcs_state_get_col(*state_key, src_stack);
+            fcs_col_pop_card(col, temp_card);
             fcs_increment_foundation(*state_key, fcs_move_get_foundation(move));
         }
         break;
@@ -244,9 +242,10 @@ void fc_solve_apply_move(
         break;
         case FCS_MOVE_TYPE_SEQ_TO_FOUNDATION:
         {
+            col = fcs_state_get_col(*state_key, src_stack);
             for(a=0;a<13;a++)
             {
-                fcs_pop_stack_card(*state_key, src_stack, temp_card);
+                fcs_col_pop_card(col, temp_card);
                 fcs_increment_foundation(*state_key, fcs_move_get_foundation(move));
             }
         }

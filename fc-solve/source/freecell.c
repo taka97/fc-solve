@@ -246,7 +246,11 @@ int fc_solve_sfs_move_top_stack_cards_to_founds(
                     sfs_check_state_begin();
 
                     my_copy_stack(stack_idx);
-                    fcs_pop_stack_card(new_state, stack_idx, temp_card);
+                    {
+                        fcs_cards_column_t new_temp_col;
+                        new_temp_col = fcs_state_get_col(new_state, stack_idx);
+                        fcs_col_pop_card(new_temp_col, temp_card);
+                    }
 
                     fcs_increment_foundation(new_state, deck*4+fcs_card_suit(card));
 
@@ -485,6 +489,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                         if (num_cards_to_relocate == 0)
                         {
                             /* We can move it */
+                            fcs_cards_column_t new_dest_col;
 
                             sfs_check_state_begin()
 
@@ -493,6 +498,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
 
                             my_copy_stack(ds);
 
+                            new_dest_col = fcs_state_get_col(new_state, ds);
                             for(a=0 ; a<freecells_to_fill ; a++)
                             {
                                 /* Find a vacant freecell */
@@ -503,7 +509,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                                         break;
                                     }
                                 }
-                                fcs_pop_stack_card(new_state, ds, temp_card);
+                                fcs_col_pop_card(new_dest_col, temp_card);
 
                                 fcs_put_card_in_freecell(new_state, b, temp_card);
 
@@ -532,7 +538,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                                 }
                                 my_copy_stack(b);
 
-                                fcs_pop_stack_card(new_state, ds, temp_card);
+                                fcs_col_pop_card(new_dest_col, temp_card);
                                 fcs_push_card_into_stack(new_state, b, temp_card);
                                 fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_STACK);
                                 fcs_move_set_src_stack(temp_move,ds);
@@ -589,7 +595,9 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
 
-
+/* TODO: Remove later */
+#define fcs_pop_stack_card(state,s,into) \
+    _fcs_pop_stack_card(state, s, into)
 
 int fc_solve_sfs_move_non_top_stack_cards_to_founds(
         fc_solve_soft_thread_t * soft_thread,
