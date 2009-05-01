@@ -147,9 +147,6 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
 
-/* TODO: Remove later */
-#define fcs_pop_stack_card(state,s,into) \
-    _fcs_pop_stack_card(state, s, into)
 
 int fc_solve_sfs_simple_simon_move_sequence_to_true_parent(
         fc_solve_soft_thread_t * soft_thread,
@@ -160,7 +157,6 @@ int fc_solve_sfs_simple_simon_move_sequence_to_true_parent(
     tests_declare_accessors();
 
 
-    fcs_move_t temp_move;
 
     int check;
     int num_vacant_stacks;
@@ -171,7 +167,7 @@ int fc_solve_sfs_simple_simon_move_sequence_to_true_parent(
      * suit - the suit of the current card
      * a - a temporary variable that designates a card height
      * */
-    int stack_idx, cards_num, suit, a;
+    int stack_idx, cards_num, suit;
     /*
      * h - the current height in stack
      * */
@@ -181,7 +177,7 @@ int fc_solve_sfs_simple_simon_move_sequence_to_true_parent(
      * above_card - the card above it.
      * dest_card - the destination card on which to put the sequence
      * */
-    fcs_card_t card, temp_card, dest_card;
+    fcs_card_t card, dest_card;
     /*
      * card_num - the card number (i.e: A, 2 ,3 ... K) of the card, or
      * its previous one.
@@ -248,7 +244,7 @@ int fc_solve_sfs_simple_simon_move_sequence_to_true_parent(
                                 my_copy_stack(ds);
 
 
-                                fcs_move_sequence(ds, stack_idx, h+1, cards_num-1, a);
+                                fcs_move_sequence(ds, stack_idx, h+1, cards_num-1);
                                 sfs_check_state_end();
 
                             }
@@ -290,7 +286,6 @@ int fc_solve_sfs_simple_simon_move_whole_stack_sequence_to_false_parent(
     tests_declare_accessors();
 
 
-    fcs_move_t temp_move;
 
     int check;
 
@@ -307,8 +302,8 @@ int fc_solve_sfs_simple_simon_move_whole_stack_sequence_to_false_parent(
      * num_true_seqs - the number of true sequences on the current
      *                 false sequence
      * */
-    int stack_idx, cards_num, suit, a;
-    fcs_card_t card, temp_card, dest_card;
+    int stack_idx, cards_num, suit;
+    fcs_card_t card, dest_card;
     int card_num, num_true_seqs, h, ds, dest_cards_num ;
     fcs_cards_column_t col, dest_col;
 
@@ -382,8 +377,8 @@ int fc_solve_sfs_simple_simon_move_whole_stack_sequence_to_false_parent(
                             my_copy_stack(stack_idx);
                             my_copy_stack(ds);
 
+                            fcs_move_sequence(ds, stack_idx, h+1, cards_num-1);
 
-                            fcs_move_sequence(ds, stack_idx, h+1, cards_num-1, a);
                             sfs_check_state_end();
 
                         }
@@ -406,7 +401,6 @@ int fc_solve_sfs_simple_simon_move_sequence_to_true_parent_with_some_cards_above
     tests_declare_accessors();
 
 
-    fcs_move_t temp_move;
     int check;
     fcs_cards_column_t col;
     fcs_cards_column_t clear_junk_dest_col;
@@ -440,7 +434,7 @@ int fc_solve_sfs_simple_simon_move_sequence_to_true_parent_with_some_cards_above
      *
      * */
     int stack_idx, cards_num, suit, a;
-    fcs_card_t card, temp_card, dest_card;
+    fcs_card_t card, dest_card;
     int card_num, above_num_true_seqs[MAX_NUM_CARDS_IN_A_STACK], h, ds, dest_cards_num ;
     int dc;
     int seq_points[MAX_NUM_CARDS_IN_A_STACK];
@@ -645,12 +639,12 @@ int fc_solve_sfs_simple_simon_move_sequence_to_true_parent_with_some_cards_above
 
                                             my_copy_stack(junk_move_to_stacks[false_seq_index]);
 
-                                            fcs_move_sequence(junk_move_to_stacks[false_seq_index], ds, start, end, a);
+                                            fcs_move_sequence(junk_move_to_stacks[false_seq_index], ds, start, end);
 
                                         }
 
                                         /* Move the source seq on top of the dest seq */
-                                        fcs_move_sequence(ds, stack_idx, h+1, cards_num-1, a);
+                                        fcs_move_sequence(ds, stack_idx, h+1, cards_num-1);
 
                                         sfs_check_state_end();
                                     }
@@ -692,11 +686,8 @@ int fc_solve_sfs_simple_simon_move_sequence_with_some_cards_above_to_true_parent
 {
     tests_declare_accessors();
 
-
-    fcs_move_t temp_move;
-
     int stack_idx, cards_num, suit, a;
-    fcs_card_t card, temp_card, dest_card;
+    fcs_card_t card, dest_card;
     int card_num, num_true_seqs, ds, dest_cards_num ;
     int check;
     int sc, num_separate_false_seqs, above_num_true_seqs[MAX_NUM_CARDS_IN_A_STACK];
@@ -915,10 +906,10 @@ int fc_solve_sfs_simple_simon_move_sequence_with_some_cards_above_to_true_parent
 
                                         my_copy_stack(junk_move_to_stacks[false_seq_index]);
 
-                                        fcs_move_sequence(junk_move_to_stacks[false_seq_index], src_stack, start, end, a);
+                                        fcs_move_sequence(junk_move_to_stacks[false_seq_index], src_stack, start, end);
                                     }
 
-                                    fcs_move_sequence(ds, stack_idx, sc, end_of_src_seq-1, a);
+                                    fcs_move_sequence(ds, stack_idx, sc, end_of_src_seq-1);
 
                                     sfs_check_state_end();
                                 }
@@ -940,9 +931,6 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
         )
 {
     tests_declare_accessors();
-
-
-    fcs_move_t temp_move;
 
     int check;
 
@@ -972,7 +960,7 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
      *      wish to move.
      * */
     int stack_idx, cards_num, suit, a;
-    fcs_card_t card, temp_card, dest_card;
+    fcs_card_t card, dest_card;
     int card_num, above_num_true_seqs[MAX_NUM_CARDS_IN_A_STACK], h, ds, dest_cards_num ;
 
     int dc;
@@ -1241,11 +1229,11 @@ int fc_solve_sfs_simple_simon_move_sequence_with_junk_seq_above_to_true_parent_w
 
                                             my_copy_stack(junk_move_to_stacks[false_seq_index]);
 
-                                            fcs_move_sequence(junk_move_to_stacks[false_seq_index], src_stack, start, end, a);
+                                            fcs_move_sequence(junk_move_to_stacks[false_seq_index], src_stack, start, end);
                                         }
 
                                         /* Move the source seq on top of the dest seq */
-                                        fcs_move_sequence(ds, stack_idx, h, end_of_junk, a);
+                                        fcs_move_sequence(ds, stack_idx, h, end_of_junk);
 
                                         sfs_check_state_end();
                                     }
@@ -1268,9 +1256,6 @@ int fc_solve_sfs_simple_simon_move_whole_stack_sequence_to_false_parent_with_som
         )
 {
     tests_declare_accessors();
-
-
-    fcs_move_t temp_move;
 
     int check;
 
@@ -1301,7 +1286,7 @@ int fc_solve_sfs_simple_simon_move_whole_stack_sequence_to_false_parent_with_som
      *
      * */
     int stack_idx, cards_num, suit, a;
-    fcs_card_t card, temp_card, dest_card;
+    fcs_card_t card, dest_card;
     int card_num, num_true_seqs, h, ds, dest_cards_num ;
 
     int dc, num_separate_false_seqs, above_num_true_seqs[MAX_NUM_CARDS_IN_A_STACK];
@@ -1494,10 +1479,10 @@ int fc_solve_sfs_simple_simon_move_whole_stack_sequence_to_false_parent_with_som
                                             my_copy_stack(src_stack);
                                             my_copy_stack(junk_move_to_stacks[false_seq_index]);
 
-                                            fcs_move_sequence( junk_move_to_stacks[false_seq_index], src_stack, start, end, a);
+                                            fcs_move_sequence( junk_move_to_stacks[false_seq_index], src_stack, start, end);
                                         }
 
-                                        fcs_move_sequence( ds, stack_idx, h+1, cards_num-1, a);
+                                        fcs_move_sequence( ds, stack_idx, h+1, cards_num-1);
 
                                         sfs_check_state_end();
 
@@ -1522,9 +1507,6 @@ int fc_solve_sfs_simple_simon_move_sequence_to_parent_on_the_same_stack(
 {
     tests_declare_accessors();
 
-
-    fcs_move_t temp_move;
-
     int check;
 
     int stack_idx, cards_num, pc, cc;
@@ -1533,8 +1515,6 @@ int fc_solve_sfs_simple_simon_move_sequence_to_parent_on_the_same_stack(
     int after_junk_num_freestacks;
     int false_seq_index;
     int child_seq_index;
-
-    fcs_card_t temp_card;
 
 #ifndef HARD_CODED_NUM_STACKS
     int stacks_num;
@@ -1774,7 +1754,7 @@ int fc_solve_sfs_simple_simon_move_sequence_to_parent_on_the_same_stack(
 
                                     my_copy_stack(junk_move_to_stacks[false_seq_index]);
 
-                                    fcs_move_sequence ( junk_move_to_stacks[false_seq_index], stack_idx, start, end, a);
+                                    fcs_move_sequence ( junk_move_to_stacks[false_seq_index], stack_idx, start, end);
                                 }
 
                                 {
@@ -1789,7 +1769,7 @@ int fc_solve_sfs_simple_simon_move_sequence_to_parent_on_the_same_stack(
                                     my_copy_stack(junk_move_to_stacks[child_seq_index]);
 
 
-                                    fcs_move_sequence( stack_idx, junk_move_to_stacks[child_seq_index], start, end, a);
+                                    fcs_move_sequence( stack_idx, junk_move_to_stacks[child_seq_index], start, end);
                                 }
 
                                 sfs_check_state_end();

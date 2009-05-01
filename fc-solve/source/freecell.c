@@ -2060,9 +2060,9 @@ int fc_solve_sfs_yukon_move_card_to_parent(
 
     int check;
 
-    int stack_idx, cards_num, c, a, ds;
+    int stack_idx, cards_num, c, ds;
     int dest_cards_num;
-    fcs_card_t card, temp_card;
+    fcs_card_t card;
     fcs_card_t dest_card;
     fcs_cards_column_t dest_col, col;
 
@@ -2114,7 +2114,7 @@ int fc_solve_sfs_yukon_move_card_to_parent(
                             my_copy_stack(stack_idx);
                             my_copy_stack(ds);
 
-                            fcs_move_sequence(ds, stack_idx, c, cards_num-1, a);
+                            fcs_move_sequence(ds, stack_idx, c, cards_num-1);
 
                             fcs_flip_top_card(stack_idx);
 
@@ -2140,8 +2140,8 @@ int fc_solve_sfs_yukon_move_kings_to_empty_stack(
 
     int check;
 
-    int stack_idx, cards_num, c, a, ds;
-    fcs_card_t card, temp_card;
+    int stack_idx, cards_num, c, ds;
+    fcs_card_t card;
     fcs_cards_column_t col;
 
 #ifndef HARD_CODED_NUM_STACKS
@@ -2196,7 +2196,7 @@ int fc_solve_sfs_yukon_move_kings_to_empty_stack(
 
                 my_copy_stack(stack_idx);
                 my_copy_stack(ds);
-                fcs_move_sequence(ds, stack_idx, c, cards_num-1, a);
+                fcs_move_sequence(ds, stack_idx, c, cards_num-1);
 
 
                 fcs_flip_top_card(stack_idx);
