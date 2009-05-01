@@ -135,9 +135,6 @@ typedef int fcs_locs_t;
 #define fcs_card_set_flipped(card, flipped) \
     (card).flags = (flipped)
 
-#define fcs_flip_stack_card(state, s, c) \
-    fcs_card_set_flipped(_fcs_stack_card((state),(s),(c)), 0)
-
 #ifdef FCS_WITH_TALONS
 #define fcs_talon_len(state) \
     ((state).talon_params[0])
@@ -243,9 +240,6 @@ typedef char fcs_locs_t;
 #define fcs_get_talon_card(state, pos) \
     ((state).talon[pos])
 #endif
-
-#define fcs_flip_stack_card(state, s, c) \
-    (fcs_card_set_flipped(_fcs_stack_card((state),(s),(c)), ((fcs_card_t)0) ))
 
 #elif defined(INDIRECT_STACK_STATES) /* #ifdef DEBUG_STATES
                                         #elif defined(COMPACT_STATES)
