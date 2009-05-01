@@ -189,16 +189,18 @@ void fc_solve_apply_move(
     {
         case FCS_MOVE_TYPE_STACK_TO_STACK:
         {
+            fcs_cards_column_t dest_col;
+
             col = fcs_state_get_col(*state_key, src_stack);
+            dest_col = fcs_state_get_col(*state_key, dest_stack);
             src_stack_len = fcs_cards_column_len(col);
             for(a=0 ; a<fcs_move_get_num_cards_in_seq(move) ; a++)
             {
-                fcs_push_stack_card_into_stack(
-                    *state_key,
-                    dest_stack,
-                    src_stack,
+                fcs_col_push_col_card(
+                    dest_col,
+                    col, 
                     src_stack_len - fcs_move_get_num_cards_in_seq(move)+a
-                    );
+                );
             }
             for(a=0 ; a<fcs_move_get_num_cards_in_seq(move) ; a++)
             {

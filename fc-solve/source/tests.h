@@ -154,14 +154,15 @@ static GCC_INLINE void fc_solve_move_sequence_function(
         )
 {
     int i;
-    fcs_cards_column_t new_src_col;
+    fcs_cards_column_t new_src_col, new_dest_col;
     fcs_move_t temp_move;
 
     new_src_col = fcs_state_get_col(*new_state_ptr, source_idx);
+    new_dest_col = fcs_state_get_col(*new_state_ptr, dest_idx);
 
     for ( i = start ; i <= end ; i++)
     {
-        fcs_push_stack_card_into_stack(*new_state_ptr, dest_idx, source_idx, i);
+        fcs_col_push_col_card(new_dest_col, new_src_col, i);
     }
 
     for ( i = start ; i <= end ; i++)

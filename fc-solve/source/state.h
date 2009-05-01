@@ -380,8 +380,8 @@ typedef char fcs_locs_t;
     fcs_col_push_card(temp_col, from); \
 }
 
-#define fcs_push_stack_card_into_stack(state, ds, ss, sc) \
-    _fcs_push_card_into_stack((state), (ds), _fcs_stack_card((state), (ss), (sc)))
+#define fcs_col_push_col_card(dest_col, src_col, card_idx) \
+    fcs_col_push_card((dest_col), fcs_cards_column_get_card((src_col), (card_idx)))
 
 #define fcs_duplicate_state(ptr_dest_key, ptr_dest_val, ptr_src_key, ptr_src_val) \
     { \
