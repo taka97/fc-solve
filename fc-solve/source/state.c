@@ -853,10 +853,10 @@ int fc_solve_check_state_validity(
     for(s=0;s<stacks_num;s++)
     {
         col = fcs_state_get_col(*state, s);
-        col_len = fcs_cards_column_len(col);
+        col_len = fcs_col_len(col);
         for(c=0;c<col_len;c++)
         {
-            card = fcs_cards_column_get_card(col,c);
+            card = fcs_col_get_card(col,c);
             if (card == 0)
             {
                 *misplaced_card = fcs_empty_card;
@@ -1049,7 +1049,7 @@ char * fc_solve_state_as_string(
         for(s=0;s<stacks_num;s++)
         {
             col = fcs_state_get_col(*state, stack_locs[s]);
-            col_len = fcs_cards_column_len(col);
+            col_len = fcs_col_len(col);
             if (col_len > max_num_cards)
             {
                 max_num_cards = col_len;
@@ -1061,7 +1061,7 @@ char * fc_solve_state_as_string(
             for(s = 0; s<stacks_num; s++)
             {
                 col = fcs_state_get_col(*state, stack_locs[s]);
-                col_len = fcs_cards_column_len(col);
+                col_len = fcs_col_len(col);
                 if (card_num >= col_len)
                 {
                     fc_solve_append_string_sprintf(
@@ -1075,7 +1075,7 @@ char * fc_solve_state_as_string(
                         app_str,
                         "%3s ",
                         fcs_card_perl2user(
-                            fcs_cards_column_get_card(col, card_num),
+                            fcs_col_get_card(col, card_num),
                             stack_card_,
                             display_10_as_t
                             )
@@ -1126,13 +1126,13 @@ char * fc_solve_state_as_string(
         for(s=0;s<stacks_num;s++)
         {
             col = fcs_state_get_col(*state, stack_locs[s]);
-            col_len = fcs_cards_column_len(col);
+            col_len = fcs_col_len(col);
             fc_solve_append_string_sprintf(app_str, "%s", ": ");
 
             for(card_num=0;card_num<col_len;card_num++)
             {
                 fcs_card_perl2user(
-                    fcs_cards_column_get_card(col, card_num),
+                    fcs_col_get_card(col, card_num),
                     stack_card_,
                     display_10_as_t
                 );

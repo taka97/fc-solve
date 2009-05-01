@@ -126,12 +126,12 @@ int fc_solve_sfs_check_state_end(
     int cards_num;                                                 \
     fcs_cards_column_t col;                                        \
     col = fcs_state_get_col(new_state, stack_idx);                 \
-    cards_num = fcs_cards_column_len(col);                         \
+    cards_num = fcs_col_len(col);                         \
                                                                    \
     if (cards_num > 0)                                             \
     {                                                              \
         if (fcs_card_get_flipped(                                  \
-                fcs_cards_column_get_card(col, cards_num-1)        \
+                fcs_col_get_card(col, cards_num-1)        \
                 ) == 1                                             \
            )                                                       \
         {                                                          \

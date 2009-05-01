@@ -318,7 +318,7 @@ int fc_solve_soft_dfs_do_solve(
                 num_vacant_stacks = 0;
                 for(a=0;a<LOCAL_STACKS_NUM;a++)
                 {
-                    if (fcs_cards_column_len(fcs_state_get_col(the_state, a)) == 0)
+                    if (fcs_col_len(fcs_state_get_col(the_state, a)) == 0)
                     {
                         num_vacant_stacks++;
                     }
@@ -559,22 +559,22 @@ static void initialize_a_star_rater(
     for(a=0;a<INSTANCE_STACKS_NUM;a++)
     {
         col = fcs_state_get_col(*ptr_state_key, a);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
         if (cards_num <= 1)
         {
             continue;
         }
 
         c = cards_num-2;
-        this_card = fcs_cards_column_get_card(col, c+1);
-        prev_card = fcs_cards_column_get_card(col, c);
+        this_card = fcs_col_get_card(col, c+1);
+        prev_card = fcs_col_get_card(col, c);
         while (fcs_is_parent_card(this_card,prev_card) && (c >= 0))
         {
             c--;
             this_card = prev_card;
             if (c>=0)
             {
-                prev_card = fcs_cards_column_get_card(col, c);
+                prev_card = fcs_col_get_card(col, c);
             }
         }
         cards_under_sequences += pow(c+1, FCS_A_STAR_CARDS_UNDER_SEQUENCES_EXPONENT);
@@ -645,7 +645,7 @@ static pq_rating_t fc_solve_a_star_rate_state(
     for(a=0;a<LOCAL_STACKS_NUM;a++)
     {
         col = fcs_state_get_col(*(ptr_state_key), a);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
 
         if (cards_num == 0)
         {
@@ -658,15 +658,15 @@ static pq_rating_t fc_solve_a_star_rate_state(
         }
 
         c = cards_num-2;
-        this_card = fcs_cards_column_get_card(col, c+1);
-        prev_card = fcs_cards_column_get_card(col, c);
+        this_card = fcs_col_get_card(col, c+1);
+        prev_card = fcs_col_get_card(col, c);
         while ((c >= 0) && fcs_is_parent_card(this_card,prev_card))
         {
             c--;
             this_card = prev_card;
             if (c>=0)
             {
-                prev_card = fcs_cards_column_get_card(col, c);
+                prev_card = fcs_col_get_card(col, c);
             }
         }
         cards_under_sequences += pow(c+1, FCS_A_STAR_CARDS_UNDER_SEQUENCES_EXPONENT);
@@ -914,7 +914,7 @@ int fc_solve_a_star_or_bfs_do_solve(
         num_vacant_stacks = 0;
         for(a=0;a<LOCAL_STACKS_NUM;a++)
         {
-            if (fcs_cards_column_len(fcs_state_get_col(the_state, a)) == 0)
+            if (fcs_col_len(fcs_state_get_col(the_state, a)) == 0)
             {
                 num_vacant_stacks++;
             }
@@ -1186,14 +1186,14 @@ extern char * fc_solve_get_the_positions_by_rank_data(
             for(ds=0;ds<LOCAL_STACKS_NUM;ds++)
             {
                 dest_col = fcs_state_get_col(*(ptr_state_key), ds);
-                dest_cards_num = fcs_cards_column_len(dest_col);
+                dest_cards_num = fcs_col_len(dest_col);
                 for(dc=0;dc<dest_cards_num;dc++)
                 {
-                    dest_card = fcs_cards_column_get_card(dest_col, dc);
+                    dest_card = fcs_col_get_card(dest_col, dc);
                     is_seq_in_dest = 0;
                     if (dest_cards_num - 1 > dc)
                     {
-                        dest_below_card = fcs_cards_column_get_card(dest_col, dc+1);
+                        dest_below_card = fcs_col_get_card(dest_col, dc+1);
                         if (fcs_is_parent_card(dest_below_card, dest_card))
                         {
                             is_seq_in_dest = 1;

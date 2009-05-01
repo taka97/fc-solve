@@ -231,11 +231,11 @@ int fc_solve_sfs_move_top_stack_cards_to_founds(
     for( stack_idx=0 ; stack_idx < LOCAL_STACKS_NUM ; stack_idx++)
     {
         col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
         if (cards_num)
         {
             /* Get the top card in the stack */
-            card = fcs_cards_column_get_card(col, cards_num-1);
+            card = fcs_col_get_card(col, cards_num-1);
             for(deck=0;deck < INSTANCE_DECKS_NUM;deck++)
             {
                 if (fcs_foundation_value(state, deck*4+fcs_card_suit(card)) == fcs_card_card_num(card) - 1)
@@ -445,11 +445,11 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                 dc = *(pos_idx_to_check++);
 
                 dest_col = fcs_state_get_col(state, ds);
-                dest_card = fcs_cards_column_get_card(dest_col, dc);
+                dest_card = fcs_col_get_card(dest_col, dc);
 
                 if (fcs_is_parent_card(src_card,dest_card))
                 {
-                    dest_cards_num = fcs_cards_column_len(dest_col);
+                    dest_cards_num = fcs_col_len(dest_col);
                     /* Let's check if we can put it there */
 
                     /* Check if the destination card is already below a
@@ -458,7 +458,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                     if (dest_cards_num - 1 > dc)
                     {
                         dest_below_card =
-                            fcs_cards_column_get_card(dest_col, dc+1);
+                            fcs_col_get_card(dest_col, dc+1);
                         if (fcs_is_parent_card(dest_below_card, dest_card))
                         {
                             is_seq_in_dest = 1;
@@ -529,7 +529,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                                 /* Find a vacant stack */
                                 for(b=0;b<LOCAL_STACKS_NUM;b++)
                                 {
-                                    if (fcs_cards_column_len(
+                                    if (fcs_col_len(
                                         fcs_state_get_col(new_state, b)
                                         ) == 0)
                                     {
@@ -643,14 +643,14 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
     for(stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
     {
         col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
         /*
          * We starts from cards_num-2 because the top card is already covered
          * by move_top_stack_cards_to_founds.
          * */
         for(c=cards_num-2 ; c >= 0 ; c--)
         {
-            card = fcs_cards_column_get_card(col, c);
+            card = fcs_col_get_card(col, c);
             for(deck=0;deck<INSTANCE_DECKS_NUM;deck++)
             {
                 if (fcs_foundation_value(state, deck*4+fcs_card_suit(card)) == fcs_card_card_num(card)-1)
@@ -709,7 +709,7 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
                             /* Find a vacant stack */
                             for(b=0;b<LOCAL_STACKS_NUM;b++)
                             {
-                                if (fcs_cards_column_len(
+                                if (fcs_col_len(
                                     fcs_state_get_col(new_state, b)
                                     ) == 0)
                                 {
@@ -802,13 +802,13 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
     for (stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
     {
         col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
 
         for (c=0 ; c<cards_num ; c++)
         {
             /* Find a card which this card can be put on; */
 
-            card = fcs_cards_column_get_card(col, c);
+            card = fcs_col_get_card(col, c);
 
             /* Do not move cards that are already found above a suitable 
              * parent */
@@ -816,7 +816,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
             a = 1;
             if (c != 0)
             {
-                prev_card = fcs_cards_column_get_card(col, c-1);
+                prev_card = fcs_col_get_card(col, c-1);
                 if ((fcs_card_card_num(prev_card) == fcs_card_card_num(card)+1) &&
                     ((fcs_card_suit(prev_card) & 0x1) != (fcs_card_suit(card) & 0x1)))
                 {
@@ -831,14 +831,14 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                 /* Check if it can be moved to something on the same stack */
                 for(dc=0;dc<c-1;dc++)
                 {
-                    dest_card = fcs_cards_column_get_card(dest_col, dc);
+                    dest_card = fcs_col_get_card(dest_col, dc);
                     if (fcs_is_parent_card(card, dest_card))
                     {
                         /* Corresponding cards - see if it is feasible to move
                            the source to the destination. */
 
                         is_seq_in_dest = 0;
-                        dest_below_card = fcs_cards_column_get_card(dest_col, dc+1);
+                        dest_below_card = fcs_col_get_card(dest_col, dc+1);
                         if (fcs_is_parent_card(dest_below_card, dest_card))
                         {
                             is_seq_in_dest = 1;
@@ -912,7 +912,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                              * and over again. Optimize it. */
                                             for(b=0;b<LOCAL_STACKS_NUM;b++)
                                             {
-                                                if (fcs_cards_column_len(
+                                                if (fcs_col_len(
                                                     fcs_state_get_col(new_state, b)
                                                     ) == 0)
                                                 {
@@ -968,7 +968,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                         
                                         for(b=0;b<LOCAL_STACKS_NUM;b++)
                                         {
-                                            if (fcs_cards_column_len(
+                                            if (fcs_col_len(
                                                 fcs_state_get_col(new_state, b)
                                                 ) == 0)
                                             {
@@ -1023,7 +1023,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                             /*  Find a vacant stack */
                                             for(b=0;b<LOCAL_STACKS_NUM;b++)
                                             {
-                                                if (fcs_cards_column_len(
+                                                if (fcs_col_len(
                                                     fcs_state_get_col(new_state, b)
                                                     ) == 0)
                                                 {
@@ -1157,15 +1157,15 @@ int fc_solve_sfs_move_stack_cards_to_different_stacks(
     for (stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
     {
         col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
 
         for (c=0 ; c<cards_num ; c=seq_end+1)
         {
             /* Check if there is a sequence here. */
             for(seq_end=c ; seq_end<cards_num-1 ; seq_end++)
             {
-                this_card = fcs_cards_column_get_card(col, seq_end+1);
-                prev_card = fcs_cards_column_get_card(col, seq_end);
+                this_card = fcs_col_get_card(col, seq_end+1);
+                prev_card = fcs_col_get_card(col, seq_end);
 
                 if (fcs_is_parent_card(this_card,prev_card))
                 {
@@ -1178,7 +1178,7 @@ int fc_solve_sfs_move_stack_cards_to_different_stacks(
 
             /* Find a card which this card can be put on; */
 
-            card = fcs_cards_column_get_card(col, c);
+            card = fcs_col_get_card(col, c);
 
             /* Make sure the card is not flipped or else we can't move it */
             if (fcs_card_get_flipped(card))
@@ -1208,8 +1208,8 @@ int fc_solve_sfs_move_stack_cards_to_different_stacks(
                     continue;
                 }
                 dest_col = fcs_state_get_col(state, ds);
-                dest_cards_num = fcs_cards_column_len(dest_col);
-                dest_card = fcs_cards_column_get_card(dest_col, dc);
+                dest_cards_num = fcs_col_len(dest_col);
+                dest_card = fcs_col_get_card(dest_col, dc);
 
                 if (! fcs_is_parent_card(card, dest_card))
                 {
@@ -1260,7 +1260,7 @@ int fc_solve_sfs_move_stack_cards_to_different_stacks(
                             }
                         }
 
-                        if (fcs_cards_column_len(fcs_state_get_col(new_state,ds)) == dc+1)
+                        if (fcs_col_len(fcs_state_get_col(new_state,ds)) == dc+1)
                         {
                             from_which_stack = stack_idx;
                         }
@@ -1295,7 +1295,7 @@ int fc_solve_sfs_move_stack_cards_to_different_stacks(
                         /* Find a vacant stack */
                         for(b=0;b<LOCAL_STACKS_NUM;b++)
                         {
-                            if (fcs_cards_column_len(
+                            if (fcs_col_len(
                                 fcs_state_get_col(new_state, b)
                                 ) == 0)
                             {
@@ -1303,7 +1303,7 @@ int fc_solve_sfs_move_stack_cards_to_different_stacks(
                             }
                         }
 
-                        if (fcs_cards_column_len(
+                        if (fcs_col_len(
                             fcs_state_get_col(new_state, ds)
                             ) == dc+1
                         )
@@ -1398,15 +1398,15 @@ int fc_solve_sfs_move_sequences_to_free_stacks(
         for(stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
         {
             col = fcs_state_get_col(state, stack_idx);
-            cards_num = fcs_cards_column_len(col);
+            cards_num = fcs_col_len(col);
 
             for(c=0; c<cards_num; c=seq_end+1)
             {
                 /* Check if there is a sequence here. */
                 for(seq_end=c ; seq_end<cards_num-1; seq_end++)
                 {
-                    this_card = fcs_cards_column_get_card(col, seq_end+1);
-                    prev_card = fcs_cards_column_get_card(col, seq_end);
+                    this_card = fcs_col_get_card(col, seq_end+1);
+                    prev_card = fcs_col_get_card(col, seq_end);
 
                     if (! fcs_is_parent_card(this_card, prev_card))
                     {
@@ -1414,7 +1414,7 @@ int fc_solve_sfs_move_sequences_to_free_stacks(
                     }
                 }
 
-                if ((fcs_cards_column_get_card_num(col, c) != 13) &&
+                if ((fcs_col_get_card_num(col, c) != 13) &&
                     (tests__is_filled_by_kings_only()))
                 {
                     continue;
@@ -1432,7 +1432,7 @@ int fc_solve_sfs_move_sequences_to_free_stacks(
                     if (
                         (c > 0) &&
                         ((tests__is_filled_by_kings_only()) ?
-                            (fcs_cards_column_get_card_num(col, c) == 13) :
+                            (fcs_col_get_card_num(col, c) == 13) :
                             1
                         )
                        )
@@ -1448,7 +1448,7 @@ int fc_solve_sfs_move_sequences_to_free_stacks(
                          * code. */
                         for(ds=0;ds<LOCAL_STACKS_NUM;ds++)
                         {
-                            if (fcs_cards_column_len(
+                            if (fcs_col_len(
                                 fcs_state_get_col(state, ds)
                                 ) == 0)
                             {
@@ -1498,7 +1498,7 @@ int fc_solve_sfs_move_sequences_to_free_stacks(
                         }
                         if ((seq_start <= seq_end) &&
                             ((tests__is_filled_by_kings_only()) ?
-                                (fcs_cards_column_get_card_num(col, seq_start)
+                                (fcs_col_get_card_num(col, seq_start)
                                     == 13) :
                                 1
                             )
@@ -1541,7 +1541,7 @@ int fc_solve_sfs_move_sequences_to_free_stacks(
                                 /* Find a vacant stack */
                                 for(b=0;b<LOCAL_STACKS_NUM;b++)
                                 {
-                                    if (fcs_cards_column_len(
+                                    if (fcs_col_len(
                                         fcs_state_get_col(new_state, b)
                                         ) == 0)
                                     {
@@ -1565,7 +1565,7 @@ int fc_solve_sfs_move_sequences_to_free_stacks(
                             /* Find a vacant stack */
                             for(b=0;b<LOCAL_STACKS_NUM;b++)
                             {
-                                if (fcs_cards_column_len(
+                                if (fcs_col_len(
                                     fcs_state_get_col(new_state, b)
                                     ) == 0)
                                 {
@@ -1640,7 +1640,7 @@ int fc_solve_sfs_move_freecell_cards_to_empty_stack(
              * code. */
             for(stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
             {
-                if (fcs_cards_column_len(
+                if (fcs_col_len(
                     fcs_state_get_col(state, stack_idx)
                     ) == 0)
                 {
@@ -1735,7 +1735,7 @@ int fc_solve_sfs_move_cards_to_a_different_parent(
     for (stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
     {
         col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
 
         /* 
          * If there's only one card in the column, then it won't be above a 
@@ -1749,7 +1749,7 @@ int fc_solve_sfs_move_cards_to_a_different_parent(
             continue;
         }
 
-        upper_card = fcs_cards_column_get_card(col, cards_num-1);
+        upper_card = fcs_col_get_card(col, cards_num-1);
 
         /*
          * min_card_height is the minimal height of the card that is above
@@ -1766,7 +1766,7 @@ int fc_solve_sfs_move_cards_to_a_different_parent(
             ; upper_card = lower_card, min_card_height--
             )
         {
-            lower_card = fcs_cards_column_get_card(col, min_card_height);
+            lower_card = fcs_col_get_card(col, min_card_height);
             if (! fcs_is_parent_card(upper_card, lower_card))
             {
                 break;
@@ -1779,7 +1779,7 @@ int fc_solve_sfs_move_cards_to_a_different_parent(
         {
             /* Find a card which this card can be put on; */
 
-            card = fcs_cards_column_get_card(col, c);
+            card = fcs_col_get_card(col, c);
 
             /*
              * Do not move cards that are flipped.
@@ -1806,8 +1806,8 @@ int fc_solve_sfs_move_cards_to_a_different_parent(
                 }
 
                 dest_col = fcs_state_get_col(state, ds);
-                dest_cards_num = fcs_cards_column_len(dest_col);
-                dest_card = fcs_cards_column_get_card(dest_col, dc);
+                dest_cards_num = fcs_col_len(dest_col);
+                dest_card = fcs_col_get_card(dest_col, dc);
 
                 if (! fcs_is_parent_card(card,dest_card))
                 {
@@ -1823,7 +1823,7 @@ int fc_solve_sfs_move_cards_to_a_different_parent(
                 if ((dc + 1 < dest_cards_num)
                         && 
                     fcs_is_parent_card(
-                        fcs_cards_column_get_card(dest_col, dc+1),
+                        fcs_col_get_card(dest_col, dc+1),
                         dest_card
                     )
                    )
@@ -1905,7 +1905,7 @@ int fc_solve_sfs_move_cards_to_a_different_parent(
                         /*  Find a vacant stack */
                         for(b=0;b<LOCAL_STACKS_NUM;b++)
                         {
-                            if (fcs_cards_column_len(
+                            if (fcs_col_len(
                                 fcs_state_get_col(new_state, b)
                                 ) == 0)
                             {
@@ -1991,7 +1991,7 @@ int fc_solve_sfs_empty_stack_into_freecells(
         for(stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
         {
             col = fcs_state_get_col(state, stack_idx);
-            cards_num = fcs_cards_column_len(col);
+            cards_num = fcs_col_len(col);
             if (cards_num <= num_vacant_freecells)
             {
                 /* We can empty it */
@@ -2072,10 +2072,10 @@ int fc_solve_sfs_yukon_move_card_to_parent(
     for( ds=0 ; ds < LOCAL_STACKS_NUM ; ds++ )
     {
         dest_col = fcs_state_get_col(state, ds);
-        dest_cards_num = fcs_cards_column_len(dest_col);
+        dest_cards_num = fcs_col_len(dest_col);
         if (dest_cards_num > 0)
         {
-            dest_card = fcs_cards_column_get_card(dest_col, dest_cards_num-1);
+            dest_card = fcs_col_get_card(dest_col, dest_cards_num-1);
             for( stack_idx=0 ; stack_idx < LOCAL_STACKS_NUM ; stack_idx++)
             {
                 if (stack_idx == ds)
@@ -2083,10 +2083,10 @@ int fc_solve_sfs_yukon_move_card_to_parent(
                     continue;
                 }
                 col = fcs_state_get_col(state, stack_idx);
-                cards_num = fcs_cards_column_len(col);
+                cards_num = fcs_col_len(col);
                 for( c=cards_num-1 ; c >= 0 ; c--)
                 {
-                    card = fcs_cards_column_get_card(col, c);
+                    card = fcs_col_get_card(col, c);
                     if (fcs_card_get_flipped(card))
                     {
                         break;
@@ -2097,7 +2097,7 @@ int fc_solve_sfs_yukon_move_card_to_parent(
                         /* We can move it there - now let's check to see
                          * if it is already above a suitable parent. */
                         if ((c == 0) ||
-                            (! fcs_is_parent_card(card, fcs_cards_column_get_card(col, c-1))))
+                            (! fcs_is_parent_card(card, fcs_col_get_card(col, c-1))))
                         {
                             /* Let's move it */
                             sfs_check_state_begin();
@@ -2158,10 +2158,10 @@ int fc_solve_sfs_yukon_move_kings_to_empty_stack(
     for( stack_idx=0 ; stack_idx < LOCAL_STACKS_NUM ; stack_idx++)
     {
         col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
         for( c=cards_num-1 ; c >= 1 ; c--)
         {
-            card = fcs_cards_column_get_card(col, c);
+            card = fcs_col_get_card(col, c);
             if (fcs_card_get_flipped(card))
             {
                 break;
@@ -2177,7 +2177,7 @@ int fc_solve_sfs_yukon_move_kings_to_empty_stack(
                  * code. */
                 for(ds=0;ds<LOCAL_STACKS_NUM;ds++)
                 {
-                    if (fcs_cards_column_len(
+                    if (fcs_col_len(
                         fcs_state_get_col(state, ds)
                         ) == 0)
                     {
@@ -2339,8 +2339,8 @@ int fc_solve_sfs_get_card_from_klondike_talon(
         for(s=0 ; s<LOCAL_STACKS_NUM ; s++)
         {
             col = fcs_state_get_col(state, s);
-            cards_num = fcs_cards_column_len(col);
-            top_card = fcs_cards_column_get_card(col, cards_num-1);
+            cards_num = fcs_col_len(col);
+            top_card = fcs_col_get_card(col, cards_num-1);
             if (fcs_is_parent_card(card_to_check, top_card))
             {
                 fcs_cards_column_t new_s_col;
@@ -2438,7 +2438,7 @@ int fc_solve_sfs_atomic_move_card_to_empty_stack(
 
     for(empty_stack_idx=0;empty_stack_idx<LOCAL_STACKS_NUM;empty_stack_idx++)
     {
-        if (fcs_cards_column_len(
+        if (fcs_col_len(
             fcs_state_get_col(state, empty_stack_idx)
             ) == 0)
         {
@@ -2454,10 +2454,10 @@ int fc_solve_sfs_atomic_move_card_to_empty_stack(
     for(stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
     {
         col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
         if (cards_num > 0)
         {
-            card = fcs_cards_column_get_card(col, cards_num-1);
+            card = fcs_col_get_card(col, cards_num-1);
             if (tests__is_filled_by_kings_only() &&
                 (fcs_card_card_num(card) != 13))
             {
@@ -2523,10 +2523,10 @@ int fc_solve_sfs_atomic_move_card_to_parent(
     for(stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
     {
         col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
         if (cards_num > 0)
         {
-            card = fcs_cards_column_get_card(col, cards_num-1);
+            card = fcs_col_get_card(col, cards_num-1);
 
             for(ds=0;ds<LOCAL_STACKS_NUM;ds++)
             {
@@ -2536,11 +2536,11 @@ int fc_solve_sfs_atomic_move_card_to_parent(
                 }
 
                 dest_col = fcs_state_get_col(state, ds);
-                ds_cards_num = fcs_cards_column_len(dest_col);
+                ds_cards_num = fcs_col_len(dest_col);
 
                 if (ds_cards_num > 0)
                 {
-                    dest_card = fcs_cards_column_get_card(dest_col, ds_cards_num-1);
+                    dest_card = fcs_col_get_card(dest_col, ds_cards_num-1);
                     if (fcs_is_parent_card(card, dest_card))
                     {
                         /* Let's move it */
@@ -2630,10 +2630,10 @@ int fc_solve_sfs_atomic_move_card_to_freecell(
     for(stack_idx=0;stack_idx<LOCAL_STACKS_NUM;stack_idx++)
     {
         col = fcs_state_get_col(state, stack_idx);
-        cards_num = fcs_cards_column_len(col);
+        cards_num = fcs_col_len(col);
         if (cards_num > 0)
         {
-            card = fcs_cards_column_get_card(col, cards_num-1);
+            card = fcs_col_get_card(col, cards_num-1);
 
             /* Let's move it */
             {
@@ -2703,10 +2703,10 @@ int fc_solve_sfs_atomic_move_freecell_card_to_parent(
         for(ds=0;ds<LOCAL_STACKS_NUM;ds++)
         {
             dest_col = fcs_state_get_col(state, ds);
-            ds_cards_num = fcs_cards_column_len(dest_col);
+            ds_cards_num = fcs_col_len(dest_col);
             if (ds_cards_num > 0)
             {
-                dest_card = fcs_cards_column_get_card(dest_col, ds_cards_num-1);
+                dest_card = fcs_col_get_card(dest_col, ds_cards_num-1);
                 if (fcs_is_parent_card(card, dest_card))
                 {
                     /* Let's move it */
@@ -2787,7 +2787,7 @@ int fc_solve_sfs_atomic_move_freecell_card_to_empty_stack(
     /* Find a vacant stack */
     for(ds=0;ds<LOCAL_STACKS_NUM;ds++)
     {
-        if (fcs_cards_column_len(
+        if (fcs_col_len(
             fcs_state_get_col(state, ds)
             ) == 0)
         {

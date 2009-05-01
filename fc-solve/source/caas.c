@@ -118,7 +118,7 @@ static void GCC_INLINE fc_solve_cache_stacks(
         /* new_state_key->stacks[a] = realloc(new_state_key->stacks[a], fcs_stack_len(new_state_key, a)+1); */
 
         column = fcs_state_get_col(*new_state_key, a);
-        col_len = (fcs_cards_column_len(column)+1);
+        col_len = (fcs_col_len(column)+1);
 
         fcs_compact_alloc_typed_ptr_into_var(new_ptr, char, hard_thread->stacks_allocator, col_len);
         memcpy(new_ptr, column, col_len);
