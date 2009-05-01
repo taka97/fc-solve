@@ -768,3 +768,20 @@ fcs_cards_column_t:
 
 134.631727933884s
 
+========================================================================
+
+In:
+
+https://svn.berlios.de/svnroot/repos/fc-solve/branches/first-class-citizen-card-columns-objects
+
+( r1612 )
+
+With "./configure -r --fc-only" after more transformations:
+
+141.339107990265s
+
+========================================================================
+
+In the trunk (r1612) with "./configure -r --fc-only":
+
+134.495909929276s
