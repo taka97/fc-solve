@@ -338,12 +338,6 @@ typedef char fcs_locs_t;
 
 /* These are macros that are common to all three _STATES types. */
 
-#define _fcs_stack_card_num(state, s, c) \
-    ( fcs_card_card_num(_fcs_stack_card((state),(s),(c))) )
-
-#define _fcs_stack_card_suit(state, s, c) \
-    ( fcs_card_suit(_fcs_stack_card((state),(s),(c))) )
-
 #define fcs_freecell_card_num(state, f) \
     ( fcs_card_card_num(fcs_freecell_card((state),(f))) )
 
