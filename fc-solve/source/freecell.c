@@ -213,7 +213,6 @@ int fc_solve_sfs_move_top_stack_cards_to_founds(
     int cards_num;
     int deck;
     fcs_card_t card;
-    fcs_card_t temp_card;
     int check;
 #ifndef HARD_CODED_NUM_STACKS
     int stacks_num;
@@ -249,7 +248,7 @@ int fc_solve_sfs_move_top_stack_cards_to_founds(
                     {
                         fcs_cards_column_t new_temp_col;
                         new_temp_col = fcs_state_get_col(new_state, stack_idx);
-                        fcs_col_pop_card(new_temp_col, temp_card);
+                        fcs_col_pop_top(new_temp_col);
                     }
 
                     fcs_increment_foundation(new_state, deck*4+fcs_card_suit(card));
@@ -369,7 +368,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
     int dest_cards_num;
     int ds, fc, dc;
     fcs_cards_column_t dest_col;
-    fcs_card_t dest_card, src_card, temp_card, dest_below_card;
+    fcs_card_t dest_card, src_card, top_card, dest_below_card;
     int check;
 
     fcs_move_t temp_move;
@@ -509,9 +508,9 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                                         break;
                                     }
                                 }
-                                fcs_col_pop_card(new_dest_col, temp_card);
+                                fcs_col_pop_card(new_dest_col, top_card);
 
-                                fcs_put_card_in_freecell(new_state, b, temp_card);
+                                fcs_put_card_in_freecell(new_state, b, top_card);
 
                                 fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_FREECELL);
                                 fcs_move_set_src_stack(temp_move,ds);
@@ -538,8 +537,8 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                                 }
                                 my_copy_stack(b);
 
-                                fcs_col_pop_card(new_dest_col, temp_card);
-                                fcs_push_card_into_stack(new_state, b, temp_card);
+                                fcs_col_pop_card(new_dest_col, top_card);
+                                fcs_push_card_into_stack(new_state, b, top_card);
                                 fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_STACK);
                                 fcs_move_set_src_stack(temp_move,ds);
                                 fcs_move_set_dest_stack(temp_move,b);

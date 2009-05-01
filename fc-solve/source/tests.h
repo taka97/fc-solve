@@ -155,7 +155,6 @@ static GCC_INLINE void fc_solve_move_sequence_function(
 {
     int i;
     fcs_cards_column_t new_src_col;
-    fcs_card_t temp_card;
     fcs_move_t temp_move;
 
     new_src_col = fcs_state_get_col(*new_state_ptr, source_idx);
@@ -167,7 +166,7 @@ static GCC_INLINE void fc_solve_move_sequence_function(
 
     for ( i = start ; i <= end ; i++)
     {
-        fcs_col_pop_card(new_src_col, temp_card);
+        fcs_col_pop_top(new_src_col);
     }
 
     fcs_move_set_type(temp_move, FCS_MOVE_TYPE_STACK_TO_STACK);

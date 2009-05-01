@@ -65,8 +65,6 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
 
     int check;
 
-    fcs_card_t temp_card;
-
     /*
      * stack - the stack index from which to move cards to the founds.
      * cards_num - the number of cards in "stack"
@@ -129,7 +127,7 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
                 suit = fcs_card_suit(card);
                 for(a=0;a<13;a++)
                 {
-                    fcs_col_pop_card(new_src_col, temp_card);
+                    fcs_col_pop_top(new_src_col);
                     fcs_increment_foundation(new_state, suit);
                 }
 

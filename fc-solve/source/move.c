@@ -169,7 +169,7 @@ void fc_solve_apply_move(
         int decks_num
         )
 {
-    fcs_card_t temp_card;
+    fcs_card_t card;
     int a;
     int src_stack, dest_stack;
     int src_freecell, dest_freecell;
@@ -202,35 +202,35 @@ void fc_solve_apply_move(
             }
             for(a=0 ; a<fcs_move_get_num_cards_in_seq(move) ; a++)
             {
-                fcs_col_pop_card(col, temp_card);
+                fcs_col_pop_top(col);
             }
         }
         break;
         case FCS_MOVE_TYPE_FREECELL_TO_STACK:
         {
-            temp_card = fcs_freecell_card(*state_key, src_freecell);
-            fcs_push_card_into_stack(*state_key, dest_stack, temp_card);
+            card = fcs_freecell_card(*state_key, src_freecell);
+            fcs_push_card_into_stack(*state_key, dest_stack, card);
             fcs_empty_freecell(*state_key, src_freecell);
         }
         break;
         case FCS_MOVE_TYPE_FREECELL_TO_FREECELL:
         {
-            temp_card = fcs_freecell_card(*state_key, src_freecell);
-            fcs_put_card_in_freecell(*state_key, dest_freecell, temp_card);
+            card = fcs_freecell_card(*state_key, src_freecell);
+            fcs_put_card_in_freecell(*state_key, dest_freecell, card);
             fcs_empty_freecell(*state_key, src_freecell);
         }
         break;
         case FCS_MOVE_TYPE_STACK_TO_FREECELL:
         {
             col = fcs_state_get_col(*state_key, src_stack);
-            fcs_col_pop_card(col, temp_card);
-            fcs_put_card_in_freecell(*state_key, dest_freecell, temp_card);
+            fcs_col_pop_card(col, card);
+            fcs_put_card_in_freecell(*state_key, dest_freecell, card);
         }
         break;
         case FCS_MOVE_TYPE_STACK_TO_FOUNDATION:
         {
             col = fcs_state_get_col(*state_key, src_stack);
-            fcs_col_pop_card(col, temp_card);
+            fcs_col_pop_top(col);
             fcs_increment_foundation(*state_key, fcs_move_get_foundation(move));
         }
         break;
@@ -245,7 +245,7 @@ void fc_solve_apply_move(
             col = fcs_state_get_col(*state_key, src_stack);
             for(a=0;a<13;a++)
             {
-                fcs_col_pop_card(col, temp_card);
+                fcs_col_pop_top(col);
                 fcs_increment_foundation(*state_key, fcs_move_get_foundation(move));
             }
         }
