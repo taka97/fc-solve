@@ -131,11 +131,12 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
                     fcs_increment_foundation(new_state, suit);
                 }
 
-
-                fcs_move_set_type(temp_move, FCS_MOVE_TYPE_SEQ_TO_FOUNDATION);
-                fcs_move_set_src_stack(temp_move, stack_idx);
-                fcs_move_set_foundation(temp_move,suit);
-                fcs_move_stack_push(moves,temp_move);
+                fcs_move_stack_push_params(moves,
+                    FCS_MOVE_TYPE_SEQ_TO_FOUNDATION,
+                    /* src = */            stack_idx,
+                    /* dest = */           suit,
+                    /* num_cards = */      0
+                );
 
                 sfs_check_state_end();
             }
