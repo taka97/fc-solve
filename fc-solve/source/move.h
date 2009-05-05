@@ -43,6 +43,8 @@ extern "C" {
 #include "state.h"
 #include "fcs_move.h"
 
+#include "inline.h"
+
 extern const fcs_move_t fc_solve_empty_move;
 
 #if 0
@@ -184,6 +186,18 @@ typedef struct fcs_derived_states_list_struct fcs_derived_states_list_t;
     }       \
     stack->moves[stack->num_moves++] = move;    \
             \
+}
+
+static void GCC_INLINE fcs_move_stack_push_params(
+    fcs_move_stack_t * stack,
+    unsigned char type,
+    unsigned char src,
+    unsigned char dest,
+    unsigned char num_cards
+    )
+{
+    register fcs_move_t move = {{type, src, dest, num_cards}};
+    fcs_move_stack_push(stack, move);
 }
 
 extern void fc_solve_derived_states_list_add_state(

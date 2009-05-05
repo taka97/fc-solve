@@ -253,13 +253,12 @@ int fc_solve_sfs_move_top_stack_cards_to_founds(
 
                     fcs_increment_foundation(new_state, deck*4+fcs_card_suit(card));
 
-
-
-                    fcs_move_set_type(temp_move,FCS_MOVE_TYPE_STACK_TO_FOUNDATION);
-                    fcs_move_set_src_stack(temp_move,stack_idx);
-                    fcs_move_set_foundation(temp_move,deck*4+fcs_card_suit(card));
-
-                    fcs_move_stack_push(moves, temp_move);
+                    fcs_move_stack_push_params(moves, 
+                        FCS_MOVE_TYPE_STACK_TO_FOUNDATION,
+                        /* src = */          stack_idx,
+                        /* dest = */         deck*4+fcs_card_suit(card),
+                        /* num_cards = */    0
+                    );
 
                     fcs_flip_top_card(stack_idx);
 
