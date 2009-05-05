@@ -131,7 +131,7 @@ int fc_solve_sfs_simple_simon_move_sequence_to_founds(
                     fcs_increment_foundation(new_state, suit);
                 }
 
-                fcs_move_stack_push_params(moves,
+                fc_solve_move_stack_push_params(moves,
                     FCS_MOVE_TYPE_SEQ_TO_FOUNDATION,
                     /* src = */            stack_idx,
                     /* dest = */           suit,

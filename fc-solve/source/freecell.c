@@ -126,7 +126,7 @@ int fc_solve_sfs_check_state_end(
      * because it indicates that the order of the stacks and freecells
      * need to be recalculated
      * */
-    fcs_move_stack_push_params(moves,
+    fc_solve_move_stack_push_params(moves,
         FCS_MOVE_TYPE_CANONIZE,
         0, 0, 0
         );
@@ -248,7 +248,7 @@ int fc_solve_sfs_move_top_stack_cards_to_founds(
 
                     fcs_increment_foundation(new_state, deck*4+fcs_card_suit(card));
 
-                    fcs_move_stack_push_params(moves, 
+                    fc_solve_move_stack_push_params(moves, 
                         FCS_MOVE_TYPE_STACK_TO_FOUNDATION,
                         /* src = */          stack_idx,
                         /* dest = */         deck*4+fcs_card_suit(card),
@@ -310,7 +310,7 @@ int fc_solve_sfs_move_freecell_cards_to_founds(
 
                     fcs_increment_foundation(new_state, deck*4+fcs_card_suit(card));
 
-                    fcs_move_stack_push_params(moves,
+                    fc_solve_move_stack_push_params(moves,
                         FCS_MOVE_TYPE_FREECELL_TO_FOUNDATION,
                         /* src = */            fc,
                         /* dest = */           deck*4+fcs_card_suit(card),
@@ -493,7 +493,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
 
                                 fcs_put_card_in_freecell(new_state, b, top_card);
 
-                                fcs_move_stack_push_params(moves,
+                                fc_solve_move_stack_push_params(moves,
                                     FCS_MOVE_TYPE_STACK_TO_FREECELL,
                                     /* src = */            ds,
                                     /* dest = */           b,
@@ -526,7 +526,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                                 fcs_col_pop_card(new_dest_col, top_card);
                                 fcs_col_push_card(new_b_col, top_card);
 
-                                fcs_move_stack_push_params(moves,
+                                fc_solve_move_stack_push_params(moves,
                                     FCS_MOVE_TYPE_STACK_TO_STACK,
                                     /* src = */            ds,
                                     /* dest = */           b,
@@ -539,7 +539,7 @@ int fc_solve_sfs_move_freecell_cards_on_top_of_stacks(
                             fcs_col_push_card(new_dest_col, src_card);
                             fcs_empty_freecell(new_state, fc);
 
-                            fcs_move_stack_push_params(moves,
+                            fc_solve_move_stack_push_params(moves,
                                 FCS_MOVE_TYPE_FREECELL_TO_STACK,
                                 /* src = */            fc,
                                 /* dest = */           ds,
@@ -674,7 +674,7 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
 
                             fcs_put_card_in_freecell(new_state, b, top_card);
 
-                            fcs_move_stack_push_params(moves,
+                            fc_solve_move_stack_push_params(moves,
                                 FCS_MOVE_TYPE_STACK_TO_FREECELL,
                                 /* src = */            stack_idx,
                                 /* dest = */           b,
@@ -709,7 +709,7 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
                             fcs_col_pop_card(new_src_col, top_card);
                             fcs_col_push_card(new_b_col, top_card);
 
-                            fcs_move_stack_push_params(moves,
+                            fc_solve_move_stack_push_params(moves,
                                 FCS_MOVE_TYPE_STACK_TO_STACK,
                                 /* src = */            stack_idx,
                                 /* dest = */           b,
@@ -722,7 +722,7 @@ int fc_solve_sfs_move_non_top_stack_cards_to_founds(
                         fcs_col_pop_card(new_src_col, top_card);
                         fcs_increment_foundation(new_state, deck*4+fcs_card_suit(top_card));
 
-                        fcs_move_stack_push_params(moves,
+                        fc_solve_move_stack_push_params(moves,
                             FCS_MOVE_TYPE_STACK_TO_FOUNDATION,
                             /* src = */            stack_idx,
                             /* dest = */           deck*4+fcs_card_suit(top_card),
@@ -880,7 +880,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                             fcs_col_pop_card(new_dest_col, top_card);
                                             fcs_put_card_in_freecell(new_state, b, top_card);
 
-                                            fcs_move_stack_push_params(moves,
+                                            fc_solve_move_stack_push_params(moves,
                                                 FCS_MOVE_TYPE_STACK_TO_FREECELL,
                                                 /* src = */            ds,
                                                 /* dest = */           b,
@@ -912,7 +912,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                             fcs_col_pop_card(new_dest_col, top_card);
                                             fcs_col_push_card(new_b_col, top_card);
 
-                                            fcs_move_stack_push_params(moves,
+                                            fc_solve_move_stack_push_params(moves,
                                                 FCS_MOVE_TYPE_STACK_TO_STACK,
                                                 /* src = */            ds,
                                                 /* dest = */           b,
@@ -937,7 +937,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                             }
                                         }
                                         fcs_put_card_in_freecell(new_state, b, moved_card);
-                                        fcs_move_stack_push_params(moves,
+                                        fc_solve_move_stack_push_params(moves,
                                             FCS_MOVE_TYPE_STACK_TO_FREECELL,
                                             /* src = */            ds,
                                             /* dest = */           b,
@@ -969,7 +969,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
 
                                         fcs_col_push_card(new_b_col, moved_card);
 
-                                        fcs_move_stack_push_params(moves,
+                                        fc_solve_move_stack_push_params(moves,
                                             FCS_MOVE_TYPE_STACK_TO_STACK,
                                             /* src = */            ds,
                                             /* dest = */           b,
@@ -996,7 +996,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                             fcs_col_pop_card(new_dest_col, top_card);
                                             fcs_put_card_in_freecell(new_state, b, top_card);
 
-                                            fcs_move_stack_push_params(moves,
+                                            fc_solve_move_stack_push_params(moves,
                                                 FCS_MOVE_TYPE_STACK_TO_FREECELL,
                                                 /* src = */            ds,
                                                 /* dest = */           b,
@@ -1026,7 +1026,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                             new_b_col = fcs_state_get_col(new_state, b);
                                             fcs_col_push_card(new_b_col, top_card);
 
-                                            fcs_move_stack_push_params(moves,
+                                            fc_solve_move_stack_push_params(moves,
                                                 FCS_MOVE_TYPE_STACK_TO_STACK,
                                                 /* src = */            ds,
                                                 /* dest = */           b,
@@ -1044,7 +1044,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
                                         moved_card = fcs_freecell_card(new_state, source_index);
                                         fcs_empty_freecell(new_state, source_index);
 
-                                        fcs_move_stack_push_params(moves,
+                                        fc_solve_move_stack_push_params(moves,
                                             FCS_MOVE_TYPE_FREECELL_TO_STACK,
                                             /* src = */            source_index,
                                             /* dest = */           ds,
@@ -1061,7 +1061,7 @@ int fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stack(
 
                                         fcs_col_pop_card(new_source_col, moved_card);
 
-                                        fcs_move_stack_push_params(moves,
+                                        fc_solve_move_stack_push_params(moves,
                                             FCS_MOVE_TYPE_STACK_TO_STACK,
                                             /* src = */            source_index,
                                             /* dest = */           ds,
@@ -1262,7 +1262,7 @@ int fc_solve_sfs_move_stack_cards_to_different_stacks(
 
                         fcs_put_card_in_freecell(new_state, b, top_card);
 
-                        fcs_move_stack_push_params(moves,
+                        fc_solve_move_stack_push_params(moves,
                             FCS_MOVE_TYPE_STACK_TO_FREECELL,
                             /* src = */            from_which_stack,
                             /* dest = */           b,
@@ -1312,7 +1312,7 @@ int fc_solve_sfs_move_stack_cards_to_different_stacks(
                         fcs_col_pop_card(new_from_which_col, top_card);
                         fcs_col_push_card(new_b_col, top_card);
 
-                        fcs_move_stack_push_params(moves,
+                        fc_solve_move_stack_push_params(moves,
                             FCS_MOVE_TYPE_STACK_TO_STACK,
                             /* src = */            from_which_stack,
                             /* dest = */           b,
@@ -1512,7 +1512,7 @@ int fc_solve_sfs_move_sequences_to_free_stacks(
                                 fcs_col_pop_card(new_src_col, top_card);
                                 fcs_put_card_in_freecell(new_state, b, top_card);
 
-                                fcs_move_stack_push_params(moves,
+                                fc_solve_move_stack_push_params(moves,
                                     FCS_MOVE_TYPE_STACK_TO_FREECELL,
                                     /* src = */            stack_idx,
                                     /* dest = */           b,
@@ -1542,7 +1542,7 @@ int fc_solve_sfs_move_sequences_to_free_stacks(
                                 fcs_col_pop_card(new_src_col, top_card);
                                 fcs_col_push_card(new_b_col, top_card);
 
-                                fcs_move_stack_push_params(moves,
+                                fc_solve_move_stack_push_params(moves,
                                     FCS_MOVE_TYPE_STACK_TO_STACK,
                                     /* src = */            stack_idx,
                                     /* dest = */           b,
@@ -1645,7 +1645,7 @@ int fc_solve_sfs_move_freecell_cards_to_empty_stack(
                 fcs_col_push_card(new_src_col, card);
                 fcs_empty_freecell(new_state, fc);
 
-                fcs_move_stack_push_params(moves,
+                fc_solve_move_stack_push_params(moves,
                     FCS_MOVE_TYPE_FREECELL_TO_STACK,
                     /* src = */            fc,
                     /* dest = */           stack_idx,
@@ -1871,7 +1871,7 @@ int fc_solve_sfs_move_cards_to_a_different_parent(
 
                         fcs_put_card_in_freecell(new_state, b, top_card);
 
-                        fcs_move_stack_push_params(moves,
+                        fc_solve_move_stack_push_params(moves,
                             FCS_MOVE_TYPE_STACK_TO_FREECELL,
                             /* src = */            ds,
                             /* dest = */           b,
@@ -1904,7 +1904,7 @@ int fc_solve_sfs_move_cards_to_a_different_parent(
                         fcs_col_pop_card(new_dest_col, top_card);
                         fcs_col_push_card(new_b_col, top_card);
 
-                        fcs_move_stack_push_params(moves,
+                        fc_solve_move_stack_push_params(moves,
                             FCS_MOVE_TYPE_STACK_TO_STACK,
                             /* src = */            ds,
                             /* dest = */           b,
@@ -1998,7 +1998,7 @@ int fc_solve_sfs_empty_stack_into_freecells(
 
                     fcs_put_card_in_freecell(new_state, b, top_card);
 
-                    fcs_move_stack_push_params(moves,
+                    fc_solve_move_stack_push_params(moves,
                         FCS_MOVE_TYPE_STACK_TO_FREECELL,
                         /* src = */            stack_idx,
                         /* dest = */           b,
@@ -2219,7 +2219,7 @@ int fc_solve_sfs_deal_gypsy_talon(
             fcs_col_push_card(new_a_col,temp_card);
         }
         fcs_talon_pos(new_state) += LOCAL_STACKS_NUM;
-        fcs_move_stack_push_params(moves,
+        fc_solve_move_stack_push_params(moves,
             FCS_MOVE_TYPE_DEAL_GYPSY_TALON,
             /* src = */            0,
             /* dest = */           0,
@@ -2348,7 +2348,7 @@ int fc_solve_sfs_get_card_from_klondike_talon(
 
                 for(a=0;a<=num_redeals_done;a++)
                 {
-                    fcs_move_stack_push_params(moves,
+                    fc_solve_move_stack_push_params(moves,
                         FCS_MOVE_TYPE_KLONDIKE_FLIP_TALON,
                         /* src = */            0,
                         /* dest = */           0,
@@ -2356,7 +2356,7 @@ int fc_solve_sfs_get_card_from_klondike_talon(
                     );
                     if (a != num_redeals_done)
                     {
-                        fcs_move_stack_push_params(moves,
+                        fc_solve_move_stack_push_params(moves,
                             FCS_MOVE_TYPE_KLONDIKE_REDEAL_TALON,
                             /* src = */            0,
                             /* dest = */           0,
@@ -2365,7 +2365,7 @@ int fc_solve_sfs_get_card_from_klondike_talon(
                     }
                 }
                 fcs_col_push_card(new_s_col, fcs_klondike_talon_get_top_card(new_state));
-                fcs_move_stack_push_params(moves,
+                fc_solve_move_stack_push_params(moves,
                     FCS_MOVE_TYPE_KLONDIKE_TALON_TO_STACK,
                     /* src = */            0,
                     /* dest = */           s,
@@ -2468,7 +2468,7 @@ int fc_solve_sfs_atomic_move_card_to_empty_stack(
                 empty_stack_col = fcs_state_get_col(new_state, empty_stack_idx);
                 fcs_col_push_card(empty_stack_col, card);
 
-                fcs_move_stack_push_params(moves,
+                fc_solve_move_stack_push_params(moves,
                     FCS_MOVE_TYPE_STACK_TO_STACK,
                     /* src = */            stack_idx,
                     /* dest = */           empty_stack_idx,
@@ -2543,7 +2543,7 @@ int fc_solve_sfs_atomic_move_card_to_parent(
 
                             fcs_col_push_card(new_dest_col, card);
 
-                            fcs_move_stack_push_params(moves,
+                            fc_solve_move_stack_push_params(moves,
                                 FCS_MOVE_TYPE_STACK_TO_STACK,
                                 /* src = */            stack_idx,
                                 /* dest = */           ds,
@@ -2625,7 +2625,7 @@ int fc_solve_sfs_atomic_move_card_to_freecell(
 
                 fcs_put_card_in_freecell(new_state, ds, card);
 
-                fcs_move_stack_push_params(moves,
+                fc_solve_move_stack_push_params(moves,
                     FCS_MOVE_TYPE_STACK_TO_FREECELL,
                     /* src = */            stack_idx,
                     /* dest = */           ds,
@@ -2697,7 +2697,7 @@ int fc_solve_sfs_atomic_move_freecell_card_to_parent(
 
                         fcs_col_push_card(new_dest_col, card);
 
-                        fcs_move_stack_push_params(moves,
+                        fc_solve_move_stack_push_params(moves,
                             FCS_MOVE_TYPE_FREECELL_TO_STACK,
                             /* src = */            fc,
                             /* dest = */           ds,
@@ -2793,7 +2793,7 @@ int fc_solve_sfs_atomic_move_freecell_card_to_empty_stack(
 
             fcs_col_push_card(new_dest_col, card);
 
-            fcs_move_stack_push_params(moves,
+            fc_solve_move_stack_push_params(moves,
                 FCS_MOVE_TYPE_FREECELL_TO_STACK,
                 /* src = */            fc,
                 /* dest = */           ds,

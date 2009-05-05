@@ -562,3 +562,16 @@ char * fc_solve_move_to_string_w_state(
 
     return strdup(string);
 }
+
+extern void fc_solve_move_stack_push_params(
+    fcs_move_stack_t * stack,
+    unsigned char type,
+    unsigned char src,
+    unsigned char dest,
+    unsigned char num_cards
+    )
+{
+    register fcs_move_t move = {{type, src, dest, num_cards}};
+    fcs_move_stack_push(stack, move);
+}
+

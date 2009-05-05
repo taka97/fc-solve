@@ -136,7 +136,7 @@ int fc_solve_sfs_check_state_end(
            )                                                       \
         {                                                          \
             fcs_col_flip_card(col, cards_num-1);                   \
-            fcs_move_stack_push_params(moves,                      \
+            fc_solve_move_stack_push_params(moves,                      \
                 FCS_MOVE_TYPE_FLIP_CARD, stack_idx, 0, 0           \
             );                                                     \
         }                                                          \
@@ -168,7 +168,7 @@ static GCC_INLINE void fc_solve_move_sequence_function(
         fcs_col_pop_top(new_src_col);
     }
 
-    fcs_move_stack_push_params(moves, 
+    fc_solve_move_stack_push_params(moves, 
         FCS_MOVE_TYPE_STACK_TO_STACK,
         /* src= */   source_idx,
         /* dest= */  dest_idx,

@@ -188,23 +188,19 @@ typedef struct fcs_derived_states_list_struct fcs_derived_states_list_t;
             \
 }
 
-static void GCC_INLINE fcs_move_stack_push_params(
-    fcs_move_stack_t * stack,
-    unsigned char type,
-    unsigned char src,
-    unsigned char dest,
-    unsigned char num_cards
-    )
-{
-    register fcs_move_t move = {{type, src, dest, num_cards}};
-    fcs_move_stack_push(stack, move);
-}
-
 extern void fc_solve_derived_states_list_add_state(
         fcs_derived_states_list_t * list,
         fcs_state_extra_info_t * state_val,
         int context
         );
+
+extern void fc_solve_move_stack_push_params(
+    fcs_move_stack_t * stack,
+    unsigned char type,
+    unsigned char src,
+    unsigned char dest,
+    unsigned char num_cards
+    );
 
 #ifdef __cplusplus
 }
