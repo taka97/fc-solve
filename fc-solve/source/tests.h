@@ -136,10 +136,9 @@ int fc_solve_sfs_check_state_end(
            )                                                       \
         {                                                          \
             fcs_col_flip_card(col, cards_num-1);                   \
-            fcs_move_set_type(temp_move, FCS_MOVE_TYPE_FLIP_CARD); \
-            fcs_move_set_src_stack(temp_move, stack_idx);              \
-                                                                   \
-            fcs_move_stack_push(moves, temp_move);                 \
+            fcs_move_stack_push_params(moves,                      \
+                FCS_MOVE_TYPE_FLIP_CARD, stack_idx, 0, 0           \
+            );                                                     \
         }                                                          \
     }                                                              \
 }
@@ -155,7 +154,6 @@ static GCC_INLINE void fc_solve_move_sequence_function(
 {
     int i;
     fcs_cards_column_t new_src_col, new_dest_col;
-    fcs_move_t temp_move;
 
     new_src_col = fcs_state_get_col(*new_state_ptr, source_idx);
     new_dest_col = fcs_state_get_col(*new_state_ptr, dest_idx);
@@ -170,12 +168,12 @@ static GCC_INLINE void fc_solve_move_sequence_function(
         fcs_col_pop_top(new_src_col);
     }
 
-    fcs_move_set_type(temp_move, FCS_MOVE_TYPE_STACK_TO_STACK);
-    fcs_move_set_src_stack(temp_move, source_idx);
-    fcs_move_set_dest_stack(temp_move, dest_idx);
-    fcs_move_set_num_cards_in_seq(temp_move, end-start+1);
-
-    fcs_move_stack_push(moves, temp_move);
+    fcs_move_stack_push_params(moves, 
+        FCS_MOVE_TYPE_STACK_TO_STACK,
+        /* src= */   source_idx,
+        /* dest= */  dest_idx,
+        /* num_cards= */end-start+1
+    );
 }
 
 /*
