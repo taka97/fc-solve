@@ -111,14 +111,11 @@ int fc_solve_sfs_check_state_end(
     fcs_derived_states_list_t * derived_states_list
     )
 {
-    fcs_move_t temp_move;
     fc_solve_hard_thread_t * hard_thread;
     fc_solve_instance_t * instance;
     int check;
     int calc_real_depth;
     int scans_synergy;
-
-    temp_move = fc_solve_empty_move;
 
     hard_thread = soft_thread->hard_thread;
     instance = hard_thread->instance;
@@ -129,8 +126,10 @@ int fc_solve_sfs_check_state_end(
      * because it indicates that the order of the stacks and freecells
      * need to be recalculated
      * */
-    fcs_move_set_type(temp_move,FCS_MOVE_TYPE_CANONIZE);
-    fcs_move_stack_push(moves, temp_move);
+    fcs_move_stack_push_params(moves,
+        FCS_MOVE_TYPE_CANONIZE,
+        0, 0, 0
+        );
 
     {
         fcs_state_extra_info_t * existing_state_val;
@@ -2048,8 +2047,6 @@ int fc_solve_sfs_yukon_move_card_to_parent(
     int stacks_num;
 #endif
 
-    fcs_move_t temp_move;
-
     tests_define_accessors();
 
 #ifndef HARD_CODED_NUM_STACKS
@@ -2126,8 +2123,6 @@ int fc_solve_sfs_yukon_move_kings_to_empty_stack(
     int stacks_num;
 #endif
     int num_vacant_stacks;
-
-    fcs_move_t temp_move;
 
     tests_define_accessors();
 
