@@ -343,7 +343,6 @@ fc_solve_instance_t * fc_solve_alloc_instance(void)
 
 #if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_INDIRECT)
     instance->num_indirect_prev_states = 0;
-    instance->max_num_indirect_prev_states = 0;
 #endif
 
     instance->num_times = 0;
@@ -982,13 +981,7 @@ int fc_solve_solve_instance(
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_INDIRECT)
     instance->num_prev_states_margin = 0;
 
-    instance->max_num_indirect_prev_states = PREV_STATES_GROW_BY;
-
-    instance->indirect_prev_states =
-        (fcs_standalone_state_ptrs_t *)malloc(
-            sizeof(instance->indirect_prev_states[0]) 
-            * instance->max_num_indirect_prev_states
-        );
+    instance->indirect_prev_states = NULL;
 #else
 #error not defined
 #endif
@@ -1501,7 +1494,6 @@ void fc_solve_finish_instance(
     instance->num_prev_states_margin = 0;
 
     instance->num_indirect_prev_states = 0;
-    instance->max_num_indirect_prev_states = 0;
 
     free(instance->indirect_prev_states);
     instance->indirect_prev_states = NULL;

@@ -159,13 +159,11 @@ typedef struct fc_solve_instance
     /* The number of states in the sort margin */
     int num_prev_states_margin;
 
-    /* The sorted cached states, their number and their maximal size.
-     * max_num_indirect_prev_states may increase as the
-     * indirect_prev_states is realloced.
+    /* The sorted cached states, and their number. The maximal
+     * size is calculated based on the number.
      * */
     fcs_standalone_state_ptrs_t * indirect_prev_states;
     int num_indirect_prev_states;
-    int max_num_indirect_prev_states;
 #endif
 
     /* The number of states that were checked by the solving algorithm.
