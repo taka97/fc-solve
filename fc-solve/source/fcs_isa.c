@@ -42,8 +42,7 @@
 
 void fc_solve_state_ia_init(fc_solve_hard_thread_t * hard_thread)
 {
-    hard_thread->max_num_state_packs = IA_STATE_PACKS_GROW_BY;
-    hard_thread->state_packs = (fcs_state_keyval_pair_t * *)malloc(sizeof(fcs_state_keyval_pair_t *) * hard_thread->max_num_state_packs);
+    hard_thread->state_packs = (fcs_state_keyval_pair_t * *)malloc(sizeof(fcs_state_keyval_pair_t *) * IA_STATE_PACKS_GROW_BY);
     hard_thread->num_state_packs = 1;
     /*
      * All the states should fit in one 64KB segment. Now, we allocate as

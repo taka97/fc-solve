@@ -475,7 +475,6 @@ struct fc_solve_hard_thread_struct
      * the last state is released.
      * */
     fcs_state_keyval_pair_t * * state_packs;
-    int max_num_state_packs;
     int num_state_packs;
     int num_states_in_last_pack;
     int state_pack_len;
