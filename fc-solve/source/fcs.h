@@ -676,9 +676,6 @@ struct fc_solve_soft_thread_struct
      *
      * num_states_to_check[i] - the size of states_to_check[i]
      *
-     * max_num_states_to_check[i] - the limit of pointers that can be
-     * placed in states_to_check[i] without resizing.
-     *
      * current_state_indexes[i] - the index of the last checked state
      * in depth i.
      *

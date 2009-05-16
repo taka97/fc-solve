@@ -157,10 +157,9 @@ typedef struct fcs_derived_states_list_struct fcs_derived_states_list_t;
     /* Allocate the data structure itself */      \
     ret = (fcs_move_stack_t *)malloc(sizeof(fcs_move_stack_t));    \
        \
-    ret->max_num_moves = FCS_MOVE_STACK_GROW_BY;      \
     ret->num_moves = 0;        \
     /* Allocate some space for the moves */     \
-    ret->moves = (fcs_move_t *)malloc(sizeof(ret->moves[0])*ret->max_num_moves);  \
+    ret->moves = (fcs_move_t *)malloc(sizeof(ret->moves[0])*FCS_MOVE_STACK_GROW_BY);  \
                 \
     (final_ret) = ret;       \
 }
@@ -170,11 +169,11 @@ typedef struct fcs_derived_states_list_struct fcs_derived_states_list_t;
     /* If all the moves inside the stack are taken then    \
        resize the move vector */       \
               \
-    if (stack->num_moves == stack->max_num_moves) \
+    if (! ((stack->num_moves+1) & (FCS_MOVE_STACK_GROW_BY-1))) \
     {      \
         stack->moves = realloc(     \
             stack->moves,     \
-            (stack->max_num_moves += FCS_MOVE_STACK_GROW_BY) * \
+            (stack->num_moves+1 + FCS_MOVE_STACK_GROW_BY) * \
                 sizeof(stack->moves[0])   \
             );     \
     }       \
