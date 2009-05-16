@@ -215,8 +215,6 @@ static fc_solve_soft_thread_t * alloc_soft_thread(
 
     soft_thread->tests_order.num = 0;
     soft_thread->tests_order.tests = NULL;
-    soft_thread->tests_order.max_num = 0;
-
 
     /* Initialize all the Soft-DFS stacks to NULL */
     soft_thread->soft_dfs_info = NULL;
@@ -256,13 +254,17 @@ static fc_solve_soft_thread_t * alloc_soft_thread(
     }
 #else
     soft_thread->tests_order.num = soft_thread->hard_thread->instance->instance_tests_order.num;
+    /* Bound the maximal number up to the next product of 
+     * TESTS_ORDER_GROW_BY . 
+     * */
     soft_thread->tests_order.tests =
-        malloc(sizeof(soft_thread->tests_order.tests[0]) * soft_thread->tests_order.num);
+        malloc(sizeof(soft_thread->tests_order.tests[0]) * 
+            ((soft_thread->tests_order.num & (~(TESTS_ORDER_GROW_BY - 1)))+TESTS_ORDER_GROW_BY)
+        );
     memcpy(soft_thread->tests_order.tests,
         soft_thread->hard_thread->instance->instance_tests_order.tests,
         sizeof(soft_thread->tests_order.tests[0]) * soft_thread->tests_order.num
         );
-    soft_thread->tests_order.max_num = soft_thread->tests_order.num;
 #endif
 
     soft_thread->is_finished = 0;
@@ -355,13 +357,11 @@ fc_solve_instance_t * fc_solve_alloc_instance(void)
 
     instance->instance_tests_order.num = 0;
     instance->instance_tests_order.tests = NULL;
-    instance->instance_tests_order.max_num = 0;
 
     instance->opt_tests_order_set = 0;
 
     instance->opt_tests_order.num = 0;
     instance->opt_tests_order.tests = NULL;
-    instance->opt_tests_order.max_num = 0;
 
 
 
@@ -689,7 +689,6 @@ void fc_solve_init_instance(fc_solve_instance_t * instance)
             tests = realloc(tests, num_tests*sizeof(tests[0]));
             instance->opt_tests_order.tests = tests;
             instance->opt_tests_order.num =
-                instance->opt_tests_order.max_num =
                 num_tests;
             instance->opt_tests_order_set = 1;
         }
@@ -830,8 +829,12 @@ static fcs_tests_order_t tests_order_dup(fcs_tests_order_t * orig)
 {
     fcs_tests_order_t ret;
 
-    ret.max_num = ret.num = orig->num;
-    ret.tests = malloc(sizeof(ret.tests[0]) * ret.num);
+    ret.num = orig->num;
+    
+    ret.tests = 
+        malloc(sizeof(ret.tests[0]) * 
+            ((ret.num & (~(TESTS_ORDER_GROW_BY - 1)))+TESTS_ORDER_GROW_BY)
+        );
     memcpy(ret.tests, orig->tests, sizeof(ret.tests[0]) * ret.num);
 
     return ret;

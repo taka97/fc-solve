@@ -141,11 +141,12 @@ struct fc_solve_soft_thread_struct;
 
 typedef struct fc_solve_hard_thread_struct fc_solve_hard_thread_t;
 
+#define TESTS_ORDER_GROW_BY 16
+
 struct fcs_tests_order_struct
 {
     int num;
     int * tests;
-    int max_num;
 };
 
 typedef struct fcs_tests_order_struct fcs_tests_order_t;
