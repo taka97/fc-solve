@@ -167,7 +167,7 @@ static void soft_thread_clean_soft_dfs(
         }
         for(;depth<dfs_max_depth;depth++)
         {
-            if (info_ptr->derived_states_list.max_num_states)
+            if (info_ptr->derived_states_list.states)
             {
                 free(info_ptr->derived_states_list.states);
                 free(info_ptr->derived_states_random_indexes);

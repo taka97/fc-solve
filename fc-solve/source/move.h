@@ -137,7 +137,6 @@ typedef struct {
 struct fcs_derived_states_list_struct
 {
     int num_states;
-    int max_num_states;
     fcs_derived_states_list_item_t * states;
 };
 
