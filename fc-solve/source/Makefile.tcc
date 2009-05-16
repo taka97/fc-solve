@@ -1,9 +1,10 @@
+# vim:ft=make
 CC = tcc
 
 DEBUG = 1
 PROFILE = 0
 WITH_TRACES = 0
-FREECELL_ONLY = 0
+FREECELL_ONLY = 1
 WITH_LIBRB = 0
 
 ifneq ($(DEBUG),0)
@@ -40,9 +41,11 @@ END_DLFLAGS = $(END_LFLAGS)
 
 DLFLAGS = $(LFLAGS)
 
-TARGETS = fc-solve libfreecell-solver.so \
+TARGETS = fc-solve \
 		  freecell-solver-multi-thread-solve \
 		  freecell-solver-range-parallel-solve
+
+# libfreecell-solver.so.0
 
 ifeq ($(EXIT),1)
 
@@ -98,20 +101,20 @@ libfcs.a: $(OBJECTS)
 	ar r $@ $(OBJECTS)
 	ranlib $@
 
-libfreecell-solver.so: $(OBJECTS)
-	gcc -shared -o $@ $(OBJECTS)
+libfreecell-solver.so.0: $(OBJECTS)
+	gcc -shared -o $@ $(OBJECTS) -ltcc
 
 fc-solve: main.o libfcs.a
 	$(CC) $(LFLAGS) -o $@ -L. $< -lfcs $(END_LFLAGS)
 
-freecell-solver-range-parallel-solve: test_multi_parallel.o libfreecell-solver.so
-	gcc -Wall -o $@ -Wl,-rpath,. -L. $< -lfreecell-solver $(END_LFLAGS)
+freecell-solver-range-parallel-solve: test_multi_parallel.o libfcs.a
+	$(CC) -Wall -o $@ -L. $< -lfcs $(END_LFLAGS)
 
-freecell-solver-multi-thread-solve: threaded_range_solver.o libfreecell-solver.so
-	gcc -Wall -o $@ -Wl,-rpath,. -L. $< -lfreecell-solver -lpthread $(END_LFLAGS)
+freecell-solver-multi-thread-solve: threaded_range_solver.o libfcs.a
+	$(CC) -Wall -o $@ -L. $< -lfcs -lpthread $(END_LFLAGS)
 
 clean:
-	rm -f *.o $(TARGETS) libfcs.a test-lib mtest
+	rm -f *.o $(TARGETS) libfcs.a libfreecell-solver.* test-lib mtest
 
 endif
 
