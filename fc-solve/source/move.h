@@ -72,30 +72,8 @@ void fcs_move_stack_reset(fcs_move_stack_t * stack);
     (stack)->num_moves = 0;   \
 }
 
-
-
 #define fcs_move_stack_get_num_moves(stack) (fc_solve_move_stack_get_num_moves(stack))
 extern int fc_solve_move_stack_get_num_moves(fcs_move_stack_t * stack);
-
-#if 0
-fcs_move_stack_t * fcs_move_stack_duplicate(fcs_move_stack_t * stack);
-#endif
-#define fcs_move_stack_duplicate_into_var(final_ret,stack) \
-{        \
-    fcs_move_stack_t * ret;     \
-    fcs_move_stack_t * temp_stack=(stack) ; \
-           \
-    ret = (fcs_move_stack_t *)malloc(sizeof(fcs_move_stack_t));     \
-                 \
-    ret->max_num_moves = temp_stack->max_num_moves;      \
-    ret->num_moves = temp_stack->num_moves;         \
-    ret->moves = (fcs_move_t *)malloc(sizeof(fcs_move_t) * ret->max_num_moves);     \
-    memcpy(ret->moves, temp_stack->moves, sizeof(fcs_move_t) * ret->max_num_moves);    \
-        \
-    (final_ret) = ret;       \
-}
-
-
 
 void fc_solve_apply_move(
         fcs_state_extra_info_t * state_with_locations_val,
