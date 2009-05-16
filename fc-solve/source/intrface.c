@@ -573,11 +573,10 @@ static int compile_prelude(
     char * string;
     int last_one = 0;
     int num_items = 0;
-    int max_num_items = 16;
     fcs_prelude_item_t * prelude;
     int st_idx;
 
-    prelude = malloc(sizeof(prelude[0]) * max_num_items);
+    prelude = NULL;
     string = hard_thread->prelude_as_string;
 
     p = string;
@@ -620,17 +619,17 @@ static int compile_prelude(
             free(prelude);
             return FCS_COMPILE_PRELUDE_UNKNOWN_SCAN_ID;
         }
+#define PRELUDE_GROW_BY 16
+        if (! (num_items & (PRELUDE_GROW_BY-1)))
+        {
+            prelude = realloc(prelude, sizeof(prelude[0]) * (num_items+PRELUDE_GROW_BY));
+        }
         prelude[num_items].scan_idx = st_idx;
         prelude[num_items].quota = atoi(p_quota);
         num_items++;
-        if (num_items == max_num_items)
-        {
-            max_num_items += 16;
-            prelude = realloc(prelude, sizeof(prelude[0]) * max_num_items);
-        }
     }
 
-    hard_thread->prelude = prelude;
+    hard_thread->prelude = realloc(prelude, sizeof(prelude[0]) * num_items);
     hard_thread->prelude_num_items = num_items;
     hard_thread->prelude_idx = 0;
 
