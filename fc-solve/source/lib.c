@@ -841,7 +841,7 @@ int DLLEXPORT freecell_solver_user_get_max_num_decks(void)
 }
 
 
-DLLEXPORT char * freecell_solver_user_get_invalid_state_error_string(
+char * freecell_solver_user_get_invalid_state_error_string(
     void * user_instance,
     int print_ts
     )
