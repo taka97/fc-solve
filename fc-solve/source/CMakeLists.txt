@@ -1,5 +1,7 @@
 INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake" )
 
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # This is the equivalent to perform a "make dist"/"make distdir" etc.
 SET(CPACK_PACKAGE_NAME "freecell-solver")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Freecell Solver")
@@ -551,6 +553,53 @@ ADD_CUSTOM_TARGET(
     boards
     DEPENDS ${BOARDS}
 )
+
+FIND_PACKAGE(Asciidoc)
+
+IF(ASCIIDOC_FOUND)
+    SET (_docfiles "USAGE.txt")
+
+    FOREACH(_file ${_docfiles})
+        GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
+        SET(_in "${_file_we}")
+        SET(_out "${_file_we}.html")
+        # MESSAGE(STATUS "_in == <<${_in}>> _out == <<${_out}>>")
+
+        # -a toc 
+        ADD_CUSTOM_COMMAND(
+            OUTPUT "${_out}"
+            COMMAND ${ASCIIDOC_EXECUTABLE} 
+                -o ${_out} ${_file}
+            DEPENDS ${_file}
+            COMMENT "Asciidoc ${_in}"
+            )
+
+        SET(_docbook "${_file_we}.xml")
+
+        ADD_CUSTOM_COMMAND(
+            OUTPUT "${_docbook}"
+            COMMAND ${ASCIIDOC_EXECUTABLE} 
+                --backend=docbook -o ${_docbook} ${_file}
+            DEPENDS ${_file}
+            COMMENT "Asciidoc->DocBook ${_in}"
+            )
+
+        SET (_pdf "${_file_we}.pdf")
+
+        ADD_CUSTOM_COMMAND(
+            OUTPUT "${_pdf}"
+            COMMAND docmake -v --make -o ${_pdf} pdf ${_docbook}
+            DEPENDS ${_docbook}
+            COMMENT "docmake to PDF"
+        )
+
+        ADD_CUSTOM_TARGET(${_in} ALL echo
+            DEPENDS "${_out}" "${_docbook}" "${_pdf}"
+            )
+
+    ENDFOREACH(_file)
+
+ENDIF(ASCIIDOC_FOUND)
 
 IF (FCS_WITH_TEST_SUITE)
     
