@@ -594,9 +594,13 @@ IF(ASCIIDOC_FOUND)
             COMMENT "docmake to PDF"
         )
 
-        ADD_CUSTOM_TARGET(${_in} ALL echo
-            DEPENDS "${_out}" "${_docbook}" "${_pdf}"
-            )
+        ADD_CUSTOM_TARGET(${_in} ALL echo -n
+            DEPENDS "${_out}" "${_docbook}"
+        )
+
+        ADD_CUSTOM_TARGET(${_in}_pdf echo -n
+            DEPENDS "${_pdf}"
+        )
 
     ENDFOREACH(_file)
 
