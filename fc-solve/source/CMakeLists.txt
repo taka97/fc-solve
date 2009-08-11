@@ -36,6 +36,7 @@ SET(CPACK_SOURCE_IGNORE_FILES
     "/lib(fcs|freecell-solver)\\\\.(a|la)$"
     "\\\\.so(\\\\.[0-9]+)*$"
     "/\\\\.svn/"
+    "\\\\.(pdf|fo)$"
     "/t/t/.*\\\\.exe$"
     "/t/Presets"
     "/CMakeCache\\\\.txt$"
@@ -502,7 +503,7 @@ INSTALL(
         "README"
         "README.win32.txt"
         "TODO"
-        "USAGE"
+        "USAGE.txt"
     DESTINATION
         "share/doc/freecell-solver/"
 )
