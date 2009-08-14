@@ -1,4 +1,8 @@
-FrecellS olver 
+Freecell Solver
+===============
+Shlomi Fish <shlomif@cpan.org>
+:Date: 2009-08-14
+:Revision: $Id
 
 Benchmarking a Freecell Solver Release
 --------------------------------------
@@ -44,24 +48,24 @@ These are instruction how to get the test suite up and running:
 
 2. Install cmake (at least version 2.6.3):
 +
-On Debian:
-
+* On Debian:
++
 	+# apt-get install cmake+
 	+$ cmake --version # Make sure it's 2.6.3 or higher.+
 +
 
 3. Install make, gcc and other needed applications:
 +
-On Debian:
-
+* On Debian:
++
     # apt-get install make gcc g++
 +
 (g++ is required by CMake even for ANSI C projects for some reason).
 
 4. Install valgrind
 +
-On Debian:
-
+* On Debian:
++
     # apt-get install valgrind+
 
 5. Install perl (at least perl-5.8.9 - perl-5.10.0 or above is recommended).
@@ -72,9 +76,9 @@ On Debian:
 and follow the instructions to set it up.
 +
 * Restart bash
-	
-    +$ export PERL_MM_USE_DEFAULT=1+
-    +$ perl -Mlocal::lib -MCPAN -e 'install Task::FreecellSolver::Testing'+
+
+    $ export PERL_MM_USE_DEFAULT=1
+    $ perl -Mlocal::lib -MCPAN -e 'install Task::FreecellSolver::Testing'
 
 7. Install the development headers of 
 libtap ( http://jc.ngo.org.uk/trac-bin/trac.cgi/wiki/LibTap ).
@@ -113,7 +117,7 @@ libtap ( http://jc.ngo.org.uk/trac-bin/trac.cgi/wiki/LibTap ).
 
 	$ echo 'export HARNESS_PLUGINS="ColorSummary ColorFileVerdicts AlternateInterpreters"' >> ~/.bashrc
 	$ echo 'export HARNESS_ALT_INTRP_FILE="$HOME/.test-run-alt-intrp.yml"' >> ~/.bashrc
-
++
 * Put the following under $HOME/.test-run-alt-intrp.yml:
 
     ---
