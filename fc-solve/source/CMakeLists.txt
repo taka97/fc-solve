@@ -6,7 +6,7 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 SET(CPACK_PACKAGE_NAME "freecell-solver")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Freecell Solver")
 SET(CPACK_PACKAGE_VENDOR "Shlomi Fish")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.txt")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 
 # Process and extract the version number.
@@ -500,7 +500,7 @@ INSTALL(
     FILES
         "AUTHORS"
         "HACKING.txt"
-        "INSTALL"
+        "INSTALL.txt"
         "README.txt"
         "README.win32.txt"
         "TODO.txt"
@@ -559,7 +559,9 @@ ADD_CUSTOM_TARGET(
 FIND_PACKAGE(Asciidoc)
 
 IF(ASCIIDOC_FOUND)
-    SET (_docfiles "HACKING.txt" "README.txt" "TODO.txt" "USAGE.txt")
+    SET (_docfiles "HACKING.txt" "INSTALL.txt" 
+        "README.txt" "TODO.txt" "USAGE.txt"
+    )
 
     FOREACH(_file ${_docfiles})
         GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
