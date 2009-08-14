@@ -501,7 +501,7 @@ INSTALL(
         "AUTHORS"
         "HACKING.txt"
         "INSTALL"
-        "README"
+        "README.txt"
         "README.win32.txt"
         "TODO.txt"
         "USAGE.txt"
@@ -559,7 +559,7 @@ ADD_CUSTOM_TARGET(
 FIND_PACKAGE(Asciidoc)
 
 IF(ASCIIDOC_FOUND)
-    SET (_docfiles "HACKING.txt" "TODO.txt" "USAGE.txt")
+    SET (_docfiles "HACKING.txt" "README.txt" "TODO.txt" "USAGE.txt")
 
     FOREACH(_file ${_docfiles})
         GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
