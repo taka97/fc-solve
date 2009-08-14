@@ -390,8 +390,8 @@ it does, is explicitly calculate the depth of the state by tracing its path
 to the initial state. This may make depth consideration more accurate.
 
 
-Running Several Scans in Parallel:
-----------------------------------
+Running Several Scans in Parallel
+---------------------------------
 
 Starting from Version 2.4.0, Freecell Solver can run several scans in
 parallel on the same state collection. Each scan resides in its own
