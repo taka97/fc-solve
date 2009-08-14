@@ -498,7 +498,7 @@ INSTALL_MAN ("${CMAKE_CURRENT_BINARY_DIR}/fc-solve.6" 6)
 
 INSTALL(
     FILES
-        "AUTHORS"
+        "AUTHORS.txt"
         "HACKING.txt"
         "INSTALL.txt"
         "README.txt"
@@ -559,7 +559,7 @@ ADD_CUSTOM_TARGET(
 FIND_PACKAGE(Asciidoc)
 
 IF(ASCIIDOC_FOUND)
-    SET (_docfiles "HACKING.txt" "INSTALL.txt" 
+    SET (_docfiles "AUTHORS.txt" "HACKING.txt" "INSTALL.txt" 
         "README.txt" "TODO.txt" "USAGE.txt"
     )
 
