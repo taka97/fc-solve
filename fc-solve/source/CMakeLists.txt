@@ -592,6 +592,8 @@ IF(ASCIIDOC_FOUND)
 
         SET (_pdf "${_file_we}.pdf")
 
+        SET (target "${_file_we}_build")
+
         ADD_CUSTOM_COMMAND(
             OUTPUT "${_pdf}"
             COMMAND docmake -v --make -o ${_pdf} pdf ${_docbook}
@@ -599,8 +601,15 @@ IF(ASCIIDOC_FOUND)
             COMMENT "docmake to PDF"
         )
 
-        ADD_CUSTOM_TARGET(${_in} ALL echo -n
-            DEPENDS "${_out}" "${_docbook}"
+        ADD_CUSTOM_COMMAND(
+            OUTPUT ${_file_we}
+            COMMAND cp -f "${_file_we}.txt" ${_file_we}
+            DEPENDS "${_file_we}.txt"
+            COMMENT "copy AsciiDoc to non-\".txt\" file"
+        )
+    
+        ADD_CUSTOM_TARGET(${target} ALL echo -n
+            DEPENDS "${_out}" "${_docbook}" "${_file_we}"
         )
 
         ADD_CUSTOM_TARGET(${_in}_pdf echo -n
