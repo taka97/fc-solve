@@ -560,8 +560,10 @@ FIND_PACKAGE(Asciidoc)
 
 IF(ASCIIDOC_FOUND)
     SET (_docfiles "AUTHORS.txt" "COPYING.txt" "HACKING.txt" "INSTALL.txt" 
-        "README.txt" "TODO.txt" "USAGE.txt"
+        "README.txt" "USAGE.txt" "TODO.txt" 
     )
+
+    SET (_pdf_targets)
 
     FOREACH(_file ${_docfiles})
         GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
@@ -605,7 +607,14 @@ IF(ASCIIDOC_FOUND)
             DEPENDS "${_pdf}"
         )
 
+        LIST(APPEND _pdf_targets ${_in}_pdf)
+
     ENDFOREACH(_file)
+
+    MESSAGE ("PDF_TARGETS == ${_pdf_targets}")
+    ADD_CUSTOM_TARGET("pdfs" echo -n
+        DEPENDS ${_pdf_targets}
+    )
 
 ENDIF(ASCIIDOC_FOUND)
 
