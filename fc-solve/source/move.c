@@ -100,8 +100,8 @@ void fc_solve_apply_move(
         case FCS_MOVE_TYPE_FREECELL_TO_STACK:
         {
             col = fcs_state_get_col(*state_key, fcs_int_move_get_dest_stack(move));
-            fcs_col_push_card(col, fcs_freecell_card(*state_key, fcs_int_move_get_dest_freecell(move)));
-            fcs_empty_freecell(*state_key, fcs_int_move_get_dest_freecell(move));
+            fcs_col_push_card(col, fcs_freecell_card(*state_key, fcs_int_move_get_src_freecell(move)));
+            fcs_empty_freecell(*state_key, fcs_int_move_get_src_freecell(move));
         }
         break;
         case FCS_MOVE_TYPE_FREECELL_TO_FREECELL:
