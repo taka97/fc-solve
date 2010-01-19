@@ -170,6 +170,12 @@ void fc_solve_increase_dfs_max_depth(
     }      \
 }
 
+#define BUMP_NUM_TIMES() \
+{       \
+    instance->num_times++; \
+    hard_thread->num_times++; \
+}
+
 int fc_solve_soft_dfs_do_solve(
     fc_solve_soft_thread_t * soft_thread,
     int to_randomize
@@ -337,6 +343,8 @@ int fc_solve_soft_dfs_do_solve(
                     (num_vacant_freecells  == LOCAL_FREECELLS_NUM))
                 {
                     instance->final_state_val = ptr_state_val;
+                    
+                    BUMP_NUM_TIMES();
 
                     TRACE0("Returning FCS_STATE_WAS_SOLVED");
                     return FCS_STATE_WAS_SOLVED;
@@ -482,8 +490,7 @@ int fc_solve_soft_dfs_do_solve(
                     )
                    )
                 {
-                    instance->num_times++;
-                    hard_thread->num_times++;
+                    BUMP_NUM_TIMES();
 
                     set_scan_visited(
                         single_derived_state,
@@ -529,8 +536,7 @@ int fc_solve_soft_dfs_do_solve(
      * We need to bump the number of iterations so it will be ready with
      * a fresh iterations number for the next scan that takes place.
      * */
-    instance->num_times++;
-    hard_thread->num_times++;
+    BUMP_NUM_TIMES();
 
     soft_thread->method_specific.soft_dfs.depth = -1;
 
@@ -870,6 +876,49 @@ extern void fc_solve_soft_thread_init_a_star_or_bfs(
     return;
 }
 
+#define DEBUG
+#ifdef DEBUG
+#if 0
+static void dump_pqueue (
+    fc_solve_soft_thread_t * soft_thread,
+    const char * stage_id,
+    PQUEUE * pq
+    )
+{
+    int i;
+    char * s; 
+
+    if (strcmp(soft_thread->name, "11"))
+    {
+        return;
+    }
+
+    printf("<pqueue_dump stage=\"%s\">\n\n", stage_id);
+
+    for (i = PQ_FIRST_ENTRY ; i < pq->CurrentSize ; i++)
+    {
+        printf("Rating[%d] = %d\nState[%d] = <<<\n", i, pq->Elements[i].rating, i);
+        s = fc_solve_state_as_string(pq->Elements[i].val, 
+                soft_thread->hard_thread->instance->freecells_num,
+                soft_thread->hard_thread->instance->stacks_num,
+                soft_thread->hard_thread->instance->decks_num,
+                1,
+                0,
+                1
+                );
+
+        printf("%s\n>>>\n\n", s);
+
+        free(s);
+    }
+
+    printf("\n\n</pqueue_dump>\n\n");
+}
+#else
+#define dump_pqueue(a,b,c) {}
+#endif
+#endif
+
 int fc_solve_a_star_or_bfs_do_solve(
     fc_solve_soft_thread_t * soft_thread
     )
@@ -941,6 +990,10 @@ int fc_solve_a_star_or_bfs_do_solve(
     while ( ptr_state_val != NULL)
     {
         TRACE0("Start of loop");
+
+#ifdef DEBUG
+        dump_pqueue(soft_thread, "loop_start", scan_specific.a_star_pqueue);
+#endif
 
         {
              register int temp_visited = ptr_state_val->visited;
@@ -1029,6 +1082,8 @@ int fc_solve_a_star_or_bfs_do_solve(
         {
             instance->final_state_val = ptr_state_val;
 
+            BUMP_NUM_TIMES();
+
             error_code = FCS_STATE_WAS_SOLVED;
             goto my_return_label;
         }
@@ -1079,10 +1134,8 @@ int fc_solve_a_star_or_bfs_do_solve(
 
         /* Increase the number of iterations by one .
          * */
-        {
-            instance->num_times++;
-            hard_thread->num_times++;
-        }
+        BUMP_NUM_TIMES();
+
 
         TRACE0("Insert all states");
         /* Insert all the derived states into the PQ or Queue */
@@ -1150,6 +1203,10 @@ label_next_state:
         */
         if (method == FCS_METHOD_A_STAR)
         {
+
+#ifdef DEBUG
+        dump_pqueue(soft_thread, "before_pop", scan_specific.a_star_pqueue);
+#endif
             /* It is an A* scan */
             fc_solve_PQueuePop(
                 scan_specific.a_star_pqueue,

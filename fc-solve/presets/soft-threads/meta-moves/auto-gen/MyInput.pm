@@ -12,12 +12,12 @@ use Shlomif::FCS::CalcMetaScan::Structs;
 use PDL;
 use PDL::IO::FastRaw;
 
-__PACKAGE__->mk_accessors(
-    qw(
+__PACKAGE__->mk_acc_ref(
+    [qw(
         start_board
         num_boards
         selected_scans
-    )
+    )],
 );
 
 sub _init
@@ -74,6 +74,23 @@ sub _gen_initial_scans_tensor
     return zeroes($self->num_boards(), $self->_num_sel_scans, @$extra_dims);
 }
 
+sub _should_update
+{
+    my ($self, $src_path, $dest_path) = @_;
+
+    my @orig_stat = stat($src_path);
+    my @proc_stat = stat($dest_path);
+
+    return ((! @proc_stat) || ($orig_stat[9] > $proc_stat[9]));
+}
+
+# Number of numbers in the header of the solutions' iteration counts
+my $NUM_NUMBERS_IN_HEADER = 3;
+
+my $HEADER_START_BOARD_IDX = 0;
+my $HEADER_NUM_BOARDS = 1;
+my $HEADER_ITERATIONS_LIMIT = 2;
+
 sub _get_scans_data_helper
 {
     my $self = shift;
@@ -94,37 +111,39 @@ sub _get_scans_data_helper
 
     foreach my $scan (@$selected_scans)
     {
-        print "scan_idx=$scan_idx\n";
         {
-            my @orig_stat = stat($scan->data_file_path());
-            my @proc_stat = stat("$data_dir/" . $scan->id());
-            if ((! scalar(@proc_stat)) || $orig_stat[9] > $proc_stat[9])
+            my $dest_path = $data_dir . "/" . $scan->id();
+            if ($self->_should_update($scan->data_file_path(), $dest_path))
             {
                 my $data_s = _slurp($scan->data_file_path());
                 my @array = unpack("l*", $data_s);
-                if (($array[0] != 1) || ($array[1] < $self->num_boards) || ($array[2] != 100000))
+                if (($array[$HEADER_START_BOARD_IDX] != 1) || 
+                    ($array[$HEADER_NUM_BOARDS] < $self->num_boards) || 
+                    ($array[$HEADER_ITERATIONS_LIMIT] != 100000)
+                   )
                 {
                     die "Incorrect file format in scan " . $scan->{'id'} . "!\n";
                 }
                 
                 my $c = pdl(\@array);
                 
-                writefraw($c, "./.data-proc/" . $scan->id());
+                writefraw($c, $dest_path);
             }
         }
         {
-            my $c = readfraw("./.data-proc/" . $scan->id());
-            my $b = $scans_data->slice(":,$scan_idx");
-            $b += $c->slice((2+$start_board).":".($self->num_boards()+1+$start_board));
+            my $scan_vec = readfraw("./.data-proc/" . $scan->id());
+            my $scans_data_slice = $scans_data->slice(":,$scan_idx");
+            # Board No. 1 starts at index 0.
+            my $start_idx = $NUM_NUMBERS_IN_HEADER + ($start_board - 1);
+            $scans_data_slice += $scan_vec->slice(
+                $start_idx.":".($start_idx + $self->num_boards()-1)
+            );
         }
         {
             my $src = $scan->data_file_path();
             my $dest = "$lens_dir/" . $scan->id();
 
-            my @orig_stat = stat($src);
-            my @proc_stat = stat($dest);
-
-            if ((! scalar(@proc_stat)) || $orig_stat[9] > $proc_stat[9])
+            if ($self->_should_update($src, $dest))
             {
                 my $data_s = _slurp($src);
 
@@ -137,7 +156,7 @@ sub _get_scans_data_helper
                 }
 
                 # Remove the header
-                splice @iters, 0, 3;
+                splice @iters, 0, $NUM_NUMBERS_IN_HEADER;
 
                 my $c = pdl(
                     [\@iters, 
@@ -154,9 +173,9 @@ sub _get_scans_data_helper
             }
         }
         {
-            my $c = readfraw("$lens_dir/" . $scan->id());
-            my $b = $scans_lens_data->slice(":,$scan_idx,:");
-            $b += $c->slice(
+            my $scan_vec = readfraw("$lens_dir/" . $scan->id());
+            my $scans_data_slice = $scans_lens_data->slice(":,$scan_idx,:");
+            $scans_data_slice += $scan_vec->slice(
                 sprintf(
                     "%d:%d,:,*",
                     ($start_board-1),
@@ -164,6 +183,9 @@ sub _get_scans_data_helper
                 )
             )->xchg(1,2);
         }
+    }
+    continue
+    {
         $scan_idx++;
     }
 

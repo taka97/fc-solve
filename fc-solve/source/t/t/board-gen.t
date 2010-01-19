@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 23;
 use Test::Differences;
 
 {
@@ -432,6 +432,132 @@ EOF
         $got,
         $expected,
         "Simple Simon 7537454 (Long seed)",
+    );
+}
+
+{
+    my $got = `python ../board_gen/make_pysol_freecell_board.py -F 800600`;
+
+    my $expected = <<"EOF";
+3H 10S QH 10D 8D JC AS
+3S KC 2D 6D 5S 10H 5C
+JH 6S 4D 8S 7H 7D 6H
+4C 7C 9D AH 4H 5D 8C
+7S KS QD 3D 5H 2H
+8H 9H 2C AC KD AD
+JS 9C 4S 9S 10C 2S
+JD QS QC KH 3C 6C
+EOF
+
+    # TEST
+    eq_or_diff (
+        $got,
+        $expected,
+        "Freecell PySolFC 800600",
+    );
+}
+
+
+{
+    my $got =
+        `python ../board_gen/make_pysol_freecell_board.py --pysolfc 800600`
+        ;
+
+    my $expected = <<"EOF";
+3H 10S QH 10D 8D JC AS
+3S KC 2D 6D 5S 10H 5C
+JH 6S 4D 8S 7H 7D 6H
+4C 7C 9D AH 4H 5D 8C
+7S KS QD 3D 5H 2H
+8H 9H 2C AC KD AD
+JS 9C 4S 9S 10C 2S
+JD QS QC KH 3C 6C
+EOF
+
+    # TEST
+    eq_or_diff (
+        $got,
+        $expected,
+        "Freecell PySolFC 800600 (Long flag).",
+    );
+}
+
+
+{
+    my $got = `python ../board_gen/make_pysol_freecell_board.py -F -t 800600`;
+
+    my $expected = <<"EOF";
+3H TS QH TD 8D JC AS
+3S KC 2D 6D 5S TH 5C
+JH 6S 4D 8S 7H 7D 6H
+4C 7C 9D AH 4H 5D 8C
+7S KS QD 3D 5H 2H
+8H 9H 2C AC KD AD
+JS 9C 4S 9S TC 2S
+JD QS QC KH 3C 6C
+EOF
+
+    # TEST
+    eq_or_diff (
+        $got,
+        $expected,
+        "Freecell PySolFC 800600",
+    );
+}
+
+{
+    my $got = `python ../board_gen/make_pysol_freecell_board.py -F -t 2400240 simple_simon`;
+
+    my $expected = <<"EOF";
+9D 5C 7D 4H TH 7S KH AC
+TC KD AD 5S 9C 5D AH QC
+2C 3H JH 5H 8D JC 9H JD
+4D QD KS 8H QH 2D QS
+6D 3D 6H TS 3C 2H
+7C JS 9S 2S 6S
+8S 4C AS 4S
+KC 8C TD
+6C 7H
+3S
+EOF
+
+    # TEST
+    eq_or_diff (
+        $got,
+        $expected,
+        "Freecell PySolFC 2400240 Simple Simon",
+    );
+}
+
+{
+    my $got = `python ../board_gen/make_pysol_freecell_board.py --pysolfc -t 45508856405861261758 black_hole`;
+
+    my $expected = <<"EOF";
+Foundations: AS
+2S 3D 6S
+2C 5D 7H
+3C 7C 3S
+4C AC JS
+9D QC 4S
+QD 6C 8H
+TC JC TS
+8D 7S 8S
+7D 3H 5H
+JD 9C 2H
+TD 6D QH
+2D KH KC
+4D KD AH
+4H JH 5C
+AD 9S QS
+6H KS TH
+5S 9H 8C
+EOF
+
+    # TEST
+    eq_or_diff (
+        $got,
+        $expected,
+        "PySolFC 45508856405861261758 black_hole",
     );
 }
 

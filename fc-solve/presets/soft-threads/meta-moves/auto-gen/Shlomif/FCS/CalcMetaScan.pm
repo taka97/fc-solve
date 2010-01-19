@@ -12,17 +12,17 @@ use vars (qw(@fields %fields_map));
 
 @fields = (qw(
     chosen_scans
-    iter_idx
-    num_boards
-    orig_scans_data
-    optimize_for
-    scans_data
-    selected_scans
-    status
-    quotas
-    total_boards_solved
-    total_iters
-    trace_cb
+    _iter_idx
+    _num_boards
+    _orig_scans_data
+    _optimize_for
+    _scans_data
+    _selected_scans
+    _status
+    _quotas
+    _total_boards_solved
+    _total_iters
+    _trace_cb
 ));
 
 use PDL ();
@@ -45,30 +45,30 @@ sub _init
 {
     my $self = shift;
 
-    my (%args) = (@_);
+    my $args = shift;
 
-    $self->quotas($args{'quotas'}) or
+    $self->_quotas($args->{'quotas'}) or
         die "Quotas not specified!";
 
-    if (!exists($args{'scans_data'}))
+    if (!exists($args->{'scans_data'}))
     {
         die "scans_data not specified!";
     }
 
-    $self->orig_scans_data($args{'scans_data'}->copy());
-    $self->scans_data($self->orig_scans_data()->copy());
+    $self->_orig_scans_data($args->{'scans_data'}->copy());
+    $self->_scans_data($self->_orig_scans_data()->copy());
 
-    $self->selected_scans($args{'selected_scans'}) or
+    $self->_selected_scans($args->{'selected_scans'}) or
         die "selected_scans not specified!";
 
-    $self->num_boards($args{'num_boards'}) or
+    $self->_num_boards($args->{'num_boards'}) or
         die "num_boards not specified!";
 
-    $self->trace_cb($args{'trace_cb'});
+    $self->_trace_cb($args->{'trace_cb'});
 
-    $self->iter_idx(0);
+    $self->_iter_idx(0);
 
-    $self->optimize_for($args{'optimize_for'});
+    $self->_optimize_for($args->{'optimize_for'});
 
     return 0;
 }
@@ -77,59 +77,50 @@ sub _next_iter_idx
 {
     my $self = shift;
 
-    my $ret = $self->iter_idx();
+    my $ret = $self->_iter_idx();
 
-    $self->iter_idx($ret+1);
+    $self->_iter_idx($ret+1);
 
     return $ret;
 }
 
-sub scans_rle
-{
-    my $self = shift;
-    my %args = (@_);
-    my $scans_list = [@{$args{'scans'}}];
-
-    my $scan = shift(@$scans_list);
-
-    my (@a);
-    while (my $next_scan = shift(@$scans_list))
-    {
-        if ($next_scan->{'ind'} == $scan->{'ind'})
-        {
-            $scan->{'q'} += $next_scan->{'q'};
-        }
-        else
-        {
-            push @a, $scan;
-            $scan = $next_scan;
-        }
-    }
-    push @a, $scan;
-    return \@a;
-}
-
-sub get_next_quota
+sub _get_next_quota
 {
     my $self = shift;
 
     my $iter = $self->_next_iter_idx();
 
-    if (ref($self->quotas()) eq "ARRAY")
+    if (ref($self->_quotas()) eq "ARRAY")
     {
-        return $self->quotas()->[$iter];
+        return $self->_quotas()->[$iter];
     }
     else
     {
-        return $self->quotas()->($iter);
+        return $self->_quotas()->($iter);
     }
 }
 
-sub get_iter_state_params
+sub _calc_get_iter_state_param_method
 {
     my $self = shift;
 
-    my $method = 'get_iter_state_params_' . $self->optimize_for();
+    my $optimize_for = $self->_optimize_for();
+
+    my %resolve = 
+    (
+        len => "_get_iter_state_params_len",
+        minmax_len => "_get_iter_state_params_minmax_len",
+        speed => "_get_iter_state_params_speed",
+    );
+
+    return $resolve{$optimize_for};
+}
+
+sub _get_iter_state_params
+{
+    my $self = shift;
+
+    my $method = $self->_calc_get_iter_state_param_method();
 
     return $self->$method();
 }
@@ -141,7 +132,7 @@ sub _my_sum_over
     return $pdl->sumover()->slice(":,(0)");
 }
 
-sub get_iter_state_params_len
+sub _get_iter_state_params_len
 {
     my $self = shift;
 
@@ -152,7 +143,7 @@ sub get_iter_state_params_len
     # If no boards were solved, then try with a larger quota
     while ($num_solved_in_iter == 0)
     {
-        my $q_more = $self->get_next_quota();
+        my $q_more = $self->_get_next_quota();
         if (!defined($q_more))
         {
             Shlomif::FCS::CalcMetaScan::Error::OutOfQuotas->throw(
@@ -162,9 +153,9 @@ sub get_iter_state_params_len
 
         $iters_quota += $q_more;
 
-        my $iters = $self->scans_data()->slice(":,:,0");
+        my $iters = $self->_scans_data()->slice(":,:,0");
         my $solved = (($iters <= $iters_quota) & ($iters > 0));
-        my $num_moves = $self->scans_data->slice(":,:,2");
+        my $num_moves = $self->_scans_data->slice(":,:,2");
         my $solved_moves = $solved * $num_moves;
         
         my $solved_moves_sums = _my_sum_over($solved_moves);
@@ -186,7 +177,7 @@ sub get_iter_state_params_len
     };
 }
 
-sub get_iter_state_params_minmax_len
+sub _get_iter_state_params_minmax_len
 {
     my $self = shift;
 
@@ -197,7 +188,7 @@ sub get_iter_state_params_minmax_len
     # If no boards were solved, then try with a larger quota
     while ($num_solved_in_iter == 0)
     {
-        my $q_more = $self->get_next_quota();
+        my $q_more = $self->_get_next_quota();
         if (!defined($q_more))
         {
             Shlomif::FCS::CalcMetaScan::Error::OutOfQuotas->throw(
@@ -207,9 +198,9 @@ sub get_iter_state_params_minmax_len
 
         $iters_quota += $q_more;
 
-        my $iters = $self->scans_data()->slice(":,:,0");
+        my $iters = $self->_scans_data()->slice(":,:,0");
         my $solved = (($iters <= $iters_quota) & ($iters > 0));
-        my $num_moves = $self->scans_data->slice(":,:,2");
+        my $num_moves = $self->_scans_data->slice(":,:,2");
         my $solved_moves = $solved * $num_moves;
         
         my $solved_moves_maxima = $solved_moves->maximum()->slice(":,(0),(0)");
@@ -230,7 +221,7 @@ sub get_iter_state_params_minmax_len
     };
 }
 
-sub get_iter_state_params_speed
+sub _get_iter_state_params_speed
 {
     my $self = shift;
 
@@ -241,7 +232,7 @@ sub get_iter_state_params_speed
     # If no boards were solved, then try with a larger quota
     while ($num_solved_in_iter == 0)
     {
-        my $q_more = $self->get_next_quota();
+        my $q_more = $self->_get_next_quota();
         if (!defined($q_more))
         {
             Shlomif::FCS::CalcMetaScan::Error::OutOfQuotas->throw(
@@ -254,8 +245,8 @@ sub get_iter_state_params_speed
         (undef, $num_solved_in_iter, undef, $selected_scan_idx) =
             PDL::minmaximum(
                 PDL::sumover(
-                    ($self->scans_data() <= $iters_quota) & 
-                    ($self->scans_data() > 0)
+                    ($self->_scans_data() <= $iters_quota) & 
+                    ($self->_scans_data() > 0)
                 )
               );
     }
@@ -268,13 +259,13 @@ sub get_iter_state_params_speed
     };
 }
 
-sub get_selected_scan
+sub _get_selected_scan
 {
     my $self = shift;
 
     my $iter_state = 
         Shlomif::FCS::CalcMetaScan::IterState->new(
-            $self->get_iter_state_params(),
+            $self->_get_iter_state_params(),
         );
 
     $iter_state->attach_to($self);
@@ -282,19 +273,19 @@ sub get_selected_scan
     return $iter_state;
 }
 
-sub inspect_quota
+sub _inspect_quota
 {
     my $self = shift;
 
-    my $state = $self->get_selected_scan();
+    my $state = $self->_get_selected_scan();
 
     $state->register_params();
 
     $state->update_total_iters();
     
-    if ($self->total_boards_solved() == $self->num_boards())
+    if ($self->_total_boards_solved() == $self->_num_boards())
     {
-        $self->status("solved_all");
+        $self->_status("solved_all");
     }
     else
     {
@@ -304,11 +295,19 @@ sub inspect_quota
     $state->detach();
 }
 
-sub get_quotas
-{
-    my $self = shift;
-    return $self->quotas();
-}
+=head2 my $chosen_scans_array_ref = $self->chosen_scans()
+
+Returns the scans that have been chosen to perform the iteration. Each one is
+a Shlomif::FCS::CalcMetaScan::ScanRun object.
+
+=head2 $calc_meta_scan->calc_meta_scan()
+
+Calculates the meta-scan after initialisation. See here for the details
+of the algorithm:
+
+L<http://www.shlomifish.org/lecture/Freecell-Solver/The-Next-Pres/slides/multi-tasking/best-meta-scan/>
+
+=cut
 
 sub calc_meta_scan
 {
@@ -316,22 +315,22 @@ sub calc_meta_scan
 
     $self->chosen_scans([]);
 
-    $self->total_boards_solved(0);
-    $self->total_iters(0);
+    $self->_total_boards_solved(0);
+    $self->_total_iters(0);
 
-    $self->status("iterating");
-    # $self->inspect_quota() throws ::Error::OutOfQuotas if
+    $self->_status("iterating");
+    # $self->_inspect_quota() throws ::Error::OutOfQuotas if
     # it does not have any available quotas.
     eval
     {
-        while ($self->status() eq "iterating")
+        while ($self->_status() eq "iterating")
         {
-            $self->inspect_quota();
+            $self->_inspect_quota();
         }
     };
     if (my $err = Exception::Class->caught('Shlomif::FCS::CalcMetaScan::Error::OutOfQuotas'))
     {
-        # Do nothing - continue.
+        $self->_status("out_of_quotas");
     }
     else
     {
@@ -347,37 +346,40 @@ sub calc_meta_scan
     }
 }
 
-sub do_rle
-{
-    my $self = shift;
-    $self->chosen_scans(
-        $self->scans_rle('scans' => $self->chosen_scans())
-    );
-}
+=head2 $calc_meta_scan->calc_board_iters($board_idx)
+
+Calculates the iterations of the board $board_idx in all the scans.
+
+Returns a hash_ref containing the key 'per_scan_iters' for the iterations
+per scan, and 'board_iters' for the total board iterations when ran in the
+scans.
+
+=cut
 
 sub calc_board_iters
 {
     my $self = shift;
     my $board = shift;
+
     my $board_iters = 0;
 
-    my @info = PDL::list($self->orig_scans_data()->slice("$board,:"));
+    my @info = PDL::list($self->_orig_scans_data()->slice("$board,:"));
     my @orig_info = @info;
 
     foreach my $s (@{$self->chosen_scans()})
     {
-        if (($info[$s->{'ind'}] > 0) && ($info[$s->{'ind'}] <= $s->{'q'}))
+        if (($info[$s->scan()] > 0) && ($info[$s->scan()] <= $s->iters()))
         {
-            $board_iters += $info[$s->{'ind'}];
+            $board_iters += $info[$s->iters()];
             last;
         }
         else
         {
-            if ($info[$s->{'ind'}] > 0)
+            if ($info[$s->scan()] > 0)
             {
-                $info[$s->{'ind'}] -= $s->{'q'};
+                $info[$s->scan()] -= $s->iters();
             }
-            $board_iters += $s->{'q'};
+            $board_iters += $s->iters();
         }
     }
 
@@ -388,15 +390,213 @@ sub calc_board_iters
         };
 }
 
-sub trace
+=head2 my $status = $calc_meta_scan->get_final_status()
+
+Returns the status as string:
+
+=over 4
+
+=item * "solved_all"
+
+=item * "iterating"
+
+=item * "out_of_quotas"
+
+=back
+
+=cut
+
+sub get_final_status
+{
+    my $self = shift;
+
+    return $self->_status();
+}
+
+=head2 my $sim_results_obj = $calc_meta_scan->simulate_board($board_idx)
+
+Simulates the board No $board_idx through the scan. Returns a 
+L<Shlomif::FCS::CalcMetaScan::SimulationResults> object.
+
+=cut
+
+sub simulate_board
+{
+    my ($self, $board) = @_;
+
+    my @info = PDL::list($self->_orig_scans_data()->slice("$board,:"));
+
+    my $board_iters = 0;
+
+    my @scan_runs;
+
+    my $status = "Unsolved";
+
+    my $add_new_scan_run = sub {
+        my $scan_run = shift;
+
+        push @scan_runs, $scan_run;
+        
+        $board_iters += $scan_run->iters();
+    };
+
+    SCANS_LOOP:
+    foreach my $s (@{$self->chosen_scans()})
+    {
+        if (($info[$s->scan()] > 0) && ($info[$s->scan()] <= $s->iters()))
+        {
+            $add_new_scan_run->(
+                Shlomif::FCS::CalcMetaScan::ScanRun->new(
+                    {
+                        iters => $info[$s->scan()],
+                        scan => $s->scan(),
+                    },
+                )
+            );
+
+            $status = "Solved";
+            last SCANS_LOOP;
+        }
+        else
+        {
+            if ($info[$s->scan()] > 0)
+            {
+                $info[$s->scan()] -= $s->iters();
+            }
+
+            $add_new_scan_run->( 
+                Shlomif::FCS::CalcMetaScan::ScanRun->new(
+                    {
+                        iters => $s->iters(),
+                        scan => $s->scan(),
+                    },
+                )
+            );
+        }
+    }
+
+    return
+        Shlomif::FCS::CalcMetaScan::SimulationResults->new(
+            {
+                status => $status,
+                scan_runs => \@scan_runs,
+                total_iters => $board_iters,
+            }
+        );
+}
+
+sub _trace
 {
     my ($self, $args) = @_;
-    my $trace_cb = $self->trace_cb();
-    if (UNIVERSAL::isa($trace_cb, "CODE"))
+    
+    if (my $trace_callback = $self->_trace_cb())
     {
-        $trace_cb->($args);
+        $trace_callback->($args);
     }
+
+    return;
 }
+
+=head2 my $n = $calc_meta_scan->get_total_iters()
+
+Returns the total iterations count so far.
+
+=cut
+
+sub get_total_iters
+{
+    my $self = shift;
+
+    return $self->_total_iters();
+}
+
+sub _add_to_total_iters
+{
+    my $self = shift;
+    
+    my $how_much = shift;
+
+    $self->add('_total_iters', $how_much);
+
+    return;
+}
+
+package Shlomif::FCS::CalcMetaScan::ScanRun;
+
+use base 'Shlomif::FCS::CalcMetaScan::Base';
+
+__PACKAGE__->mk_acc_ref([qw(iters scan)]);
+
+sub _init
+{
+    my ($self, $args) = @_;
+
+    $self->iters($args->{iters});
+    $self->scan($args->{scan});
+
+    return;
+}
+
+sub clone
+{
+    my $self = shift;
+
+    return ref($self)->new({iters => $self->iters(), scan => $self->scan()});
+}
+
+package Shlomif::FCS::CalcMetaScan::SimulationResults;
+
+use base 'Shlomif::FCS::CalcMetaScan::Base';
+
+__PACKAGE__->mk_acc_ref([qw(status scan_runs total_iters)]);
+
+sub _init
+{
+    my ($self, $args) = @_;
+
+    $self->status($args->{status});
+    $self->scan_runs($args->{scan_runs});
+    $self->total_iters($args->{total_iters});
+
+    return;
+}
+
+sub get_total_iters
+{
+    return shift->total_iters();
+}
+
+sub get_status
+{
+    return shift->status();
+}
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (c) 2010 Shlomi Fish
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+=cut
 
 1;
 

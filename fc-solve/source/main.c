@@ -87,6 +87,9 @@ static void my_iter_handler(
     fprintf(stdout, "Stored-States: %i\n",
         freecell_solver_user_get_num_states_in_collection(user_instance)
         );
+    fprintf(stdout, "Scan: %s\n", 
+        freecell_solver_user_get_current_soft_thread_name(user_instance)
+        );
     if (context->display_parent_iter_num)
     {
         fprintf(stdout, "Parent Iteration: %i\n", parent_iter_num);
@@ -363,7 +366,7 @@ help_screen_t help_screens[] = {
 "    fc-solve -l gooey-unknown-thing\n"
 "    fc-solve -l slick-rock\n"
 "\n"
-"You may also try adding the \"-opt\" and/or \"--reparent-states\" options"
+"You may also try adding the \"-opt\" and/or \"--reparent-states\" options\n"
 "which may make things a little better.\n"
 "\n"
 "Refer to the file 'USAGE' for more information.\n"

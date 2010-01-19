@@ -54,6 +54,7 @@
 
 # imports
 import sys, os, re, string, time, types
+import random
 
 # PySol imports
 
@@ -193,12 +194,64 @@ class LCRandom31(PysolRandom):
         self.seed = (self.seed*214013L + 2531011L) & self.MAX_SEED
         return a + (int(self.seed >> 16) % (b+1-a))
 
+# ************************************************************************
+# * Mersenne Twister random number generator
+# * uses standart python module `random'
+# ************************************************************************
+
+class BasicRandom:
+    #MAX_SEED = 0L
+    #MAX_SEED = 0xffffffffffffffffL  # 64 bits
+    MAX_SEED = 100000000000000000000L # 20 digits
+
+    ORIGIN_UNKNOWN  = 0
+    ORIGIN_RANDOM   = 1
+    ORIGIN_PREVIEW  = 2         # random from preview
+    ORIGIN_SELECTED = 3         # manually entered
+    ORIGIN_NEXT_GAME = 4        # "Next game number"
+
+    def __str__(self):
+        return self.str(self.initial_seed)
+
+    def str(self, seed):
+        return '%020d' % seed
+
+    def reset(self):
+        raise SubclassResponsibility
+
+    def copy(self):
+        random = self.__class__(0L)
+        random.__dict__.update(self.__dict__)
+        return random
+
+    def increaseSeed(self, seed):
+        if seed < self.MAX_SEED:
+            return seed + 1L
+        return 0L
+
+    def _getRandomSeed(self):
+        t = long(time.time() * 256.0)
+        t = (t ^ (t >> 24)) % (self.MAX_SEED + 1L)
+        return t
+
+class MTRandom(BasicRandom, random.Random):
+
+    def setSeed(self, seed):
+        random.Random.__init__(self, seed)
+        self.initial_seed = seed
+        self.initial_state = self.getstate()
+        self.origin = self.ORIGIN_UNKNOWN
+
+    def reset(self):
+        self.setstate(self.initial_state)
+
 class Card:
 
     ACE = 1
     KING = 13
 
-    def __init__(self, rank, suit, print_ts):
+    def __init__(self, id, rank, suit, print_ts):
+        self.id = id
         self.rank = rank
         self.suit = suit
         self.flipped = False
@@ -235,7 +288,7 @@ class Card:
         return self.suit_s() + "-" + self.rank_s()
 
     def flip(self, flipped=True):
-        new_card = Card(self.rank, self.suit, self.print_ts)
+        new_card = Card(self.id, self.rank, self.suit, self.print_ts)
         new_card.flipped = flipped
         return new_card
 
@@ -330,16 +383,18 @@ class Board:
 
 
 def empty_card():
-    ret = Card(0,0,1)
+    ret = Card(0,0,0,1)
     ret.empty = True
     return ret
 
 def createCards(num_decks, print_ts):
     cards = []
     for deck in range(num_decks):
+        id = 0
         for suit in range(4):
             for rank in range(13):
-                cards.append(Card(rank+1, suit, print_ts))
+                cards.append(Card(id, rank+1, suit, print_ts))
+                id = id + 1
     return cards
 
 def column_to_list_of_strings(col):
@@ -355,7 +410,7 @@ def flip_card(card_str, flip):
         return card_str
 
 
-def shuffle(orig_cards, game_num):
+def shuffle(orig_cards, game_num, is_pysol_fc_deals):
     if game_num <= 32000:
         r = LCRandom31()
         r.setSeed(game_num)
@@ -367,7 +422,11 @@ def shuffle(orig_cards, game_num):
             orig_cards = fcards
         r.shuffle(orig_cards)
     else:
-        r = LCRandom64()
+        r = 0
+        if (is_pysol_fc_deals):
+            r = MTRandom()
+        else:
+            r = LCRandom64()
         r.setSeed(game_num)
         r.shuffle(orig_cards)
 
@@ -390,10 +449,11 @@ class Game:
                 "simple_simon" : None,
                 "yukon" : None,
                 "beleaguered_castle" : [ "beleaguered_castle", "streets_and_alleys", "citadel" ],
-                "fan" : None
+                "fan" : None,
+                "black_hole" : None,
         }
 
-    def __init__(self, game_id, game_num, print_ts):
+    def __init__(self, game_id, game_num, is_pysol_fc_deals, print_ts):
         mymap = {}
         for k in self.REVERSE_MAP.keys():
             if self.REVERSE_MAP[k] is None:
@@ -405,6 +465,7 @@ class Game:
         self.game_id = game_id
         self.game_num = game_num
         self.print_ts = print_ts
+        self.is_pysol_fc_deals = is_pysol_fc_deals
 
     def print_layout(self):
         game_class = self.lookup()
@@ -433,7 +494,7 @@ class Game:
     def deal(self):
         orig_cards = createCards(self.get_num_decks(), self.print_ts)
 
-        orig_cards = shuffle(orig_cards, self.game_num)
+        orig_cards = shuffle(orig_cards, self.game_num, self.is_pysol_fc_deals)
 
         cards = orig_cards
         cards.reverse()
@@ -581,6 +642,39 @@ class Game:
 
         game.add(17, game.next())
 
+    def _shuffleHookMoveSorter(self, cards, func, ncards):
+        # note that we reverse the cards, so that smaller sort_orders
+        # will be nearer to the top of the Talon
+        sitems, i = [], len(cards)
+        for c in cards[:]:
+            select, sort_order = func(c)
+            if select:
+                cards.remove(c)
+                sitems.append((sort_order, i, c))
+                if len(sitems) >= ncards:
+                    break
+            i = i - 1
+        sitems.sort()
+        sitems.reverse()
+        scards = map(lambda item: item[2], sitems)
+        return cards, scards
+
+    def _shuffleHookMoveToBottom(self, cards, func, ncards=999999):
+        # move cards to bottom of the Talon (i.e. last cards to be dealt)
+        cards, scards = self._shuffleHookMoveSorter(cards, func, ncards)
+        ret = scards + cards
+        return ret
+
+    def black_hole(game):
+        game.board = Board(17)
+
+        # move Ace to bottom of the Talon (i.e. last cards to be dealt)
+        game.cards = game._shuffleHookMoveToBottom(game.cards, lambda c: (c.id == 13, c.suit), 1)
+        game.next()
+        game.cyclical_deal(52-1, 17)
+
+        print "Foundations: AS"
+
     def beleaguered_castle(game):
         aces_up = game.game_id in ("beleaguered_castle", "citadel")
 
@@ -628,16 +722,24 @@ class Game:
 
 def shlomif_main(args):
     print_ts = 0
-    if (args[1] == "-t"):
-        print_ts = 1
-        args.pop(0)
+    pysol_fc_deals = 0
+    while args[1][0] == '-':
+        if (args[1] == "-t"):
+            print_ts = 1
+            args.pop(0)
+        elif ((args[1] == "--pysolfc") or (args[1] == "-F")):
+            pysol_fc_deals = 1
+            args.pop(0)
+        else:
+            raise "Unknown flag " + args[1] + "!"
+
     game_num = long(args[1])
     if (len(args) >= 3):
         which_game = args[2]
     else:
         which_game = "freecell"
 
-    game = Game(which_game, game_num, print_ts)
+    game = Game(which_game, game_num, pysol_fc_deals, print_ts)
     game.print_layout();
 
 if __name__ == "__main__":

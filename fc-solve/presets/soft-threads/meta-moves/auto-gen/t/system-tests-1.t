@@ -6,6 +6,8 @@ use warnings;
 use Test::More tests => 3;
 use Test::Trap qw( trap $trap :flow:stderr(systemsafe):stdout(systemsafe):warn );
 
+use Carp;
+
 {
     trap {    
         # TEST
@@ -22,3 +24,4 @@ use Test::Trap qw( trap $trap :flow:stderr(systemsafe):stdout(systemsafe):warn )
         "results are identical"
     );
 }
+
