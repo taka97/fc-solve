@@ -499,18 +499,26 @@ int DLLEXPORT freecell_solver_user_get_next_move(
         if (user->ret == FCS_STATE_WAS_SOLVED)
         {
             int ret;
+#ifdef FCS_USE_COMPACT_MOVE_TOKENS
             fcs_internal_move_t internal_move;
+#endif
 
             ret = fc_solve_move_stack_pop(
                 &(user->instance->solution_moves),
+#ifdef FCS_USE_COMPACT_MOVE_TOKENS
                 &internal_move
+#else
+                user_move
+#endif
                 );
 
+#ifdef FCS_USE_COMPACT_MOVE_TOKENS
             /* Convert the internal_move to a user move. */
             fcs_move_set_src_stack(*user_move, fcs_int_move_get_src_stack(internal_move));
             fcs_move_set_dest_stack(*user_move, fcs_int_move_get_dest_stack(internal_move));
             fcs_move_set_type(*user_move, fcs_int_move_get_type(internal_move));
             fcs_move_set_num_cards_in_seq(*user_move, fcs_int_move_get_num_cards_in_seq(internal_move));
+#endif
 
             if (ret == 0)
             {
