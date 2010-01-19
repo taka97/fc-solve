@@ -38,7 +38,11 @@
 #include "inline.h"
 #include "unused.h"
 
+#ifdef FCS_USE_COMPACT_MOVE_TOKENS
 const fcs_internal_move_t fc_solve_empty_move = {0,0,0,0};
+#else
+const fcs_internal_move_t fc_solve_empty_move = {"\0\0\0\0"};
+#endif
 
 #if 0
 int fcs_move_stack_push(fcs_move_stack_t * stack, fcs_move_t move)
