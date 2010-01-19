@@ -40,19 +40,13 @@ extern "C" {
 typedef struct
 {
     /*  TODO : Change to log_2 ( 
-     *      min(MAX_NUM_FREECELLS, MAX_NUM_STACKS, MAX_NUM_DECKS * 2) 
+     *      max(MAX_NUM_FREECELLS, MAX_NUM_STACKS, MAX_NUM_DECKS * 4) 
      *  ) */
     unsigned int type : 4;
     unsigned int src : 4;
     unsigned int dest : 4;
     unsigned int num_cards_in_seq : 4;
 } fcs_internal_move_t;
-
-#define FCS_MOVE_TYPE                0
-#define FCS_MOVE_SRC                 1
-#define FCS_MOVE_DEST                2
-#define FCS_MOVE_NUM_CARDS_IN_SEQ    3
-#define FCS_MOVE_NUM_CARDS_FLIPPED   3
 
 #define fcs_int_move_set_src_stack(move,value)        (move).src = ((unsigned int)(value));
 #define fcs_int_move_set_src_freecell(move,value)     (move).src = ((unsigned int)(value));
