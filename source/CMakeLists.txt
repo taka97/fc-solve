@@ -4,10 +4,6 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # This is the equivalent to perform a "make dist"/"make distdir" etc.
 SET(CPACK_PACKAGE_NAME "freecell-solver")
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Freecell Solver")
-SET(CPACK_PACKAGE_VENDOR "Shlomi Fish")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.txt")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING.txt")
 
 # Process and extract the version number.
 FILE( READ "ver.txt" VERSION)
@@ -24,60 +20,10 @@ SET(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_DESCRIPTION_SUMMARY} ${CPAC
 
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
-SET (base_with_ver "freecell-solver-[0-9]+\\\\.[0-9]+\\\\.[0-9]+")
-
-SET(CPACK_SOURCE_IGNORE_FILES
-    "/_CPack_Packages/"
-    "/CMakeFiles/"
-    "/.deps/"
-    "${base_with_ver}(-Source|-Linux)/"
-    "${base_with_ver}.tar\\\\.(gz|bz2|Z|lzma|xz)$"
-    "\\\\.o$"
-    "~$"
-    "/board_gen/(pi-make-microsoft-freecell-board|make-microsoft-freecell-board|make-gnome-freecell-board|make-aisleriot-freecell-board)$"
-    "/(fc-solve|freecell-solver-range-parallel-solve|freecell-solver-fc-pro-range-solve|freecell-solver-multi-thread-solve)$"
-    "/lib(fcs|freecell-solver)\\\\.(a|la)$"
-    "\\\\.so(\\\\.[0-9]+)*$"
-    "/\\\\.svn/"
-    "\\\\.(pdf|fo)$"
-    "/t/t/.*\\\\.exe$"
-    "/t/Presets"
-    "/CMakeCache\\\\.txt$"
-    "/Makefile$"
-    "/CTestTestfile\\\\.cmake$"
-    "/cmake_install\\\\.cmake$"
-    "/CPackConfig\\\\.cmake$"
-    "/CPackSourceConfig\\\\.cmake$"
-    "/tags$"
-    "/freecell-solver-config$"
-    "/libfreecell-solver\\\\.pc$"
-    "/([0-9]+)\\\\.board$"
-    "/config\\\\.h$"
-    "/install_manifest\\\\.txt$"
-    "/t/card-test-(parse|render)\\\\.c$"
-    "/Testing/"
-    "ids-whitelist\\\\.txt"
-)
-
-IF(WIN32 AND NOT UNIX)
-    # There is a bug in NSI that does not handle full unix paths properly. Make
-    # sure there is at least one set of four (4) backlasshes.
-    SET(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}\\\\dondorf-king.bmp")
-    SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\fc-solve.exe")
-    SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\fc-solve.berlios.de")
-    SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\fc-solve.berlios.de")
-    SET(CPACK_NSIS_DISPLAY_NAME "Freecell Solver")
-    SET(CPACK_NSIS_CONTACT "shlomif@iglu.org.il")
-    SET(CPACK_NSIS_MODIFY_PATH ON)
-    # Setting for NSIS :
-    SET(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}\\\\fc-solve.ico")
-    SET(CPACK_NSIS_MUI_UNIICON ${CPACK_NSIS_MUI_ICON})
-    SET(CPACK_PACKAGE_ICON ${CPACK_NSIS_MUI_ICON})
-    SET(CPACK_NSIS_MODIFY_PATH "ON")
-ELSE(WIN32 AND NOT UNIX)
+IF(NOT (WIN32 AND NOT UNIX))
   SET(CPACK_STRIP_FILES "fc-solve")
   SET(CPACK_SOURCE_STRIP_FILES "")
-ENDIF(WIN32 AND NOT UNIX)
+ENDIF(NOT (WIN32 AND NOT UNIX))
 
 SET(CPACK_PACKAGE_EXECUTABLES
     "fc-solve" "Single-Game Solver"
