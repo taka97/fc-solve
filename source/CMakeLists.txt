@@ -14,11 +14,11 @@ SET (_docfiles "AUTHORS.xml" "USAGE.xml" )
 SET (_pdf_targets)
 
 FOREACH(_file ${_docfiles})
-    GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
+    GET_FILENAME_COMPONENT(_file_wo_ext ${_file} NAME_WE)
 
-    SET (_pdf "${_file_we}.pdf")
+    SET (_pdf "${_file_wo_ext}.pdf")
 
-    SET (_target "${_file_we}_pdf")
+    SET (_target "${_file_wo_ext}_pdf")
 
     ADD_CUSTOM_COMMAND(
         OUTPUT "${_pdf}"
