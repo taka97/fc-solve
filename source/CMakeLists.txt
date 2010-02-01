@@ -52,58 +52,6 @@ SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-
-SET (STATES_TYPE "INDIRECT_STACK_STATES" CACHE STRING 
-    "States Type ('INDIRECT_STACK_STATES', 'COMPACT_STATES' or 'DEBUG_STATES'). No need to usually change.")
-SET (IA_STATE_PACKS_GROW_BY 32 CACHE STRING "Amount to Grow State Packs By")
-SET (MAX_NUM_FREECELLS 8 CACHE STRING "Maximal Number of Freecells")
-SET (MAX_NUM_STACKS 10 CACHE STRING "Maximal Number of Stacks")
-SET (MAX_NUM_INITIAL_CARDS_IN_A_STACK 8 CACHE STRING
-    "Maximal Number of Initial Cards in a Stack")
-SET (MAX_NUM_DECKS 2 CACHE STRING "Maximal Number of Decks (1 or 2)")
-SET (MAX_NUM_BENCHMARK_THREADS 4 CACHE STRING "Maximal Number of Threads to Use When Benchmarking")
-
-SET (FCS_STATE_STORAGE "FCS_STATE_STORAGE_INTERNAL_HASH" CACHE STRING "The State Storage Type")
-SET (FCS_STACK_STORAGE "FCS_STACK_STORAGE_INTERNAL_HASH" CACHE STRING "The Stack Storage Type")
-
-SET (FCS_FREECELL_ONLY "" CACHE BOOL "Configure Freecell Solver to only be able to solve Freecell (not recommended)")
-SET (FCS_DISABLE_SIMPLE_SIMON "" CACHE BOOL "Exclude being able to solve Simple Simon from the Binary (not recommended)")
-SET (FCS_WITHOUT_CARD_FLIPPING "" CACHE BOOL "Exclude the flipping of cards from the binary.")
-SET (FCS_WITH_TEST_SUITE "" CACHE BOOL "Also build and run the test suite.")
-
-SET (FCS_ENABLE_SECONDARY_HASH_VALUE "" 
-    CACHE BOOL 
-    "Enable the secondary hash value calculation and track-keeping. Seems to slow things down."
-)
-
-SET (FCS_WITH_CONTEXT_VARIABLE "1" 
-    CACHE BOOL 
-    "Enable the context (extra void *) as passed to the comparison functions, etc."
-)
-
-SET (FCS_INLINED_HASH_COMPARISON "1" 
-    CACHE BOOL 
-    "Inline the hash comparisons."
-)
-
-SET (FCS_USE_COMPACT_MOVE_TOKENS "" 
-    CACHE BOOL 
-    "Use more compact tokens for moves internally (makes things slower)"
-)
-
-SET (BUILD_STATIC_LIBRARY "1" CACHE BOOL "Whether to build the static library (which takes more time)" )
-
-SET (CPU_ARCH "" CACHE STRING "A specific CPU architecture to pass to gcc")
-SET (OPTIMIZATION_OMIT_FRAME_POINTER "" CACHE STRING "Use -fomit-frame-pointer with gcc (not recommended for debugging)")
-
-SET (FCS_STATE_STORAGE_LIBAVL2_TREE_TYPE "avl" CACHE STRING "The libavl2 tree type used for the state storage. Ignored if not set to libavl2")
-SET (FCS_STACK_STORAGE_LIBAVL2_TREE_TYPE "avl" CACHE STRING "The libavl2 tree type used for the stack storage. Ignored if not set to libavl2")
-SET (LIBAVL2_SOURCE_DIR "/usr/src/avl-2.0.3" CACHE STRING "The location of the libavl2 source tree (from which files are copied)")
-
-IF (NOT (STATES_TYPE MATCHES "^(INDIRECT_STACK_STATES|COMPACT_STATES|DEBUG_STATES)$"))
-    MESSAGE(FATAL_ERROR "STATES_TYPE should be ('INDIRECT_STACK_STATES', 'COMPACT_STATES' or 'DEBUG_STATES')")
-ENDIF(NOT (STATES_TYPE MATCHES "^(INDIRECT_STACK_STATES|COMPACT_STATES|DEBUG_STATES)$"))
-
 SET (${STATES_TYPE} 1)
 
 SET (FREECELL_SOLVER_LIB_MODULES alloc.c app_str.c card.c check_and_add_state.c cmd_line.c freecell.c instance.c lib.c move.c move_funcs_maps.c move_funcs_order.c preset.c scans.c simpsim.c split_cmd_line.c state.c)
