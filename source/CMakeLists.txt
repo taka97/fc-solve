@@ -9,14 +9,13 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-SET (_docfiles "AUTHORS.txt" "USAGE.txt" )
+SET (_docfiles "AUTHORS.xml" "USAGE.xml" )
 
 SET (_pdf_targets)
 
 FOREACH(_file ${_docfiles})
     GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
     SET(_in "${_file_we}")
-    SET(_docbook_out "${CMAKE_CURRENT_SOURCE_DIR}/${_file_we}.xml")
 
     SET (_pdf "${_file_we}.pdf")
 
@@ -24,8 +23,8 @@ FOREACH(_file ${_docfiles})
 
     ADD_CUSTOM_COMMAND(
         OUTPUT "${_pdf}"
-        COMMAND docmake -v --make -o ${_pdf} pdf ${_docbook_out}
-        DEPENDS ${_docbook_out}
+        COMMAND docmake -v --make -o ${_pdf} pdf ${_file}
+        DEPENDS ${_file}
         COMMENT "docmake to PDF"
     )
 
