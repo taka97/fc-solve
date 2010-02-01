@@ -391,32 +391,6 @@ INSTALL(
     DESTINATION "lib"
 )
 
-IF (WIN32 AND NOT UNIX)
-    # This is so on Windows, the .dll's will be installed in the bin/ 
-    # directory as well where the Freecell Solver command-line utilities
-    # will be able to find them.
-
-    INSTALL(
-        TARGETS "freecell-solver"
-        DESTINATION "bin"
-    )
-ENDIF (WIN32 AND NOT UNIX)
-
-INSTALL(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/${CPACK_PACKAGE_NAME}-config"
-    DESTINATION "bin"
-)
-
-RUN_POD2MAN(
-    "${CMAKE_CURRENT_SOURCE_DIR}/fc-solve.pod"
-    "fc-solve.6"
-    "6"
-    "Freecell Solver"
-    "Freecell Solver ${VERSION}"
-)
-
-INSTALL_MAN ("${CMAKE_CURRENT_BINARY_DIR}/fc-solve.6" 6)
-
 INSTALL(
     FILES
         ${docs_to_install}
@@ -441,35 +415,6 @@ INSTALL(
         "${CMAKE_CURRENT_BINARY_DIR}/lib${CPACK_PACKAGE_NAME}.pc"
     DESTINATION 
         "lib/pkgconfig"
-)
-
-# Rebuild config.h if ver.txt has changed.
-ADD_CUSTOM_COMMAND(
-    OUTPUT "config.h.in"
-    DEPENDS "ver.txt"
-    COMMAND "touch"
-    ARGS "config.h.in"
-)
-
-SET (BOARDS "")
-
-MACRO(GEN_BOARD idx)
-    SET(board "${idx}.board")
-    ADD_CUSTOM_COMMAND(
-        OUTPUT ${board}
-        COMMAND "python"
-        ARGS "board_gen/make_pysol_freecell_board.py" ${idx} ">" ${board}
-    )
-    SET(BOARDS ${BOARDS} ${board})
-ENDMACRO(GEN_BOARD idx)
-
-FOREACH(idx 24 1941)
-    GEN_BOARD(${idx})
-ENDFOREACH(idx)
-
-ADD_CUSTOM_TARGET(
-    boards
-    DEPENDS ${BOARDS}
 )
 
 FIND_PACKAGE(Asciidoc)
