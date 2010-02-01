@@ -20,7 +20,7 @@ FOREACH(_file ${_docfiles})
 
     ADD_CUSTOM_COMMAND(
         OUTPUT "${_pdf}"
-        COMMAND docmake -v --make -o ${_pdf} pdf ${_file}
+        COMMAND cp -f ${_file} ${_pdf}
         DEPENDS ${_file}
         COMMENT "docmake to PDF"
     )
