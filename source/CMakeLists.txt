@@ -52,21 +52,6 @@ SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 # which point to directories outside the build tree to the install RPATH
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-SET (${STATES_TYPE} 1)
-
-SET (MY_LINK_FLAGS "")
-SET (MY_TO_PROFILE "")
-IF (CMAKE_BUILD_TYPE STREQUAL profile)
-    SET (MY_TO_PROFILE "1")
-    SET (CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_DEBUG} -pg")
-    SET (MY_LINK_FLAGS "-pg -static-libgcc")
-    SET (BUILD_STATIC_LIBRARY "1")
-    SET (MY_TARGET_LINK_LIBS "freecell-solver-static" "m_p" "c_p")
-ELSE (CMAKE_BUILD_TYPE STREQUAL profile)
-    SET (MY_TARGET_LINK_LIBS "freecell-solver")
-ENDIF (CMAKE_BUILD_TYPE STREQUAL profile)
-
-
 INCLUDE(CPack)
 
 include(CheckFunctionExists)
