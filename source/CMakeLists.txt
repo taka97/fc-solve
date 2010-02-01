@@ -13,9 +13,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 FIND_PACKAGE(Asciidoc)
 
-SET (_docfiles "AUTHORS.txt" "COPYING.txt" "HACKING.txt" "INSTALL.txt" 
-    "NEWS.txt" "README.txt" "TODO.txt" "USAGE.txt" 
-)
+SET (_docfiles "AUTHORS.txt" "USAGE.txt" )
 
 SET (docs_to_install)
 FOREACH(_file ${_docfiles})
