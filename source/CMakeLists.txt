@@ -386,37 +386,6 @@ FOREACH(KEYWORD "inline" "__inline__" "__inline")
    ENDIF(NOT DEFINED HAVE_C_INLINE)
 ENDFOREACH(KEYWORD)
 
-INSTALL(
-    TARGETS ${FREECELL_SOLVER_LIBS}
-    DESTINATION "lib"
-)
-
-INSTALL(
-    FILES
-        ${docs_to_install}
-        "README.win32.txt"
-    DESTINATION
-        "share/doc/freecell-solver/"
-)
-
-INSTALL(
-    FILES
-        "fcs_cl.h"
-        "fcs_enums.h"
-        "fcs_move.h"
-        "fcs_user.h"
-    DESTINATION
-        "include/freecell-solver"
-)
-
-
-INSTALL(
-    FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/lib${CPACK_PACKAGE_NAME}.pc"
-    DESTINATION 
-        "lib/pkgconfig"
-)
-
 FIND_PACKAGE(Asciidoc)
 
 SET (_docfiles "AUTHORS.txt" "COPYING.txt" "HACKING.txt" "INSTALL.txt" 
