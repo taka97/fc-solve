@@ -497,22 +497,3 @@ IF(ASCIIDOC_FOUND)
 
 ENDIF(ASCIIDOC_FOUND)
 
-IF (FCS_WITH_TEST_SUITE)
-    
-    ADD_CUSTOM_TARGET(
-        "test"
-        "perl" "run-tests.pl"
-    )
-
-    ADD_DEPENDENCIES(
-        "test"
-        "all"
-    )
-
-ENDIF(FCS_WITH_TEST_SUITE)
-
-ADD_CUSTOM_TARGET(
-    "bench" bash scripts/time-threads-num.bash -s 2 "${MAX_NUM_BENCHMARK_THREADS}"
-    COMMAND perl scripts/time-fcs.pl dump "DUMPS/*"
-)
-
