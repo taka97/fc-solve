@@ -7,14 +7,15 @@ SET (_pdf_targets)
 FOREACH(_file ${_docfiles})
     GET_FILENAME_COMPONENT(_file_wo_ext ${_file} NAME_WE)
 
-    SET (_pdf "${_file_wo_ext}.pdf")
+    SET (_in "${CMAKE_CURRENT_SOURCE_DIR}/${_file}")
+    SET (_pdf "${CMAKE_CURRENT_BINARY_DIR}/${_file_wo_ext}.pdf")
 
     SET (_target "${_file_wo_ext}_pdf")
 
     ADD_CUSTOM_COMMAND(
         OUTPUT "${_pdf}"
-        COMMAND cp -f ${_file} ${_pdf}
-        DEPENDS ${_file}
+        COMMAND cp -f "${_in}" "${_pdf}"
+        DEPENDS "${_in}"
         COMMENT "docmake to PDF"
     )
 
@@ -29,3 +30,4 @@ ENDFOREACH(_file)
 ADD_CUSTOM_TARGET("pdfs" echo -n
     DEPENDS ${_pdf_targets}
 )
+
