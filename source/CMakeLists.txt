@@ -1,5 +1,3 @@
-INCLUDE( "${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake" )
-
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 ### This is to set the RPATH correctly, so when installed under a prefix
@@ -12,9 +10,6 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 ### (Taken from that wiki page)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-
-# So it can find config.h
-INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
 FIND_PACKAGE(Asciidoc)
 
