@@ -30,13 +30,6 @@ FOREACH(_file ${_docfiles})
         COMMENT "docmake to PDF"
     )
 
-    ADD_CUSTOM_COMMAND(
-        OUTPUT ${_file_we}
-        COMMAND cp -f "${_full_file}" ${_file_we}
-        DEPENDS "${_file_we}.txt"
-        COMMENT "copy AsciiDoc to non-\".txt\" file"
-    )
-
     ADD_CUSTOM_TARGET(${_in}_pdf echo -n
         DEPENDS "${_pdf}"
     )
