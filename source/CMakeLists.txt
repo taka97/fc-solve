@@ -16,7 +16,6 @@ SET (_pdf_targets)
 FOREACH(_file ${_docfiles})
     GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
     SET(_in "${_file_we}")
-    SET(_full_file "${CMAKE_CURRENT_SOURCE_DIR}/${_file}")
     SET(_docbook_out "${CMAKE_CURRENT_SOURCE_DIR}/${_file_we}.xml")
 
     SET (_pdf "${_file_we}.pdf")
