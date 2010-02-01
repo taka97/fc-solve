@@ -18,6 +18,8 @@ FOREACH(_file ${_docfiles})
 
     SET (_pdf "${_file_we}.pdf")
 
+    SET (_target "${_file_we}_pdf")
+
     ADD_CUSTOM_COMMAND(
         OUTPUT "${_pdf}"
         COMMAND cp -f ${_file} ${_pdf}
@@ -25,18 +27,14 @@ FOREACH(_file ${_docfiles})
         COMMENT "docmake to PDF"
     )
 
-    ADD_CUSTOM_TARGET(${_file_we}_pdf echo -n
+    ADD_CUSTOM_TARGET("${_target}" echo -n
         DEPENDS "${_pdf}"
     )
 
-    LIST(APPEND _pdf_targets ${_file_we}_pdf)
+    LIST(APPEND _pdf_targets "${_target}")
 
 ENDFOREACH(_file)
 
-# MESSAGE ("PDF_TARGETS == ${_pdf_targets}")
 ADD_CUSTOM_TARGET("pdfs" echo -n
     DEPENDS ${_pdf_targets}
 )
-
-# ENDIF(ASCIIDOC_FOUND)
-
