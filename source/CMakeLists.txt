@@ -152,19 +152,6 @@ WHILE ( NOT ("${TEMP_SIZE}" STREQUAL "${INT_SIZE_IN_BITS}") )
 
 ENDWHILE ( NOT ("${TEMP_SIZE}" STREQUAL "${INT_SIZE_IN_BITS}") )
 
-# Inspired from /usr/share/autoconf/autoconf/c.m4
-FOREACH(KEYWORD "inline" "__inline__" "__inline")
-   IF(NOT DEFINED HAVE_C_INLINE)
-     TRY_COMPILE(C_HAS_${KEYWORD} "${CMAKE_CURRENT_BINARY_DIR}"
-       "${CMAKE_CURRENT_SOURCE_DIR}/test_inline.c"
-       COMPILE_DEFINITIONS "-Dinline=${KEYWORD}")
-     IF(C_HAS_${KEYWORD})
-       SET(HAVE_C_INLINE TRUE)
-       SET(FCS_INLINE_KEYWORD "${KEYWORD}")
-     ENDIF(C_HAS_${KEYWORD})
-   ENDIF(NOT DEFINED HAVE_C_INLINE)
-ENDFOREACH(KEYWORD)
-
 FIND_PACKAGE(Asciidoc)
 
 SET (_docfiles "AUTHORS.txt" "COPYING.txt" "HACKING.txt" "INSTALL.txt" 
