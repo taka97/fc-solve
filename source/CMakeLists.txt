@@ -11,15 +11,6 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 SET (_docfiles "AUTHORS.txt" "USAGE.txt" )
 
-SET (docs_to_install)
-FOREACH(_file ${_docfiles})
-    GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
-    SET(_full_file "${CMAKE_CURRENT_BINARY_DIR}/${_file_we}")
-    LIST(APPEND docs_to_install ${_full_file})
-ENDFOREACH(_file)
-
-# IF(ASCIIDOC_FOUND)
-
 SET (_pdf_targets)
 
 FOREACH(_file ${_docfiles})
