@@ -27,7 +27,7 @@ FOREACH(_file ${_docfiles})
 
 ENDFOREACH(_file)
 
-ADD_CUSTOM_TARGET("pdfs" echo -n
-    DEPENDS ${_pdf_targets}
-)
+ADD_CUSTOM_TARGET("pdfs" echo -n)
+
+ADD_DEPENDENCIES("pdfs" ${_pdf_targets})
 
