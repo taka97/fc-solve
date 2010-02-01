@@ -1,12 +1,3 @@
-### This is to set the RPATH correctly, so when installed under a prefix
-### the executables will find the libraries.
-### 
-### See:
-###
-### http://www.cmake.org/Wiki/CMake_RPATH_handling
-###
-### (Taken from that wiki page)
-
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 SET (_docfiles "AUTHORS.xml" "USAGE.xml" )
