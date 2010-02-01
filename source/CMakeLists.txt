@@ -1,5 +1,3 @@
-LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 ### This is to set the RPATH correctly, so when installed under a prefix
 ### the executables will find the libraries.
 ### 
@@ -11,8 +9,6 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-FIND_PACKAGE(Asciidoc)
-
 SET (_docfiles "AUTHORS.txt" "USAGE.txt" )
 
 SET (docs_to_install)
@@ -22,70 +18,46 @@ FOREACH(_file ${_docfiles})
     LIST(APPEND docs_to_install ${_full_file})
 ENDFOREACH(_file)
 
-IF(ASCIIDOC_FOUND)
+# IF(ASCIIDOC_FOUND)
 
-    SET (_pdf_targets)
+SET (_pdf_targets)
 
-    FOREACH(_file ${_docfiles})
-        GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
-        SET(_in "${_file_we}")
-        SET(_html_out "${CMAKE_CURRENT_SOURCE_DIR}/${_file_we}.html")
-        SET(_full_file "${CMAKE_CURRENT_SOURCE_DIR}/${_file}")
-        SET(_docbook_out "${CMAKE_CURRENT_SOURCE_DIR}/${_file_we}.xml")
-        # MESSAGE(STATUS "_in == <<${_in}>> _html_out == <<${_html_out}>>")
+FOREACH(_file ${_docfiles})
+    GET_FILENAME_COMPONENT(_file_we ${_file} NAME_WE)
+    SET(_in "${_file_we}")
+    SET(_full_file "${CMAKE_CURRENT_SOURCE_DIR}/${_file}")
+    SET(_docbook_out "${CMAKE_CURRENT_SOURCE_DIR}/${_file_we}.xml")
 
-        # -a toc 
-        ADD_CUSTOM_COMMAND(
-            OUTPUT "${_html_out}"
-            COMMAND ${ASCIIDOC_EXECUTABLE} 
-                -o ${_html_out} "${_full_file}"
-            DEPENDS "${_full_file}"
-            COMMENT "Asciidoc ${_in}"
-            )
+    SET (_pdf "${_file_we}.pdf")
 
+    SET (target "${_file_we}_build")
 
-        ADD_CUSTOM_COMMAND(
-            OUTPUT "${_docbook_out}"
-            COMMAND ${ASCIIDOC_EXECUTABLE} 
-                --backend=docbook -o ${_docbook_out} "${_full_file}"
-            DEPENDS "${_full_file}"
-            COMMENT "Asciidoc->DocBook ${_in}"
-            )
-
-        SET (_pdf "${_file_we}.pdf")
-
-        SET (target "${_file_we}_build")
-
-        ADD_CUSTOM_COMMAND(
-            OUTPUT "${_pdf}"
-            COMMAND docmake -v --make -o ${_pdf} pdf ${_docbook_out}
-            DEPENDS ${_docbook_out}
-            COMMENT "docmake to PDF"
-        )
-
-        ADD_CUSTOM_COMMAND(
-            OUTPUT ${_file_we}
-            COMMAND cp -f "${_full_file}" ${_file_we}
-            DEPENDS "${_file_we}.txt"
-            COMMENT "copy AsciiDoc to non-\".txt\" file"
-        )
-    
-        ADD_CUSTOM_TARGET(${target} ALL echo -n
-            DEPENDS "${_html_out}" "${_docbook_out}" "${_file_we}"
-        )
-
-        ADD_CUSTOM_TARGET(${_in}_pdf echo -n
-            DEPENDS "${_pdf}"
-        )
-
-        LIST(APPEND _pdf_targets ${_in}_pdf)
-
-    ENDFOREACH(_file)
-
-    # MESSAGE ("PDF_TARGETS == ${_pdf_targets}")
-    ADD_CUSTOM_TARGET("pdfs" echo -n
-        DEPENDS ${_pdf_targets}
+    ADD_CUSTOM_COMMAND(
+        OUTPUT "${_pdf}"
+        COMMAND docmake -v --make -o ${_pdf} pdf ${_docbook_out}
+        DEPENDS ${_docbook_out}
+        COMMENT "docmake to PDF"
     )
 
-ENDIF(ASCIIDOC_FOUND)
+    ADD_CUSTOM_COMMAND(
+        OUTPUT ${_file_we}
+        COMMAND cp -f "${_full_file}" ${_file_we}
+        DEPENDS "${_file_we}.txt"
+        COMMENT "copy AsciiDoc to non-\".txt\" file"
+    )
+
+    ADD_CUSTOM_TARGET(${_in}_pdf echo -n
+        DEPENDS "${_pdf}"
+    )
+
+    LIST(APPEND _pdf_targets ${_in}_pdf)
+
+ENDFOREACH(_file)
+
+# MESSAGE ("PDF_TARGETS == ${_pdf_targets}")
+ADD_CUSTOM_TARGET("pdfs" echo -n
+    DEPENDS ${_pdf_targets}
+)
+
+# ENDIF(ASCIIDOC_FOUND)
 

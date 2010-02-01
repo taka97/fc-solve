@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+
+<article lang="en">
+<articleinfo>
+    <title>Freecell Solver&#8217;s Authors and Contributors</title>
+    <date>2009-08-29</date>
+    <author>
+        <firstname>Shlomi</firstname>
+        <surname>Fish</surname>
+        <email>shlomif@cpan.org</email>
+    </author>
+    <authorinitials>SF</authorinitials>
+<revhistory><revision><revnumber>$Id: AUTHORS.txt 2303 2009-11-22 08:37:36Z shlomif $</revnumber><date>2009-08-29</date><authorinitials>SF</authorinitials></revision></revhistory>
+</articleinfo>
+<section id="_freecell_solver_8217_s_authors_and_contributors_list">
+<title>Freecell Solver&#8217;s Authors and Contributors List</title>
+<itemizedlist>
+<listitem>
+<simpara>
+<emphasis role="strong">Shlomi Fish</emphasis> ( <ulink url="http://www.shlomifish.org/">http://www.shlomifish.org/</ulink> ) - doing most of the work on
+Freecell Solver.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Eric Warmenhoven</emphasis> - sending a program that generates the board of GNOME
+Freecell.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Hai Huang</emphasis> - noting several boards of Microsoft Freecell that could not be
+solved by Freecell Solver.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Magnus Reftel</emphasis> - noting the correct procedure for calculating how many
+cards can be moved as a function of the free freecells and free stacks.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Colin Plumb</emphasis> - writing the MD5 code.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Ron Rivest</emphasis> - inventing the MD5 hashing algorithm.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Jim Horne</emphasis> - supplying the shuffling algorithm for
+Microsoft Freecell/Freecell Pro.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Tom Holroyd</emphasis> - sending several Seahaven Towers games which Freecell Solver
+was unable to solve, thus making me improve the algorithm.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Markus F. X. J. Oberhumer</emphasis> - writing PySol on whose code the board generation
+program for it is based. Also, contributing some patches.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Justin-Heyes Jones</emphasis> - wrote a nice introduction to the A* algorithm, and
+wrote the basis for the pqueue.c code.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Stephan Kulow</emphasis> - integrated Freecell Solver into the kpat Solitaire suite for
+KDE 2.1 and onwards; reported several bugs and memory leaks.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Michael Keller</emphasis> - Contributing some useful input about some minor features
+lacking and the Spades/Clubs mix-up.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">GeYong</emphasis> - He created Freecell Tool, whose randomized scan provided
+inspiration for the random-DFS scan of Freecell Solver.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Adrian Ettlinger</emphasis> - Integrating Freecell Solver into "Freecell Pro", and
+contributing some input.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">The perl 5.x Hackers</emphasis> - I copied its hash function.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Gergeley Kontra</emphasis> - wrote a Vim script to align text which I used.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Bob Jenkins</emphasis> - wrote the lookup2 hash function, which was used as
+the primary hash until reverted back to the perl 5.x hash.
+(check <ulink url="http://burtleburtle.net/bob/hash/">http://burtleburtle.net/bob/hash/</ulink>)
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Tzafrir Cohen</emphasis> - His "RPM" lecture provided help in creating the RPM
+<literal>.spec</literal> file and constructing RPMs (RPM Package Manager) for Freecell
+Solver.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Yotam Rubin</emphasis> - Preparing an initial Debian Package.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Risko Gergely</emphasis> - Maintaining the current Debian Package and contributing
+some patches to the CMake build system.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Chris Moore</emphasis> - Pointing to an out-of-date comment regarding the
+<literal>MAX_NUM_CARDS_IN_A_STACK</literal> which I updated.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Anonymous</emphasis> (on <ulink url="http://xrl.us/h6ex">http://xrl.us/h6ex</ulink> ) - for pointing out the malloc.h and
+leading double underscores problems.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Con Radchenko</emphasis> - supplying a small patch, and reporting a bug with
+<literal>--method dfs</literal>, and supplying some other input. Integrated Freecell Solver
+into <ulink url="http://pysolfc.sourceforge.net/">http://pysolfc.sourceforge.net/</ulink> .
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">larrysan45</emphasis> - reporting a problem with <literal>--sequence-move unlimited</literal>
+and <literal>--empty-stacks-filled-by kings</literal>, which resulted in a bug fix.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Ido Kanner</emphasis> ( <ulink url="http://ik.homelinux.org/">http://ik.homelinux.org/</ulink> ) - reporting a segfault when running
+freecell-solver-2.28.0 on x86-64, and allowing us to diagnose it.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">Gary Campbell</emphasis> ( <ulink url="http://numin8r.us/">http://numin8r.us/</ulink> ) - participating in the mailing list
+and inspiring some past (and possibly future) work on optimising the
+length of the resultant solutions. He was given the honour of naming the
+"sand-stone" and "slick-rock" "-l" presets. Has his own solver for
+Freecell for DOS on his homepage.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<emphasis role="strong">LECA Dimitri (Pythack)</emphasis> ( <ulink url="http://pythack.com/">http://pythack.com/</ulink> ) - tried to run the
+Freecell Solver test suite and benchmarks on Archlinux, reported some
+problems in the process. This in turn eventually made us simplify the process
+and also uncovered some bugs in the dependencies.
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+<ulink url="http://commons.wikimedia.org/wiki/User:Stannered">http://commons.wikimedia.org/wiki/User:Stannered</ulink> - created
+<ulink url="http://commons.wikimedia.org/wiki/File:Stop_hand_nuvola.svg">The stop sign
+that we use on the download page</ulink>, which is under the Creative Commons
+Attribution ShareAlike licence. Thanks!
+</simpara>
+</listitem>
+<listitem>
+<simpara>
+David Stevenson - inspiring a documentation clarification for broken
+versions of CMake (e.g: cmake-2.6.2).
+</simpara>
+</listitem>
+</itemizedlist>
+</section>
+</article>
