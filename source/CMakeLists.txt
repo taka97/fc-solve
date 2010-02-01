@@ -13,10 +13,6 @@ LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-SET(COMPILER_FLAGS_TO_CHECK 
-    "-Wall" "-Werror=implicit-function-declaration" "-fvisibility=hidden"
-)
-
 # So it can find config.h
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
