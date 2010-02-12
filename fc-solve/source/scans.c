@@ -1790,6 +1790,8 @@ extern void fc_solve_soft_thread_init_patsolve(
     }
     soft_thread->method_specific.befs.meth.patsolve.queue_pos = 0;
     soft_thread->method_specific.befs.meth.patsolve.min_pos = 0;
+    /* TODO : change to be input from the user. */
+    soft_thread->method_specific.befs.meth.patsolve.is_stack = 1;
 
     fcs_state_extra_info_t * ptr_orig_state_val = instance->state_copy_ptr_val;
     
@@ -2113,6 +2115,12 @@ label_next_state:
     error_code = FCS_STATE_IS_NOT_SOLVEABLE;
 
 my_return_label:
+    /* Free the memory that was allocated by the
+     * derived states list */
+    if (derived.states != NULL)
+    {
+        free(derived.states);
+    }
 
     return error_code;
 }
