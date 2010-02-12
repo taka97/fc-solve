@@ -719,6 +719,18 @@ struct fc_solve_soft_thread_struct
                      * */
                     double a_star_weights[5];
                 } befs;
+#define FCS_PATSOLVE_NUM_QUEUES 100
+                struct {
+#define FCS_PATSOLVE_NUM_XPARAM 9
+#define FCS_PATSOLVE_NUM_YPARAM 3
+                    int Xparam[FCS_PATSOLVE_NUM_XPARAM];
+                    double Yparam[FCS_PATSOLVE_NUM_YPARAM];
+                    int max_queue;
+                    int queue_pos;
+                    int min_pos;
+                    fcs_states_linked_list_item_t * queue_heads[FCS_PATSOLVE_NUM_QUEUES];
+                    fcs_states_linked_list_item_t * queue_tails[FCS_PATSOLVE_NUM_QUEUES];
+                } patsolve;
             } meth;
         } befs;
     } method_specific;

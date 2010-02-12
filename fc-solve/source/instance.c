@@ -1173,6 +1173,19 @@ static GCC_INLINE int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
 
             break;
 
+            case FCS_METHOD_PATSOLVE:
+
+            if (! soft_thread->initialized)
+            {
+                fc_solve_soft_thread_init_patsolve(soft_thread);
+
+                soft_thread->initialized = 1;
+            }
+            
+            ret = fc_solve_patsolve_scan_do_solve(soft_thread);
+
+            break;
+
             default:
             ret = FCS_STATE_IS_NOT_SOLVEABLE;
             break;

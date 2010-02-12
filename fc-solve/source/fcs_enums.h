@@ -88,6 +88,7 @@ enum
 #define FCS_METHOD_A_STAR 3
 #define FCS_METHOD_OPTIMIZE 4
 #define FCS_METHOD_RANDOM_DFS 5
+#define FCS_METHOD_PATSOLVE 6
 
 
 #ifdef __cplusplus

@@ -92,6 +92,14 @@ extern void fc_solve_increase_dfs_max_depth(
     fc_solve_soft_thread_t * soft_thread
     );
 
+extern void fc_solve_soft_thread_init_patsolve(
+    fc_solve_soft_thread_t * soft_thread
+    );
+
+extern int fc_solve_patsolve_scan_do_solve(
+    fc_solve_soft_thread_t * soft_thread
+    );
+
 #ifdef __cplusplus
 }
 #endif

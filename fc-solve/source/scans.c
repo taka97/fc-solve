@@ -1533,3 +1533,366 @@ int fc_solve_sfs_check_state_end(
     return check;
 }
 
+static int patsolve_init_params(
+    fc_solve_soft_thread_t * soft_thread,
+    const char * spec_string,
+    const char * * end_of_spec
+    )
+{
+    int i;
+    const char * s;
+
+    int * Xparam;
+    double * Yparam;
+
+    Xparam = soft_thread->method_specific.befs.meth.patsolve.Xparam;
+    Yparam = soft_thread->method_specific.befs.meth.patsolve.Yparam;
+
+    for(i=0;i<FCS_PATSOLVE_NUM_XPARAM;i++)
+    {
+        Xparam[i] = 0;
+    }
+
+    for(i=0;i<FCS_PATSOLVE_NUM_YPARAM;i++)
+    {
+        Yparam[i] = 0;
+    }
+    
+    s = strchr(spec_string, ')');
+    if (s == NULL)
+    {
+        s = spec_string+strlen(spec_string);
+        *end_of_spec = s;
+    }
+    else
+    {
+        *end_of_spec = s+1;
+    }
+
+    {
+        int x_idx;
+        s = spec_string;
+        for(x_idx=0;x_idx<FCS_PATSOLVE_NUM_XPARAM;x_idx++)
+        {
+            Xparam[x_idx] = atoi(s);
+            s = strchr(s, ',');
+            if (s == NULL)
+            {
+                break;
+            }
+            s++;
+        }
+    }
+
+    if (s)
+    {
+        int y_idx;
+        for(y_idx=0;y_idx<FCS_PATSOLVE_NUM_YPARAM;y_idx++)
+        {
+            Yparam[y_idx] = atof(s);
+            s = strchr(s, ',');
+            if (s == NULL)
+            {
+                break;
+            }
+            s++;
+        }
+    }
+
+    /*
+     * This is done to facilitate the flooring of the value.
+     *
+     * */
+    Yparam[2] += 0.5;
+
+    return 0;
+}
+
+typedef int priority_t;
+
+static GCC_INLINE int tom_holroyd_order_states(
+        fc_solve_soft_thread_t * soft_thread,
+        fcs_state_extra_info_t * ptr_src_state_val,
+        fcs_derived_states_list_t * derived_states,
+        priority_t * out_priorities
+    )
+{
+    int priority;
+    int a;
+    int num_states;
+    fcs_state_extra_info_t * d_state_val;
+    fcs_move_stack_t * moves;
+    fcs_move_t first_move;
+    fcs_card_t parent_card, moved_card, card;
+    int src_stack;
+    int num_cards;
+    int sequences_are_built_by;
+    fc_solve_instance_t * instance;
+    int * num_needed_cards;
+    int stacks_num, founds_num;
+    int c_idx, s_idx, found_val, f_idx;
+    int move_type;
+    int num_cards_out;
+    fcs_cards_column_t col, src_col;
+    fcs_state_t * ptr_src_state_key;
+
+    int * Xparam;
+    double * Yparam;
+
+    Xparam = soft_thread->method_specific.befs.meth.patsolve.Xparam;
+    Yparam = soft_thread->method_specific.befs.meth.patsolve.Yparam;
+
+    instance = soft_thread->hard_thread->instance;
+    sequences_are_built_by = GET_INSTANCE_SEQUENCES_ARE_BUILT_BY(instance);
+
+    num_states = derived_states->num_states;
+    stacks_num = INSTANCE_STACKS_NUM;
+    founds_num = INSTANCE_DECKS_NUM << 2;
+
+    ptr_src_state_key = ptr_src_state_val->key;
+
+#define state (*ptr_src_state_key)
+    /*
+     * Calculate the number of needed cards in each card stack.
+     * */
+    num_needed_cards = calloc(stacks_num, sizeof(num_needed_cards[0]));
+    
+    for (s_idx=0 ; s_idx<stacks_num ; s_idx++)
+    {
+        col = fcs_state_get_col(state, s_idx);
+        for (c_idx=0 ; c_idx<fcs_col_len(col) ; c_idx++)
+        {
+            card = fcs_col_get_card(col, c_idx);
+            found_val = fcs_foundation_value(state, fcs_card_suit(card));
+            /* Todo: support for the second set of foundations - for
+             * double-deck games ? */
+            if ((found_val+1 == fcs_card_card_num(card)) ||
+                (found_val+2 == fcs_card_card_num(card)))
+            {
+                num_needed_cards[s_idx]++;
+            }
+        }
+    }
+
+    for(a=0;a<num_states;a++)
+    {
+        d_state_val = derived_states->states[a].state_ptr;
+        moves = d_state_val->moves_to_parent;
+        first_move = moves->moves[0];
+        move_type = fcs_move_get_type(first_move);
+        switch(move_type)
+        {
+            case FCS_MOVE_TYPE_STACK_TO_FOUNDATION:
+            case FCS_MOVE_TYPE_FREECELL_TO_FOUNDATION:
+                /* This is an irreversible move, so we bump its priority */
+                /* The original priority is 0 */
+                priority = Xparam[8];
+                break;
+            case FCS_MOVE_TYPE_STACK_TO_FREECELL:
+                priority = Xparam[7];
+                break;
+            case FCS_MOVE_TYPE_FREECELL_TO_STACK:
+                if (fcs_col_len(fcs_state_get_col(state, fcs_move_get_dest_stack(first_move))))
+                {
+                    priority = Xparam[5];
+                }
+                else
+                {
+                    priority = Xparam[6];
+                }
+                break;
+            case FCS_MOVE_TYPE_STACK_TO_STACK:
+                if (fcs_col_len(fcs_state_get_col(state, fcs_move_get_dest_stack(first_move))))
+                {
+                    priority = Xparam[4];
+                }
+                else
+                {
+                    priority = Xparam[3];
+                }
+                break;
+                
+            default:
+                priority = 0;
+                break;
+        }
+
+        /*
+         * Check for other irreversible moves and if so - bump their priorities.
+         * */
+        if ((move_type == FCS_MOVE_TYPE_STACK_TO_STACK) ||
+            (move_type == FCS_MOVE_TYPE_STACK_TO_FREECELL))
+        {
+            src_stack = fcs_move_get_src_stack(first_move);
+            src_col = fcs_state_get_col(state, src_stack);
+
+            num_cards = (fcs_move_get_type(first_move) == FCS_MOVE_TYPE_STACK_TO_STACK) ? fcs_move_get_num_cards_in_seq(first_move) : 1;
+            parent_card = fcs_col_get_card(src_col, fcs_col_len(src_col)-(1+num_cards));
+            moved_card = fcs_col_get_card(src_col, fcs_col_len(src_col)-(num_cards));
+            if (!fcs_is_parent_card(moved_card, parent_card))
+            {
+                priority += Xparam[8];
+            }
+        }
+
+        if ((move_type == FCS_MOVE_TYPE_STACK_TO_STACK) ||
+            (move_type == FCS_MOVE_TYPE_STACK_TO_FREECELL) ||
+            (move_type == FCS_MOVE_TYPE_STACK_TO_FOUNDATION))
+        {
+            src_stack = fcs_move_get_src_stack(first_move);
+            priority += Xparam[0] * num_needed_cards[src_stack];
+            num_cards = (fcs_move_get_type(first_move) == FCS_MOVE_TYPE_STACK_TO_STACK) ? fcs_move_get_num_cards_in_seq(first_move) : 1;
+            parent_card = fcs_col_get_card(src_col, fcs_col_len(src_col)-(1+num_cards));
+            /*
+             * Increase the priority by Xparam[1] if the card that is one 
+             * card below the top of the column (i.e: right under the card 
+             * that is moved) is immediately needed for the foundations.
+             * */
+            if (fcs_foundation_value(state, fcs_card_suit(parent_card))+1 == fcs_card_card_num(parent_card))
+            {
+                priority += Xparam[1];
+            }
+        }
+        
+        if ((move_type == FCS_MOVE_TYPE_STACK_TO_STACK) ||
+            (move_type == FCS_MOVE_TYPE_FREECELL_TO_STACK))
+        {
+            priority -= Xparam[2] * num_needed_cards[fcs_move_get_dest_stack(first_move)];
+        }
+
+        num_cards_out = 0;
+        for(f_idx = 0;f_idx<founds_num;f_idx++)
+        {
+            num_cards_out += fcs_foundation_value(*(d_state_val->key), f_idx);
+        }
+        priority += (int)floor((Yparam[0] * num_cards_out + Yparam[1]) * num_cards_out + Yparam[2]);
+
+        out_priorities[a] = priority;
+    }
+#undef state
+
+    free(num_needed_cards);
+
+    return 0;
+}
+
+extern void fc_solve_soft_thread_init_patsolve(
+    fc_solve_soft_thread_t * soft_thread
+    )
+{
+    int i;
+    fc_solve_instance_t * instance = soft_thread->hard_thread->instance;
+
+    soft_thread->method_specific.befs.meth.patsolve.max_queue = 0;
+    for (i=0; i < FCS_PATSOLVE_NUM_QUEUES ; i++)
+    {
+        soft_thread->method_specific.befs.meth.patsolve.queue_heads[i] = NULL;
+    }
+    soft_thread->method_specific.befs.meth.patsolve.queue_pos = 0;
+    soft_thread->method_specific.befs.meth.patsolve.min_pos = 0;
+
+    fcs_state_extra_info_t * ptr_orig_state_val = instance->state_copy_ptr_val;
+    
+    /* Initialize the first element to indicate it is the first */
+    ptr_orig_state_val->parent_val = NULL;
+    ptr_orig_state_val->moves_to_parent = NULL;
+    ptr_orig_state_val->depth = 0;
+
+
+
+    soft_thread->first_state_to_check_val = ptr_orig_state_val;
+
+    return;
+}
+
+#define FALSE 0
+#define TRUE 1
+
+static fcs_state_extra_info_t * patsolve_dequeue_pos(
+        fc_solve_soft_thread_t * soft_thread
+        )
+{
+    int last = FALSE;
+    fcs_states_linked_list_item_t * ret;
+    fcs_states_linked_list_item_t * * queue_heads;
+
+    int * queue_pos_ptr, * min_pos_ptr, * max_queue_ptr;
+    
+    queue_pos_ptr = &(soft_thread->method_specific.befs.meth.patsolve.queue_pos);
+    min_pos_ptr = &(soft_thread->method_specific.befs.meth.patsolve.min_pos);
+    max_queue_ptr = &(soft_thread->method_specific.befs.meth.patsolve.max_queue);
+    queue_heads = soft_thread->method_specific.befs.meth.patsolve.queue_heads;
+
+    do
+    {
+        (*queue_pos_ptr)--;
+        if ((*queue_pos_ptr) < (*min_pos_ptr))
+        {
+            if (last)
+            {
+                return NULL;
+            }
+            else
+            {
+                *queue_pos_ptr = *max_queue_ptr;
+                
+                if ((*min_pos_ptr)-- < 0)
+                {
+                    *(min_pos_ptr) = *(max_queue_ptr);
+                }
+                if ((*min_pos_ptr) == 0)
+                {
+                    last = TRUE;
+                }
+            }
+        }
+    } while (!queue_heads[ *queue_pos_ptr ]);
+
+    ret = queue_heads[*queue_pos_ptr];
+    queue_heads[*queue_pos_ptr] = ret->next;
+
+    while ((queue_heads[*queue_pos_ptr] == NULL)
+            &&
+           ((*queue_pos_ptr) == *(max_queue_ptr))
+           &&
+           ((*max_queue_ptr) > 0)
+          )
+    {
+        (*max_queue_ptr)--;
+        (*queue_pos_ptr)--;
+        if ((*queue_pos_ptr) < (*min_pos_ptr))
+        {
+            (*min_pos_ptr) = (*queue_pos_ptr);
+        }
+    }
+
+    return ret->s;
+}
+
+int fc_solve_patsolve_scan_do_solve(
+    fc_solve_soft_thread_t * soft_thread
+    )
+{
+    const char * end_of_spec;
+    fcs_state_extra_info_t * position;
+
+#if 0
+    fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
+    fc_solve_instance_t * instance = hard_thread->instance;
+#endif
+
+    patsolve_init_params(
+            soft_thread, 
+            "(4,1,8,-1,7,11,4,2,2,1,2,0.0032,0.32,-3.0)",
+            &end_of_spec
+            );
+
+
+    while ((position = patsolve_dequeue_pos(soft_thread)) != NULL)
+    {
+        
+    }
+
+    return FCS_STATE_IS_NOT_SOLVEABLE;
+}
+
