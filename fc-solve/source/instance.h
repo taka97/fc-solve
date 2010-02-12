@@ -730,6 +730,7 @@ struct fc_solve_soft_thread_struct
                     int min_pos;
                     fcs_states_linked_list_item_t * queue_heads[FCS_PATSOLVE_NUM_QUEUES];
                     fcs_states_linked_list_item_t * queue_tails[FCS_PATSOLVE_NUM_QUEUES];
+                    int is_stack;
                 } patsolve;
             } meth;
         } befs;

@@ -987,7 +987,7 @@ int fc_solve_a_star_or_bfs_do_solve(
 #endif
 
         {
-             register int temp_visited = ptr_state_val->visited;
+            register int temp_visited = ptr_state_val->visited;
 
             /*
              * If this is an optimization scan and the state being checked is 
@@ -1093,7 +1093,7 @@ int fc_solve_a_star_or_bfs_do_solve(
         }
 
         TRACE0("perform_tests");
-        /* Do all the tests at one go, because that the way it should be
+        /* Do all the tests at one go, because that is the way it should be
            done for BFS and A*
         */
         derived.num_states = 0;
@@ -1610,7 +1610,7 @@ static int patsolve_init_params(
 
 typedef int priority_t;
 
-static GCC_INLINE int tom_holroyd_order_states(
+static GCC_INLINE int patsolve_order_states(
         fc_solve_soft_thread_t * soft_thread,
         fcs_state_extra_info_t * ptr_src_state_val,
         fcs_derived_states_list_t * derived_states,
@@ -1873,27 +1873,247 @@ static fcs_state_extra_info_t * patsolve_dequeue_pos(
         }
     }
 
-    return ret->s;
+    {
+        register fcs_state_extra_info_t * ptr_state_val = ret->s;
+        free(ret);
+        return ptr_state_val;
+    }
 }
 
 int fc_solve_patsolve_scan_do_solve(
     fc_solve_soft_thread_t * soft_thread
     )
 {
-    fcs_state_extra_info_t * position;
-
-#if 0
     fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
     fc_solve_instance_t * instance = hard_thread->instance;
+    priority_t * priorities;
+    priority_t priority;
+    fcs_state_extra_info_t * ptr_state_val, * ptr_new_state_val;
+    fcs_state_t * ptr_state_key;
+    fcs_states_linked_list_item_t * * queue_heads;
+    fcs_states_linked_list_item_t * * queue_tails;
+    int * max_queue_ptr;
+    int is_stack;
+    int soft_thread_id = soft_thread->id;
+    int num_vacant_stacks, num_vacant_freecells;
+    int a;
+    int error_code;
+    int check;
+    int is_a_complete_scan = soft_thread->is_a_complete_scan;
+
+    int calc_real_depth = instance->calc_real_depth;
+    fcs_derived_states_list_t derived;
+    int tests_order_num;
+    int * tests_order_tests;
+    int derived_index;
+
+#if ((!defined(HARD_CODED_NUM_FREECELLS)) || (!defined(HARD_CODED_NUM_STACKS)))
+    DECLARE_GAME_PARAMS();
+#endif    
+
+    max_queue_ptr = &(soft_thread->method_specific.befs.meth.patsolve.max_queue);
+    queue_heads = soft_thread->method_specific.befs.meth.patsolve.queue_heads;
+    queue_tails = soft_thread->method_specific.befs.meth.patsolve.queue_tails;
+    is_stack = soft_thread->method_specific.befs.meth.patsolve.is_stack;
+
+#if ((!defined(HARD_CODED_NUM_FREECELLS)) || (!defined(HARD_CODED_NUM_STACKS)))
+    SET_GAME_PARAMS();
 #endif
 
+    derived.num_states = 0;
+    derived.states = NULL;
 
+    tests_order_num = soft_thread->tests_order.num;
+    tests_order_tests = soft_thread->tests_order.tests;
 
-    while ((position = patsolve_dequeue_pos(soft_thread)) != NULL)
+    ptr_state_val = soft_thread->first_state_to_check_val;
+
+    while (ptr_state_val != NULL)
     {
-        
+        /*
+         * If this is an optimization scan and the state being checked is 
+         * not in the original solution path - move on to the next state
+         * */
+        /*
+         * It the state has already been visited - move on to the next
+         * state.
+         * */
+        if (
+                (ptr_state_val->visited & FCS_VISITED_DEAD_END)
+                ||
+                (is_scan_visited(ptr_state_val, soft_thread_id))
+           )
+        {
+            goto label_next_state;
+        }
+
+        ptr_state_key = ptr_state_val->key;
+
+        /* Count the free-cells */
+        num_vacant_freecells = 0;
+        for(a=0;a<LOCAL_FREECELLS_NUM;a++)
+        {
+            if (fcs_freecell_card_num((*ptr_state_key), a) == 0)
+            {
+                num_vacant_freecells++;
+            }
+        }
+
+        /* Count the number of unoccupied stacks */
+
+        num_vacant_stacks = 0;
+        for(a=0;a<LOCAL_STACKS_NUM;a++)
+        {
+            if (fcs_col_len(fcs_state_get_col(the_state, a)) == 0)
+            {
+                num_vacant_stacks++;
+            }
+        }
+
+        if (check_if_limits_exceeded())
+        {
+            soft_thread->first_state_to_check_val = ptr_state_val;
+
+            TRACE0("myreturn - FCS_STATE_SUSPEND_PROCESS");
+            error_code = FCS_STATE_SUSPEND_PROCESS;
+            goto my_return_label;
+        }
+
+        if (instance->debug_iter_output_func)
+        {
+#ifdef DEBUG
+            printf("ST Name: %s\n", soft_thread->name);
+#endif
+            instance->debug_iter_output_func(
+                    (void*)instance->debug_iter_output_context,
+                    instance->num_times,
+                    ptr_state_val->depth,
+                    (void*)instance,
+                    ptr_state_val,
+                    ((ptr_state_val->parent_val == NULL) ?
+                        0 :
+                        ptr_state_val->parent_val->visited_iter
+                    )
+                    );
+        }
+ 
+        if ((num_vacant_stacks == LOCAL_STACKS_NUM) && (num_vacant_freecells == LOCAL_FREECELLS_NUM))
+        {
+            instance->final_state_val = ptr_state_val;
+
+            BUMP_NUM_TIMES();
+
+            error_code = FCS_STATE_WAS_SOLVED;
+            goto my_return_label;
+        }
+
+        calculate_real_depth(
+            ptr_state_val
+        );
+
+        soft_thread->num_vacant_freecells = num_vacant_freecells;
+        soft_thread->num_vacant_stacks = num_vacant_stacks;
+
+        if (soft_thread->method_specific.befs.a_star_positions_by_rank)
+        {
+            free(soft_thread->method_specific.befs.a_star_positions_by_rank);
+            soft_thread->method_specific.befs.a_star_positions_by_rank = NULL;
+        }
+
+        /* Do all the tests at one go, because that is the way it should be
+           done for BFS and A*
+        */
+        derived.num_states = 0;
+        for(a=0 ;
+            a < tests_order_num;
+            a++)
+        {
+            check = fc_solve_sfs_tests[tests_order_tests[a] & FCS_TEST_ORDER_NO_FLAGS_MASK] (
+                    soft_thread,
+                    ptr_state_val,
+                    &derived
+                    );
+            if ((check == FCS_STATE_BEGIN_SUSPEND_PROCESS) ||
+                (check == FCS_STATE_EXCEEDS_MAX_NUM_TIMES) ||
+                (check == FCS_STATE_SUSPEND_PROCESS))
+            {
+                /* Save the current position in the scan */
+                soft_thread->first_state_to_check_val = ptr_state_val;
+
+                error_code = FCS_STATE_SUSPEND_PROCESS;
+                goto my_return_label;
+            }
+        }
+
+        if (is_a_complete_scan)
+        {
+            ptr_state_val->visited |= FCS_VISITED_ALL_TESTS_DONE;
+        }
+
+
+        priorities = malloc(sizeof(priorities[0]) * derived.num_states);
+        patsolve_order_states(soft_thread, ptr_state_val, &derived, priorities);
+
+        for(derived_index = 0 ; derived_index < derived.num_states ; derived_index++)
+        {
+            ptr_new_state_val = derived.states[derived_index].state_ptr;
+            priority = priorities[derived_index];
+
+            if (priority < 0)
+            {
+                priority = 0;
+            }
+            else if (priority >= FCS_PATSOLVE_NUM_QUEUES)
+            {
+                priority = FCS_PATSOLVE_NUM_QUEUES-1;
+            }
+
+            if (priority > (*max_queue_ptr))
+            {
+                *max_queue_ptr = priority;
+            }
+
+            {
+                /* Enqueue the new state. */
+                fcs_states_linked_list_item_t * last_item_next;
+
+                last_item_next =
+                    ((fcs_states_linked_list_item_t*)
+                        malloc(sizeof(*last_item_next))
+                    );
+
+                last_item_next->next = NULL;
+
+                if (queue_heads[priority] == NULL)
+                {
+                    queue_heads[priority] = queue_tails[priority] = last_item_next;
+                }
+                else
+                {
+                    if (is_stack)
+                    {
+                        last_item_next->next = queue_heads[priority];
+                        queue_heads[priority] = last_item_next;
+                    }
+                    else
+                    {
+                        queue_tails[priority]->next = last_item_next;
+                        queue_tails[priority] = last_item_next;
+                    }
+                }
+            }
+        }
+
+        free(priorities);
+ 
+label_next_state:
+        ptr_state_val = patsolve_dequeue_pos(soft_thread);
     }
 
-    return FCS_STATE_IS_NOT_SOLVEABLE;
+    error_code = FCS_STATE_IS_NOT_SOLVEABLE;
+
+my_return_label:
+
+    return error_code;
 }
 
