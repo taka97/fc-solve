@@ -1740,6 +1740,8 @@ static GCC_INLINE int patsolve_order_states(
             (move_type == FCS_MOVE_TYPE_STACK_TO_FOUNDATION))
         {
             src_stack = fcs_move_get_src_stack(first_move);
+            src_col = fcs_state_get_col(state, src_stack);
+
             priority += Xparam[0] * num_needed_cards[src_stack];
             num_cards = (fcs_move_get_type(first_move) == FCS_MOVE_TYPE_STACK_TO_STACK) ? fcs_move_get_num_cards_in_seq(first_move) : 1;
             parent_card = fcs_col_get_card(src_col, fcs_col_len(src_col)-(1+num_cards));
