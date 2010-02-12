@@ -1798,7 +1798,14 @@ extern void fc_solve_soft_thread_init_patsolve(
     ptr_orig_state_val->moves_to_parent = NULL;
     ptr_orig_state_val->depth = 0;
 
-
+    {
+        const char * end_of_spec;
+        patsolve_init_params(
+            soft_thread, 
+            "(4,1,8,-1,7,11,4,2,2,1,2,0.0032,0.32,-3.0)",
+            &end_of_spec
+        );
+    }
 
     soft_thread->first_state_to_check_val = ptr_orig_state_val;
 
@@ -1873,7 +1880,6 @@ int fc_solve_patsolve_scan_do_solve(
     fc_solve_soft_thread_t * soft_thread
     )
 {
-    const char * end_of_spec;
     fcs_state_extra_info_t * position;
 
 #if 0
@@ -1881,11 +1887,6 @@ int fc_solve_patsolve_scan_do_solve(
     fc_solve_instance_t * instance = hard_thread->instance;
 #endif
 
-    patsolve_init_params(
-            soft_thread, 
-            "(4,1,8,-1,7,11,4,2,2,1,2,0.0032,0.32,-3.0)",
-            &end_of_spec
-            );
 
 
     while ((position = patsolve_dequeue_pos(soft_thread)) != NULL)
