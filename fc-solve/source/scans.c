@@ -871,7 +871,6 @@ extern void fc_solve_soft_thread_init_a_star_or_bfs(
     return;
 }
 
-#define DEBUG
 #ifdef DEBUG
 #if 0
 static void dump_pqueue (
@@ -1806,7 +1805,7 @@ extern void fc_solve_soft_thread_init_patsolve(
         const char * end_of_spec;
         patsolve_init_params(
             soft_thread, 
-            "(4,1,8,-1,7,11,4,2,2,1,2,0.0032,0.32,-3.0)",
+            "4,1,8,-1,7,11,4,2,2,1,2,0.0032,0.32,-3.0)",
             &end_of_spec
         );
     }
@@ -1847,7 +1846,7 @@ static fcs_state_extra_info_t * patsolve_dequeue_pos(
             {
                 *queue_pos_ptr = *max_queue_ptr;
                 
-                if ((*min_pos_ptr)-- < 0)
+                if (--(*min_pos_ptr) < 0)
                 {
                     *(min_pos_ptr) = *(max_queue_ptr);
                 }
@@ -1934,10 +1933,7 @@ int fc_solve_patsolve_scan_do_solve(
 
     while (ptr_state_val != NULL)
     {
-        /*
-         * If this is an optimization scan and the state being checked is 
-         * not in the original solution path - move on to the next state
-         * */
+        TRACE0("Start of loop");
         /*
          * It the state has already been visited - move on to the next
          * state.
@@ -1950,6 +1946,8 @@ int fc_solve_patsolve_scan_do_solve(
         {
             goto label_next_state;
         }
+
+        TRACE0("Counting cells");
 
         ptr_state_key = ptr_state_val->key;
 
@@ -1983,6 +1981,7 @@ int fc_solve_patsolve_scan_do_solve(
             goto my_return_label;
         }
 
+        TRACE0("debug_iter_output");
         if (instance->debug_iter_output_func)
         {
 #ifdef DEBUG
@@ -2024,6 +2023,7 @@ int fc_solve_patsolve_scan_do_solve(
             soft_thread->method_specific.befs.a_star_positions_by_rank = NULL;
         }
 
+        TRACE0("perform_tests");
         /* Do all the tests at one go, because that is the way it should be
            done for BFS and A*
         */
@@ -2054,12 +2054,21 @@ int fc_solve_patsolve_scan_do_solve(
             ptr_state_val->visited |= FCS_VISITED_ALL_TESTS_DONE;
         }
 
+        /* Increase the number of iterations by one .
+         * */
+        BUMP_NUM_TIMES();
+
+        TRACE0("Insert all states");
+        /* Insert all the derived states into the PQ or Queue */
 
         priorities = malloc(sizeof(priorities[0]) * derived.num_states);
         patsolve_order_states(soft_thread, ptr_state_val, &derived, priorities);
 
         for(derived_index = 0 ; derived_index < derived.num_states ; derived_index++)
         {
+#ifdef DEBUG
+            printf("Derived_idx = %d\n", derived_index); 
+#endif
             ptr_new_state_val = derived.states[derived_index].state_ptr;
             priority = priorities[derived_index];
 
@@ -2086,6 +2095,7 @@ int fc_solve_patsolve_scan_do_solve(
                         malloc(sizeof(*last_item_next))
                     );
 
+                last_item_next->s = ptr_new_state_val;
                 last_item_next->next = NULL;
 
                 if (queue_heads[priority] == NULL)
@@ -2111,6 +2121,8 @@ int fc_solve_patsolve_scan_do_solve(
         free(priorities);
  
 label_next_state:
+        TRACE0("Label next state");
+
         ptr_state_val = patsolve_dequeue_pos(soft_thread);
     }
 

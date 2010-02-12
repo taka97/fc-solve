@@ -721,7 +721,7 @@ struct fc_solve_soft_thread_struct
                 } befs;
 #define FCS_PATSOLVE_NUM_QUEUES 100
                 struct {
-#define FCS_PATSOLVE_NUM_XPARAM 9
+#define FCS_PATSOLVE_NUM_XPARAM 11
 #define FCS_PATSOLVE_NUM_YPARAM 3
                     int Xparam[FCS_PATSOLVE_NUM_XPARAM];
                     double Yparam[FCS_PATSOLVE_NUM_YPARAM];
