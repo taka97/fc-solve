@@ -35,7 +35,7 @@ SET(CPACK_SOURCE_IGNORE_FILES
     "\\\\.o$"
     "~$"
     "/board_gen/(pi-make-microsoft-freecell-board|make-microsoft-freecell-board|make-gnome-freecell-board|make-aisleriot-freecell-board)$"
-    "/(fc-solve|freecell-solver-range-parallel-solve|freecell-solver-fc-pro-range-solve|freecell-solver-multi-thread-solve)$"
+    "/(fc-solve|freecell-solver-range-parallel-solve|freecell-solver-fc-pro-range-solve|freecell-solver-multi-thread-solve|freecell-solver-fork-solve)$"
     "/lib(fcs|freecell-solver)\\\\.(a|la)$"
     "\\\\.so(\\\\.[0-9]+)*$"
     "/\\\\.svn/"
@@ -396,14 +396,19 @@ TARGET_LINK_LIBRARIES (freecell-solver
     )
 
 SET(FREECELL_SOLVER_EXECUTABLES )
-MACRO(FCS_ADD_EXEC target)
+MACRO(FCS_ADD_EXEC_NO_INSTALL target)
     SET(modules ${ARGV})
     LIST(REMOVE_AT modules 0)
     ADD_EXECUTABLE(${target} ${modules})
     LIST(APPEND FREECELL_SOLVER_EXECUTABLES ${target})
     TARGET_LINK_LIBRARIES (${target} ${MY_TARGET_LINK_LIBS})
+ENDMACRO(FCS_ADD_EXEC_NO_INSTALL target)
+
+MACRO(FCS_ADD_EXEC target)
+    FCS_ADD_EXEC_NO_INSTALL(${ARGV})
     INSTALL (TARGETS ${target} DESTINATION "bin")
-ENDMACRO(FCS_ADD_EXEC target)
+ENDMACRO(FCS_ADD_EXEC)
+
 
 FCS_ADD_EXEC(fc-solve main.c)
 FCS_ADD_EXEC(freecell-solver-range-parallel-solve test_multi_parallel.c)
@@ -413,6 +418,12 @@ IF (CMAKE_USE_PTHREADS_INIT)
     FCS_ADD_EXEC(freecell-solver-multi-thread-solve threaded_range_solver.c)
     TARGET_LINK_LIBRARIES(freecell-solver-multi-thread-solve "pthread")
 ENDIF (CMAKE_USE_PTHREADS_INIT)
+
+IF (UNIX)
+    FCS_ADD_EXEC_NO_INSTALL(
+        freecell-solver-fork-solve "forking_range_solver.c"
+    )
+ENDIF (UNIX)
 
 IF (MY_LINK_FLAGS)
     SET_TARGET_PROPERTIES(
