@@ -1,0 +1,13 @@
+Index: CMakeLists.txt
+===================================================================
+--- CMakeLists.txt	(revision 2871)
++++ CMakeLists.txt	(working copy)
+@@ -383,7 +383,7 @@
+     # Optionally link against Google's TCMalloc if it's available:
+     # http://goog-perftools.sourceforge.net/
+     # This gives better performance for the threaded programs.
+-    FIND_LIBRARY(LIBTCMALLOC_LIB tcmalloc)
++    FIND_LIBRARY(LIBTCMALLOC_LIB nedmalloc)
+ 
+     IF(LIBTCMALLOC_LIB STREQUAL "LIBTCMALLOC_LIB-NOTFOUND")
+         # Do nothing.
