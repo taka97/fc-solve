@@ -389,12 +389,12 @@ ENDIF(UNIX)
 
 SET(LIBTCMALLOC_LIB_LIST)
 
-IF (NOT CMAKE_BUILD_TYPE STREQUAL debug)
+# IF (NOT CMAKE_BUILD_TYPE STREQUAL debug)
 
     # Optionally link against Google's TCMalloc if it's available:
     # http://goog-perftools.sourceforge.net/
     # This gives better performance for the threaded programs.
-    FIND_LIBRARY(LIBTCMALLOC_LIB tcmalloc)
+    FIND_LIBRARY(LIBTCMALLOC_LIB hoard)
 
     IF(LIBTCMALLOC_LIB STREQUAL "LIBTCMALLOC_LIB-NOTFOUND")
         # Do nothing.
@@ -404,7 +404,7 @@ IF (NOT CMAKE_BUILD_TYPE STREQUAL debug)
         SET(LIBTCMALLOC_LIB_LIST ${LIBTCMALLOC_LIB})
     ENDIF(LIBTCMALLOC_LIB STREQUAL "LIBTCMALLOC_LIB-NOTFOUND")
     
-ENDIF (NOT CMAKE_BUILD_TYPE STREQUAL debug)
+# ENDIF (NOT CMAKE_BUILD_TYPE STREQUAL debug)
 
 
 TARGET_LINK_LIBRARIES (freecell-solver 
