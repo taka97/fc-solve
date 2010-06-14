@@ -2244,6 +2244,30 @@ int DLLEXPORT fc_solve_user_INTERNAL_get_flares_plan_item_iters_count(
     return instance_item->plan[item_idx].count_iters;
 }
 
+int DLLEXPORT freecell_solver_user_set_depth_tests_order(
+    void * api_instance,
+    int min_depth,
+    const char * tests_order,
+    char * * error_string
+    )
+{
+    fcs_user_t * user;
+    fcs_instance_item_t * instance_item;
+
+    user = (fcs_user_t *)api_instance;
+
+    instance_item = &(user->instances_list[user->current_instance_idx]);
+    
+    *error_string = NULL;
+
+    if (min_depth < 0)
+    {
+        *error_string = strdup("Depth is negative.");
+        return 1;
+    }
+
+    return 0;
+}
 
 #endif
 
