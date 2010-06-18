@@ -38,6 +38,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <limits.h>
 
 #define NUM_TIMES_STEP 50
 
@@ -315,8 +316,9 @@ static GCC_INLINE void init_soft_thread(
     /* Initialize all the Soft-DFS stacks to NULL */
     soft_thread->method_specific.soft_dfs.soft_dfs_info = NULL;
 
-    soft_thread->method_specific.soft_dfs.tests_list.num_lists = 0;
-    soft_thread->method_specific.soft_dfs.tests_list.lists = NULL;
+    soft_thread->method_specific.soft_dfs.tests_by_depth_array.num_units = 0;
+    soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units = NULL;
+
     soft_thread->method_specific.befs.tests_list = NULL;
 
     /* The default solving method */
@@ -1096,11 +1098,12 @@ static GCC_INLINE void fc_solve_soft_thread_init_soft_dfs(
             soft_thread->method_specific.soft_dfs.rand_seed
     );
 
-    if (! soft_thread->method_specific.soft_dfs.tests_list.lists)
+    if (! soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units)
     {
         fcs_tests_list_of_lists * tests_list_of_lists;
         fc_solve_solve_for_state_test_t * tests_list, * next_test;
         fcs_tests_list_t * tests_list_struct_ptr;
+        fcs_tests_by_depth_array_t * arr_ptr; 
 
         int tests_order_num;
         int * tests_order_tests;
@@ -1110,12 +1113,21 @@ static GCC_INLINE void fc_solve_soft_thread_init_soft_dfs(
             ;
         int do_first_iteration;
 
+        arr_ptr = &(soft_thread->method_specific.soft_dfs.tests_by_depth_array);
+
+        arr_ptr->by_depth_units =
+            malloc(
+                sizeof(arr_ptr->by_depth_units[0])
+                * (arr_ptr->num_units = 1)
+            );
+
+        arr_ptr->by_depth_units[0].max_depth = INT_MAX;
         tests_order_tests = soft_thread->tests_order.tests;
         
         tests_order_num = soft_thread->tests_order.num;
 
         tests_list_of_lists =
-            &(soft_thread->method_specific.soft_dfs.tests_list);
+            &(arr_ptr->by_depth_units[0].tests);
 
         tests_list_of_lists->num_lists = 0;
         tests_list_of_lists->lists =

@@ -221,7 +221,7 @@ int fc_solve_soft_dfs_do_solve(
         ptr_state_val
     );
 
-#define THE_TESTS_LIST soft_thread->method_specific.soft_dfs.tests_list
+#define THE_TESTS_LIST soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units[0].tests
     TRACE0("Before depth loop");
     /*
         The main loop.
