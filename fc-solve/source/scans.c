@@ -879,9 +879,9 @@ void fc_solve_soft_thread_init_befs_or_bfs(
         int * tests_order_tests;
         int i;
 
-        tests_order_tests = soft_thread->tests_order.tests;
+        tests_order_tests = soft_thread->by_depth_tests_order.by_depth_tests[0].tests_order.tests;
         
-        tests_order_num = soft_thread->tests_order.num;
+        tests_order_num = soft_thread->by_depth_tests_order.by_depth_tests[0].tests_order.num;
 
         tests_list = malloc(sizeof(tests_list[0]) * tests_order_num);
 

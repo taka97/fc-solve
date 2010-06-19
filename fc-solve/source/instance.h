@@ -190,6 +190,18 @@ typedef struct
     int * tests;
 } fcs_tests_order_t;
 
+typedef struct
+{
+    int max_depth;
+    fcs_tests_order_t tests_order;
+} fcs_by_depth_tests_order_t;
+
+typedef struct
+{
+    int num;
+    fcs_by_depth_tests_order_t * by_depth_tests;
+} fcs_by_depth_tests_order_array_t;
+
 typedef unsigned char fcs_game_limit_t;
 
 typedef struct {
@@ -717,7 +729,7 @@ struct fc_solve_soft_thread_struct
      * that it can be lower than FCS_TESTS_NUM, thus enabling several tests
      * to be removed completely.
      * */
-    fcs_tests_order_t tests_order;
+    fcs_by_depth_tests_order_array_t by_depth_tests_order;
 
 
     /*

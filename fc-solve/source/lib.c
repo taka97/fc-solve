@@ -305,7 +305,7 @@ int DLLEXPORT freecell_solver_user_set_tests_order(
 
     return
         fc_solve_apply_tests_order(
-            &(user->soft_thread->tests_order),
+            &(user->soft_thread->by_depth_tests_order.by_depth_tests[0].tests_order),
             tests_order,
             error_string
             );
