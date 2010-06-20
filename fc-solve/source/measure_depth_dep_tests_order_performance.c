@@ -110,6 +110,10 @@ typedef struct
     int verdict;
 } result_t;
 
+static const char * known_parameters[] = {
+    NULL
+    };
+
 int main(int argc, char * argv[])
 {
     pack_item_t user;
@@ -244,7 +248,6 @@ int main(int argc, char * argv[])
         fprintf(stderr, "output filename not specified");
         exit(-1);
     }
-    start_from_arg = arg;
 
     /* for(board_num=1;board_num<100000;board_num++) */
 #ifndef WIN32
@@ -278,7 +281,7 @@ int main(int argc, char * argv[])
                 end_args,
                 (freecell_solver_str_t *)argv,
                 start_from_arg,
-                NULL,
+                known_parameters,
                 NULL,
                 &user,
                 &error_string,
