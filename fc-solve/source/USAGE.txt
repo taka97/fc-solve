@@ -446,6 +446,18 @@ Tests can be grouped together into random groups using parenthesis
 (e.g: "(0123)") or square brackets ("[012][3456789]"). Such grouping is
 only relevant to the Random DFS scan (see below).
 
+-dto [Min Depth],[Tests' Order] , --depth-tests-order [Min Depth],[Tests' Order]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sets the Tests' order starting from the minimal depth onwards. This way, if
+a Soft-DFS scan recurses deeply into the game, it will use a different tests' order.
+
+Note that if you set the tests' order of a minimal depth of say 50, then it will
+override all the tests' order of 50 and above. As a result, it is recommended that
+you set the minimal depth tests order in an increasing depth.
+
+It should be noted that the +-to+ or +--tests-order+ option above is equivalent
+to using this option with a minimal depth of 0. 
 
 -me [Solving Method] , --method [Solving Method]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
