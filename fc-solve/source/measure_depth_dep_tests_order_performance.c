@@ -131,12 +131,12 @@ int main(int argc, char * argv[])
 #endif
     int total_num_iters = 0;
     char * error_string;
-    char * scan1_to, * scan2_to;
+    char * scan1_to = NULL, * scan2_to = NULL;
 
     char * output_filename = NULL;
     fcs_state_string_t state_string;
 
-    int arg = 1, start_from_arg;
+    int arg = 1, start_from_arg = -1, end_args = -1;
 
     if (argc < 4)
     {
@@ -150,7 +150,22 @@ int main(int argc, char * argv[])
 
     for (;arg < argc; arg++)
     {
-        if (!strcmp(argv[arg], "--output-to"))
+        if (!strcmp(argv[arg], "--args-start"))
+        {
+            arg++;
+
+            start_from_arg = arg;
+            while (arg < argc)
+            {
+                if (!strcmp(argv[arg], "--args-end"))
+                {
+                    break;
+                }
+                arg++;
+            }
+            end_args = arg;
+        }
+        else if (!strcmp(argv[arg], "--output-to"))
         {
             arg++;
             if (arg == argc)
@@ -207,8 +222,21 @@ int main(int argc, char * argv[])
         }
         else
         {
-            break;
+            fprintf(stderr, "Unknown argument - '%s'!\n", argv[arg]);
+            exit(-1);
         }
+    }
+
+    if (!scan1_to)
+    {
+        fprintf(stderr, "--scan1-to not specified!\n");
+        exit(-1);
+    }
+    
+    if (!scan2_to)
+    {
+        fprintf(stderr, "--scan2-to not specified!\n");
+        exit(-1);
     }
 
     if (!output_filename)
@@ -242,6 +270,22 @@ int main(int argc, char * argv[])
             min_depth_for_scan2++)
     {
         user.instance = freecell_solver_user_alloc();
+
+        if (start_from_arg >= 0)
+        {
+            freecell_solver_user_cmd_line_parse_args(
+                user.instance,
+                end_args,
+                (freecell_solver_str_t *)argv,
+                start_from_arg,
+                NULL,
+                NULL,
+                &user,
+                &error_string,
+                &arg
+            );
+        }
+        
         if (freecell_solver_user_set_depth_tests_order(
             user.instance,
             0,
