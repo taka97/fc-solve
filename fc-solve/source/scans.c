@@ -222,7 +222,7 @@ int fc_solve_soft_dfs_do_solve(
         ptr_state_val
     );
 
-#define THE_TESTS_LIST soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units[0].tests
+#define THE_TESTS_LIST soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units[by_depth_idx].tests
     TRACE0("Before depth loop");
 
 #define GET_DEPTH(idx) soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units[idx].max_depth
@@ -236,17 +236,15 @@ int fc_solve_soft_dfs_do_solve(
     
     {
         for (by_depth_idx = 0; 
-            (by_depth_idx < soft_thread->method_specific
-                .soft_dfs.tests_by_depth_array.num_units)
-            &&
-             (GET_DEPTH(by_depth_idx) >= 
-                soft_thread->method_specific.soft_dfs.depth)
+            (
+                soft_thread->method_specific.soft_dfs.depth
+                > GET_DEPTH(by_depth_idx)
+            )
             ;
             by_depth_idx++
             )
         {
         }
-        by_depth_idx--;
         RECALC_BY_DEPTH_LIMITS();
     }
 

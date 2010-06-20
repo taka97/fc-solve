@@ -317,22 +317,31 @@ int DLLEXPORT freecell_solver_user_set_depth_tests_order(
         return 1;
     }
 
-    for (depth_idx = 0
-            ;
-            ;
-         depth_idx++
-    )
+    if (min_depth == 0)
     {
-        if (depth_idx == user->soft_thread->by_depth_tests_order.num)
+        depth_idx = 0;
+    }
+    else
+    {
+        for (depth_idx = 0
+                ;
+                ;
+                depth_idx++
+            )
         {
-            break;
+            if (depth_idx == user->soft_thread->by_depth_tests_order.num-1)
+            {
+                break;
+            }
+            else if (min_depth < user->soft_thread
+                    ->by_depth_tests_order.by_depth_tests[depth_idx].max_depth
+                    )
+            {
+                break;
+            }
         }
-        else if (min_depth < user->soft_thread
-            ->by_depth_tests_order.by_depth_tests[depth_idx].max_depth
-        )
-        {
-            break;
-        }
+
+        depth_idx++;
     }
 
     if (depth_idx == user->soft_thread->by_depth_tests_order.num)
@@ -343,6 +352,9 @@ int DLLEXPORT freecell_solver_user_set_depth_tests_order(
                 (++user->soft_thread->by_depth_tests_order.num) *
                 sizeof(user->soft_thread->by_depth_tests_order.by_depth_tests[0])
                 );
+
+        user->soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].tests_order.num = 0;
+        user->soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].tests_order.tests = NULL;
     }
 
     if (depth_idx > 0)
@@ -2315,6 +2327,28 @@ int DLLEXPORT fc_solve_user_INTERNAL_get_flares_plan_item_iters_count(
     return instance_item->plan[item_idx].count_iters;
 }
 
+int DLLEXPORT fc_solve_user_INTERNAL_get_num_by_depth_tests_order(
+    void * api_instance
+    )
+{
+    fcs_user_t * user;
+
+    user = (fcs_user_t *)api_instance;
+
+    return user->soft_thread->by_depth_tests_order.num;
+}
+
+int DLLEXPORT fc_solve_user_INTERNAL_get_by_depth_tests_max_depth(
+    void * api_instance,
+    int depth_idx
+    )
+{
+    fcs_user_t * user;
+
+    user = (fcs_user_t *)api_instance;
+
+    return user->soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].max_depth;
+}
 
 #endif
 

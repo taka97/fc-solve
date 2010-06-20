@@ -67,10 +67,6 @@ struct pack_item_struct
 
 typedef struct pack_item_struct pack_item_t;
 
-#if 0
-#define total_iterations_limit_per_board 100000
-#endif
-
 #define BINARY_OUTPUT_NUM_INTS 16
 
 typedef struct
@@ -136,8 +132,6 @@ int main(int argc, char * argv[])
     int total_num_iters = 0;
     char * error_string;
     char * scan1_to, * scan2_to;
-
-    int total_iterations_limit_per_board = -1;
 
     char * output_filename = NULL;
     fcs_state_string_t state_string;
@@ -271,10 +265,6 @@ int main(int argc, char * argv[])
             exit(-1);
         }
 
-        freecell_solver_user_limit_iterations(
-            user.instance,
-            iters_limit
-        );
 
         ret = 0;
 
@@ -284,7 +274,10 @@ int main(int argc, char * argv[])
         {
             get_board(board_num, state_string);
 
-            freecell_solver_user_limit_iterations(user.instance, total_iterations_limit_per_board);
+            freecell_solver_user_limit_iterations(
+                user.instance,
+                iters_limit
+            );
 
 #ifndef WIN32
                 gettimeofday(
