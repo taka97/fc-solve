@@ -434,6 +434,7 @@ ENDMACRO(FCS_ADD_EXEC)
 FCS_ADD_EXEC(fc-solve main.c)
 FCS_ADD_EXEC(freecell-solver-range-parallel-solve test_multi_parallel.c)
 FCS_ADD_EXEC(freecell-solver-fc-pro-range-solve fc_pro_range_solver.c fc_pro_iface.c)
+FCS_ADD_EXEC_NO_INSTALL(measure-depth-dep-tests-order-perf measure_depth_dep_tests_order_performance.c)
 
 FCS_ADD_EXEC_NO_INSTALL(
     temp-flair-solver temp-fc_pro_range_solver_with_flair_support.c
