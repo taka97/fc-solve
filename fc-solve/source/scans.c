@@ -193,7 +193,8 @@ int fc_solve_soft_dfs_do_solve(
 #if ((!defined(HARD_CODED_NUM_FREECELLS)) || (!defined(HARD_CODED_NUM_STACKS)))
     DECLARE_GAME_PARAMS();
 #endif
-    int dfs_max_depth;
+    int by_depth_idx;
+    int dfs_max_depth, by_depth_max_depth, by_depth_min_depth;
 
     fcs_runtime_flags_t calc_real_depth = STRUCT_QUERY_FLAG(instance, FCS_RUNTIME_CALC_REAL_DEPTH);
     fcs_runtime_flags_t scans_synergy = STRUCT_QUERY_FLAG(instance, FCS_RUNTIME_SCANS_SYNERGY);
@@ -223,6 +224,32 @@ int fc_solve_soft_dfs_do_solve(
 
 #define THE_TESTS_LIST soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units[0].tests
     TRACE0("Before depth loop");
+
+#define GET_DEPTH(idx) soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units[idx].max_depth
+
+#define RECALC_BY_DEPTH_LIMITS() \
+    { \
+        by_depth_max_depth = GET_DEPTH(by_depth_idx); \
+        by_depth_min_depth = (by_depth_idx == 0) ? 0 : GET_DEPTH(by_depth_idx-1); \
+    }
+
+    
+    {
+        for (by_depth_idx = 0; 
+            (by_depth_idx < soft_thread->method_specific
+                .soft_dfs.tests_by_depth_array.num_units)
+            &&
+             (GET_DEPTH(by_depth_idx) >= 
+                soft_thread->method_specific.soft_dfs.depth)
+            ;
+            by_depth_idx++
+            )
+        {
+        }
+        by_depth_idx--;
+        RECALC_BY_DEPTH_LIMITS();
+    }
+
     /*
         The main loop.
     */
@@ -276,6 +303,12 @@ int fc_solve_soft_dfs_do_solve(
                     ptr_state_key = ptr_state_val->key;
                     soft_thread->num_vacant_freecells = the_soft_dfs_info->num_vacant_freecells;
                     soft_thread->num_vacant_stacks = the_soft_dfs_info->num_vacant_stacks;
+
+                    if (soft_thread->method_specific.soft_dfs.depth < by_depth_min_depth)
+                    {
+                        by_depth_idx--;
+                        RECALC_BY_DEPTH_LIMITS();
+                   }
                 }
 
                 continue; /* Just to make sure depth is not -1 now */
@@ -506,7 +539,11 @@ int fc_solve_soft_dfs_do_solve(
                         I'm using current_state_indexes[depth]-1 because we already
                         increased it by one, so now it refers to the next state.
                     */
-                    soft_thread->method_specific.soft_dfs.depth++;
+                    if (++soft_thread->method_specific.soft_dfs.depth >= by_depth_max_depth)
+                    {
+                        by_depth_idx++;
+                        RECALC_BY_DEPTH_LIMITS();
+                    }
                     the_soft_dfs_info++;
 
                     the_soft_dfs_info->state_val =
