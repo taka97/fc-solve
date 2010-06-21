@@ -310,7 +310,7 @@ int fc_solve_soft_dfs_do_solve(
                     soft_thread->num_vacant_freecells = the_soft_dfs_info->num_vacant_freecells;
                     soft_thread->num_vacant_stacks = the_soft_dfs_info->num_vacant_stacks;
 
-                    if (DEPTH() < by_depth_min_depth)
+                    if (unlikely(DEPTH() < by_depth_min_depth))
                     {
                         curr_by_depth_unit--;
                         RECALC_BY_DEPTH_LIMITS();
@@ -545,7 +545,7 @@ int fc_solve_soft_dfs_do_solve(
                         I'm using current_state_indexes[depth]-1 because we already
                         increased it by one, so now it refers to the next state.
                     */
-                    if (++DEPTH() >= by_depth_max_depth)
+                    if (unlikely(++DEPTH() >= by_depth_max_depth))
                     {
                         curr_by_depth_unit++;
                         RECALC_BY_DEPTH_LIMITS();
