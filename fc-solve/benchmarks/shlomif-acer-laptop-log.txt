@@ -71,4 +71,11 @@ https://svn.berlios.de/svnroot/repos/fc-solve/branches/add-depth-dependent-moves
 
 ------------------------------
 
+foss-nessy.bash (with two -dto scan) ; r2938 
+https://svn.berlios.de/svnroot/repos/fc-solve/branches/add-depth-dependent-moves-order/fc-solve/source
+
+33.366259098053s
+
+------------------------------
+
 
