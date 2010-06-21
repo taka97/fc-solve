@@ -193,7 +193,6 @@ int fc_solve_soft_dfs_do_solve(
 #if ((!defined(HARD_CODED_NUM_FREECELLS)) || (!defined(HARD_CODED_NUM_STACKS)))
     DECLARE_GAME_PARAMS();
 #endif
-    int by_depth_idx;
     int dfs_max_depth, by_depth_max_depth, by_depth_min_depth;
 
     fcs_runtime_flags_t calc_real_depth = STRUCT_QUERY_FLAG(instance, FCS_RUNTIME_CALC_REAL_DEPTH);
@@ -202,7 +201,7 @@ int fc_solve_soft_dfs_do_solve(
     fcs_runtime_flags_t is_a_complete_scan = STRUCT_QUERY_FLAG(soft_thread, FCS_SOFT_THREAD_IS_A_COMPLETE_SCAN);
     int soft_thread_id = soft_thread->id;
     fcs_derived_states_list_t * derived_states_list;
-    fcs_tests_by_depth_unit_t * by_depth_units;
+    fcs_tests_by_depth_unit_t * by_depth_units, * curr_by_depth_unit;
     fcs_rand_t * rand_gen;
     int local_to_randomize = 0;
 
@@ -225,26 +224,27 @@ int fc_solve_soft_dfs_do_solve(
 
     by_depth_units = soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units;
 
-#define THE_TESTS_LIST by_depth_units[by_depth_idx].tests
+#define THE_TESTS_LIST curr_by_depth_unit->tests
     TRACE0("Before depth loop");
 
-#define GET_DEPTH(idx) soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units[idx].max_depth
+#define GET_DEPTH(ptr) ((ptr)->max_depth)
 
 #define RECALC_BY_DEPTH_LIMITS() \
     { \
-        by_depth_max_depth = GET_DEPTH(by_depth_idx); \
-        by_depth_min_depth = (by_depth_idx == 0) ? 0 : GET_DEPTH(by_depth_idx-1); \
+        by_depth_max_depth = GET_DEPTH(curr_by_depth_unit); \
+        by_depth_min_depth = (curr_by_depth_unit == by_depth_units) ? 0 : GET_DEPTH(curr_by_depth_unit-1); \
     }
 
-    
     {
-        for (by_depth_idx = 0; 
+        for (
+            curr_by_depth_unit = by_depth_units
+                ;
             (
                 soft_thread->method_specific.soft_dfs.depth
-                >= GET_DEPTH(by_depth_idx)
+                >= GET_DEPTH(curr_by_depth_unit)
             )
-            ;
-            by_depth_idx++
+                ;
+            curr_by_depth_unit++
             )
         {
         }
@@ -307,7 +307,7 @@ int fc_solve_soft_dfs_do_solve(
 
                     if (soft_thread->method_specific.soft_dfs.depth < by_depth_min_depth)
                     {
-                        by_depth_idx--;
+                        curr_by_depth_unit--;
                         RECALC_BY_DEPTH_LIMITS();
                    }
                 }
@@ -542,7 +542,7 @@ int fc_solve_soft_dfs_do_solve(
                     */
                     if (++soft_thread->method_specific.soft_dfs.depth >= by_depth_max_depth)
                     {
-                        by_depth_idx++;
+                        curr_by_depth_unit++;
                         RECALC_BY_DEPTH_LIMITS();
                     }
                     the_soft_dfs_info++;
