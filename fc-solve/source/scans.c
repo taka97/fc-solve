@@ -238,7 +238,7 @@ int fc_solve_soft_dfs_do_solve(
         for (by_depth_idx = 0; 
             (
                 soft_thread->method_specific.soft_dfs.depth
-                > GET_DEPTH(by_depth_idx)
+                >= GET_DEPTH(by_depth_idx)
             )
             ;
             by_depth_idx++
