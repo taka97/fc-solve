@@ -204,6 +204,7 @@ int fc_solve_soft_dfs_do_solve(
     fcs_tests_by_depth_unit_t * by_depth_units, * curr_by_depth_unit;
     fcs_rand_t * rand_gen;
     int local_to_randomize = 0;
+    int * depth_ptr;
 
 #if ((!defined(HARD_CODED_NUM_FREECELLS)) || (!defined(HARD_CODED_NUM_STACKS)))
     SET_GAME_PARAMS();
@@ -235,7 +236,9 @@ int fc_solve_soft_dfs_do_solve(
         by_depth_min_depth = (curr_by_depth_unit == by_depth_units) ? 0 : GET_DEPTH(curr_by_depth_unit-1); \
     }
 
-#define DEPTH() (soft_thread->method_specific.soft_dfs.depth)
+    depth_ptr = &(soft_thread->method_specific.soft_dfs.depth);
+
+#define DEPTH() (*depth_ptr)
 
     {
         for (
