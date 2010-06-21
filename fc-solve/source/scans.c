@@ -202,6 +202,7 @@ int fc_solve_soft_dfs_do_solve(
     fcs_runtime_flags_t is_a_complete_scan = STRUCT_QUERY_FLAG(soft_thread, FCS_SOFT_THREAD_IS_A_COMPLETE_SCAN);
     int soft_thread_id = soft_thread->id;
     fcs_derived_states_list_t * derived_states_list;
+    fcs_tests_by_depth_unit_t * by_depth_units;
     fcs_rand_t * rand_gen;
     int local_to_randomize = 0;
 
@@ -222,7 +223,9 @@ int fc_solve_soft_dfs_do_solve(
         ptr_state_val
     );
 
-#define THE_TESTS_LIST soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units[by_depth_idx].tests
+    by_depth_units = soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units;
+
+#define THE_TESTS_LIST by_depth_units[by_depth_idx].tests
     TRACE0("Before depth loop");
 
 #define GET_DEPTH(idx) soft_thread->method_specific.soft_dfs.tests_by_depth_array.by_depth_units[idx].max_depth
