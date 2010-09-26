@@ -109,6 +109,7 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 SET (STATES_TYPE "INDIRECT_STACK_STATES" CACHE STRING 
     "States Type ('INDIRECT_STACK_STATES', 'COMPACT_STATES' or 'DEBUG_STATES'). No need to usually change.")
+SET (FCS_ENABLE_RCS_STATES CACHE BOOL "Whether to use RCS-like states (requires a STATES_TYPE of COMPACT_STATES")
 SET (IA_STATE_PACKS_GROW_BY 32 CACHE STRING "Amount to Grow State Packs By")
 SET (FCS_IA_PACK_SIZE 64 CACHE STRING "Size of a single pack in kilo-bytes.")
 SET (MAX_NUM_FREECELLS 8 CACHE STRING "Maximal Number of Freecells")
@@ -170,6 +171,10 @@ IF (NOT (STATES_TYPE MATCHES "^(INDIRECT_STACK_STATES|COMPACT_STATES|DEBUG_STATE
 ENDIF(NOT (STATES_TYPE MATCHES "^(INDIRECT_STACK_STATES|COMPACT_STATES|DEBUG_STATES)$"))
 
 SET (${STATES_TYPE} 1)
+
+IF (FCS_ENABLE_RCS_STATES)
+    SET (FCS_RCS_STATES 1)
+ENDIF (FCS_ENABLE_RCS_STATES)
 
 SET (FREECELL_SOLVER_LIB_MODULES alloc.c app_str.c card.c check_and_add_state.c cmd_line.c freecell.c instance.c lib.c move.c move_funcs_maps.c move_funcs_order.c preset.c scans.c simpsim.c split_cmd_line.c state.c)
 
