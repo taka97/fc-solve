@@ -34,6 +34,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 
 #include "config.h"
 
@@ -86,16 +87,16 @@ void fc_solve_increase_dfs_max_depth(
 }
 
 #define FCS_IS_STATE_DEAD_END(ptr_state) \
-    ((ptr_state)->info.visited & FCS_VISITED_DEAD_END)
+    (FCS_S_VISITED_ITER(ptr_state) & FCS_VISITED_DEAD_END)
 
 fcs_bool_t free_states_should_delete(void * key, void * context)
 {
     fc_solve_instance_t * instance = (fc_solve_instance_t *)context;
-    fcs_state_keyval_pair_t * ptr_state = (fcs_state_keyval_pair_t *)key;
+    fcs_collectible_state_t * ptr_state = (fcs_collectible_state_t *)key;
 
     if (FCS_IS_STATE_DEAD_END(ptr_state))
     {
-        ptr_state->next = instance->list_of_vacant_states;
+        FCS_S_NEXT(ptr_state) = instance->list_of_vacant_states;
         instance->list_of_vacant_states = ptr_state;
 
         instance->active_num_states_in_collection--;
@@ -193,7 +194,11 @@ static void free_states(fc_solve_instance_t * instance)
     without procedural recursion
     by using some dedicated stacks for the traversal.
   */
+#ifdef FCS_RCS_STATES
+#define the_state (*ptr_state_key)
+#else
 #define the_state (ptr_state->s)
+#endif
 
 #ifdef DEBUG
 #define TRACE0(message) \
@@ -227,21 +232,21 @@ static void free_states(fc_solve_instance_t * instance)
     if (calc_real_depth)                                           \
     {                                                              \
         int this_real_depth = 0;                                   \
-        fcs_state_keyval_pair_t * temp_state = ptr_state_orig; \
+        fcs_collectible_state_t * temp_state = ptr_state_orig; \
         /* Count the number of states until the original state. */ \
         while(temp_state != NULL)                                   \
         {                                                          \
-            temp_state = temp_state->info.parent;             \
+            temp_state = FCS_S_PARENT(temp_state);             \
             this_real_depth++;                                     \
         }                                                          \
         this_real_depth--;                                         \
         temp_state = (ptr_state_orig);                      \
         /* Assign the new depth throughout the path */             \
-        while (temp_state->info.depth != this_real_depth)            \
+        while (FCS_S_DEPTH(temp_state) != this_real_depth)            \
         {                                                          \
-            temp_state->info.depth = this_real_depth;                \
+            FCS_S_DEPTH(temp_state) = this_real_depth;                \
             this_real_depth--;                                     \
-            temp_state = temp_state->info.parent;             \
+            temp_state = FCS_S_PARENT(temp_state);             \
         }                                                          \
     }                                                              \
 }
@@ -255,26 +260,26 @@ static void free_states(fc_solve_instance_t * instance)
 {      \
     if (scans_synergy)      \
     {        \
-        fcs_state_keyval_pair_t * temp_state = (ptr_state_input); \
+        fcs_collectible_state_t * temp_state = (ptr_state_input); \
         /* Mark as a dead end */        \
-        temp_state->info.visited |= FCS_VISITED_DEAD_END; \
-        temp_state = temp_state->info.parent;          \
+        FCS_S_VISITED(temp_state)|= FCS_VISITED_DEAD_END; \
+        temp_state = FCS_S_PARENT(temp_state);          \
         if (temp_state != NULL)                    \
         {           \
             /* Decrease the refcount of the state */    \
-            temp_state->info.num_active_children--;   \
-            while((temp_state->info.num_active_children == 0) && (temp_state->info.visited & FCS_VISITED_ALL_TESTS_DONE))  \
+            (FCS_S_NUM_ACTIVE_CHILDREN(temp_state))--;   \
+            while((FCS_S_NUM_ACTIVE_CHILDREN(temp_state) == 0) && (FCS_S_VISITED(temp_state) & FCS_VISITED_ALL_TESTS_DONE))  \
             {          \
                 /* Mark as dead end */        \
-                temp_state->info.visited |= FCS_VISITED_DEAD_END;  \
+                FCS_S_VISITED(temp_state) |= FCS_VISITED_DEAD_END;  \
                 /* Go to its parent state */       \
-                temp_state = temp_state->info.parent;    \
+                temp_state = FCS_S_PARENT(temp_state);    \
                 if (temp_state == NULL)         \
                 {                \
                     break;             \
                 }      \
                 /* Decrease the refcount */       \
-                temp_state->info.num_active_children--;     \
+                (FCS_S_NUM_ACTIVE_CHILDREN(temp_state))--;     \
             }       \
         }   \
     }      \
@@ -289,12 +294,102 @@ static void free_states(fc_solve_instance_t * instance)
 #define SHOULD_STATE_BE_PRUNED(enable_pruning, ptr_state) \
     ( \
         enable_pruning && \
-        (! (ptr_state->info.visited & \
+        (! (FCS_S_VISITED(ptr_state) & \
             FCS_VISITED_GENERATED_BY_PRUNING \
             ) \
         ) \
     )
 
+#ifdef FCS_RCS_STATES
+fcs_state_t * fc_solve_lookup_state_key_from_val(
+        fc_solve_instance_t * instance,
+        fcs_collectible_state_t * ptr_state_val
+        )
+{
+    PWord_t PValue;
+
+    JLI (PValue, instance->states_values_to_keys_map, 
+        ((Word_t)ptr_state_val));
+
+    if (*PValue == 0)
+    {
+        /* A new state. */
+        if (!FCS_S_PARENT(ptr_state_val))
+        {
+            *PValue = (Word_t)&(instance->state_copy_ptr->s);
+        }
+        else
+        {
+            fcs_state_t * parent_state_key, * new_state_key;
+            fcs_collectible_state_t temp_new_state_val;
+            int i;
+
+            PWord_t parent_PValue;
+                
+            if (! FCS_S_PARENT(FCS_S_PARENT(ptr_state_val)))
+            {
+                parent_state_key = &(instance->state_copy_ptr->s);
+            }
+            else
+            {
+                JLG (parent_PValue, instance->states_values_to_keys_map,
+                       ((Word_t)(FCS_S_PARENT(ptr_state_val))));
+
+                assert ((*parent_PValue));
+
+                parent_state_key = (fcs_state_t *)(*parent_PValue);
+            }
+
+            new_state_key =
+                fcs_compact_alloc_ptr(
+                    &(instance->states_values_to_keys_allocator),
+                    sizeof(*new_state_key)
+                );
+
+            fcs_duplicate_state(
+                new_state_key,
+                &(temp_new_state_val),
+                parent_state_key,
+                FCS_S_PARENT(ptr_state_val)
+                );
+
+            for (i = 0 ; i < ptr_state_val->moves_to_parent->num_moves ; i++)
+            {
+                fc_solve_apply_move(
+                    new_state_key,
+                    &(temp_new_state_val),
+                    ptr_state_val->moves_to_parent->moves[i],
+                    INSTANCE_FREECELLS_NUM,
+                    INSTANCE_STACKS_NUM,
+                    INSTANCE_DECKS_NUM
+                );
+            }
+
+            *PValue = (Word_t)new_state_key;
+        }
+    }
+
+#ifdef DEBUG
+    {
+        fcs_state_t * state = (fcs_state_t *)(*PValue);
+
+        int s=0;
+        for (s=0;s<INSTANCE_STACKS_NUM; s++)
+        {
+            fcs_cards_column_t col = fcs_state_get_col(*state, s);
+            int col_len = fcs_col_len(col);
+            int c;
+            for (c = col_len ; c < MAX_NUM_CARDS_IN_A_STACK ; c++)
+            {
+                assert (fcs_col_get_card(col, c) == 0);
+            }
+        }
+    }
+#endif
+
+    return (fcs_state_t *)(*PValue);
+}
+#endif
 int fc_solve_soft_dfs_do_solve(
     fc_solve_soft_thread_t * soft_thread
     )
@@ -302,7 +397,10 @@ int fc_solve_soft_dfs_do_solve(
     fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
     fc_solve_instance_t * instance = hard_thread->instance;
 
-    fcs_state_keyval_pair_t * ptr_state;
+#ifdef FCS_RCS_STATES
+    fcs_state_t * ptr_state_key;
+#endif
+    fcs_collectible_state_t * ptr_state;
     fcs_soft_dfs_stack_item_t * the_soft_dfs_info;
 #if ((!defined(HARD_CODED_NUM_FREECELLS)) || (!defined(HARD_CODED_NUM_STACKS)))
     DECLARE_GAME_PARAMS();
@@ -335,6 +433,10 @@ int fc_solve_soft_dfs_do_solve(
     ptr_state = the_soft_dfs_info->state;
     derived_states_list = &(the_soft_dfs_info->derived_states_list);
     
+#ifdef FCS_RCS_STATES
+    ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+#endif
+
     rand_gen = &(soft_thread->method_specific.soft_dfs.rand_gen);
     
     calculate_real_depth(
@@ -410,7 +512,7 @@ int fc_solve_soft_dfs_do_solve(
 
                 if (is_a_complete_scan)
                 {
-                    ptr_state->info.visited |= FCS_VISITED_ALL_TESTS_DONE;
+                    FCS_S_VISITED(ptr_state) |= FCS_VISITED_ALL_TESTS_DONE;
                     mark_as_dead_end(
                         ptr_state
                     );
@@ -425,7 +527,13 @@ int fc_solve_soft_dfs_do_solve(
                 {
                     the_soft_dfs_info--;
                     derived_states_list = &(the_soft_dfs_info->derived_states_list);
+
                     ptr_state = the_soft_dfs_info->state;
+ 
+#ifdef FCS_RCS_STATES
+                    ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+#endif
+
                     soft_thread->num_vacant_freecells = the_soft_dfs_info->num_vacant_freecells;
                     soft_thread->num_vacant_stacks = the_soft_dfs_info->num_vacant_stacks;
 
@@ -433,7 +541,7 @@ int fc_solve_soft_dfs_do_solve(
                     {
                         curr_by_depth_unit--;
                         RECALC_BY_DEPTH_LIMITS();
-                   }
+                    }
                 }
 
                 continue; /* Just to make sure depth is not -1 now */
@@ -463,10 +571,13 @@ int fc_solve_soft_dfs_do_solve(
                         instance->num_times,
                         soft_thread->method_specific.soft_dfs.depth,
                         (void*)instance,
+#ifdef FCS_RCS_STATES
+                        ptr_state_key,
+#endif
                         ptr_state,
                         ((soft_thread->method_specific.soft_dfs.depth == 0) ?
                             0 :
-                            soft_thread->method_specific.soft_dfs.soft_dfs_info[soft_thread->method_specific.soft_dfs.depth-1].state->info.visited_iter
+                            FCS_S_VISITED_ITER(soft_thread->method_specific.soft_dfs.soft_dfs_info[soft_thread->method_specific.soft_dfs.depth-1].state)
                         )
                         );
                 }
@@ -518,9 +629,21 @@ int fc_solve_soft_dfs_do_solve(
                 /* Perform the pruning. */
                 if (SHOULD_STATE_BE_PRUNED(enable_pruning, ptr_state))
                 {
-                    fcs_state_keyval_pair_t * derived;
+                    fcs_collectible_state_t * derived;
+#ifdef FCS_RCS_STATES
+                    fcs_state_t derived_key;
+#endif
+
                     if (fc_solve_sfs_raymond_prune(
-                        soft_thread, ptr_state, &derived
+                        soft_thread, 
+#ifdef FCS_RCS_STATES
+                        ptr_state_key,
+#endif
+                        ptr_state, 
+#ifdef FCS_RCS_STATES
+                        &derived_key,
+#endif
+                        &derived
                         ) == PRUNE_RET_FOLLOW_STATE
                     )
                     {
@@ -562,6 +685,7 @@ int fc_solve_soft_dfs_do_solve(
                     ].tests[the_soft_dfs_info->test_index]
                     (
                         soft_thread,
+                        ptr_state_key,
                         ptr_state,
                         derived_states_list
                     );
@@ -640,7 +764,7 @@ int fc_solve_soft_dfs_do_solve(
             fcs_derived_states_list_item_t * derived_states =
                 derived_states_list->states;
             int * rand_array = the_soft_dfs_info->derived_states_random_indexes;
-            fcs_state_keyval_pair_t * single_derived_state;
+            fcs_collectible_state_t * single_derived_state;
 
             while (the_soft_dfs_info->current_state_index <
                    num_states)
@@ -652,7 +776,7 @@ int fc_solve_soft_dfs_do_solve(
                     ].state_ptr;
 
                 if (
-                    (! (single_derived_state->info.visited &
+                    (! (FCS_S_VISITED(single_derived_state) &
                         FCS_VISITED_DEAD_END)
                     ) &&
                     (! is_scan_visited(
@@ -668,7 +792,7 @@ int fc_solve_soft_dfs_do_solve(
                         soft_thread_id
                     );
 
-                    single_derived_state->info.visited_iter = instance->num_times;
+                    FCS_S_VISITED_ITER(single_derived_state) = instance->num_times;
 
                     /*
                         I'm using current_state_indexes[depth]-1 because we already
@@ -684,6 +808,11 @@ int fc_solve_soft_dfs_do_solve(
                     the_soft_dfs_info->state =
                         ptr_state =
                         single_derived_state;
+
+#ifdef FCS_RCS_STATES
+                    ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+#endif
+                    
 
                     the_soft_dfs_info->tests_list_index = 0;
                     the_soft_dfs_info->test_index = 0;
@@ -766,7 +895,13 @@ static GCC_INLINE int update_col_cards_under_sequences(
 
 static GCC_INLINE void initialize_befs_rater(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_keyval_pair_t * ptr_state
+#ifdef FCS_RCS_STATES
+    fcs_state_t * ptr_state_key,
+#define STATE() (*ptr_state_key)
+#else
+#define STATE() (ptr_state->s)
+#endif
+    fcs_collectible_state_t * ptr_state
     )
 {
 #ifndef HARD_CODED_NUM_STACKS
@@ -780,10 +915,11 @@ static GCC_INLINE void initialize_befs_rater(
     cards_under_sequences = 0;
     for(a=0;a<INSTANCE_STACKS_NUM;a++)
     {
-        update_col_cards_under_sequences(soft_thread, fcs_state_get_col(ptr_state->s, a), &cards_under_sequences);
+        update_col_cards_under_sequences(soft_thread, fcs_state_get_col(STATE(), a), &cards_under_sequences);
     }
     soft_thread->method_specific.befs.meth.befs.initial_cards_under_sequences_value = cards_under_sequences;
 }
+#undef STATE
 
 #undef TRACE0
 
@@ -810,7 +946,10 @@ static GCC_INLINE void initialize_befs_rater(
 
 static GCC_INLINE pq_rating_t befs_rate_state(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_keyval_pair_t * ptr_state
+#ifdef FCS_RCS_STATES
+    fcs_state_t * ptr_state_key,
+#endif
+    fcs_collectible_state_t * ptr_state
     )
 {
 #ifndef FCS_FREECELL_ONLY
@@ -845,7 +984,7 @@ static GCC_INLINE pq_rating_t befs_rate_state(
     seqs_over_renegade_cards = 0;
     for(a=0;a<LOCAL_STACKS_NUM;a++)
     {
-        col = fcs_state_get_col(ptr_state->s, a);
+        col = fcs_state_get_col(the_state, a);
         cards_num = fcs_col_len(col);
 
         if (cards_num == 0)
@@ -880,7 +1019,7 @@ static GCC_INLINE pq_rating_t befs_rate_state(
     num_cards_in_founds = 0;
     for(a=0;a<(LOCAL_DECKS_NUM<<2);a++)
     {
-        num_cards_in_founds += fcs_foundation_value((ptr_state->s), a);
+        num_cards_in_founds += fcs_foundation_value((the_state), a);
     }
 
     ret += ((double)num_cards_in_founds/(LOCAL_DECKS_NUM*52)) * befs_weights[FCS_BEFS_WEIGHT_CARDS_OUT];
@@ -888,7 +1027,7 @@ static GCC_INLINE pq_rating_t befs_rate_state(
     num_vacant_freecells = 0;
     for(a=0;a<LOCAL_FREECELLS_NUM;a++)
     {
-        if (fcs_freecell_card_num((ptr_state->s),a) == 0)
+        if (fcs_freecell_card_num((the_state),a) == 0)
         {
             num_vacant_freecells++;
         }
@@ -924,9 +1063,9 @@ static GCC_INLINE pq_rating_t befs_rate_state(
 
     ret += (temp * befs_weights[FCS_BEFS_WEIGHT_MAX_SEQUENCE_MOVE]);
 
-    if (ptr_state->info.depth <= 20000)
+    if (FCS_S_DEPTH(ptr_state) <= 20000)
     {
-        ret += ((20000 - ptr_state->info.depth)/20000.0) * befs_weights[FCS_BEFS_WEIGHT_DEPTH];
+        ret += ((20000 - FCS_S_DEPTH(ptr_state))/20000.0) * befs_weights[FCS_BEFS_WEIGHT_DEPTH];
     }
 
     TRACE0("Before return");
@@ -1024,8 +1163,12 @@ void fc_solve_soft_thread_init_befs_or_bfs(
     )
 {
     fc_solve_instance_t * instance = soft_thread->hard_thread->instance;
-
-    fcs_state_keyval_pair_t * ptr_orig_state = instance->state_copy_ptr;
+    fcs_collectible_state_t * ptr_orig_state;
+#ifdef FCS_RCS_STATES
+    ptr_orig_state = &(instance->state_copy_ptr->info);
+#else
+    ptr_orig_state = instance->state_copy_ptr;
+#endif
 
     if (soft_thread->method == FCS_METHOD_A_STAR)
     {
@@ -1039,6 +1182,9 @@ void fc_solve_soft_thread_init_befs_or_bfs(
 
         initialize_befs_rater(
             soft_thread,
+#ifdef FCS_RCS_STATES
+            &(instance->state_copy_ptr->s),
+#endif
             ptr_orig_state
             );
     }
@@ -1127,7 +1273,10 @@ int fc_solve_befs_or_bfs_do_solve(
     fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
     fc_solve_instance_t * instance = hard_thread->instance;
 
-    fcs_state_keyval_pair_t * ptr_state, * ptr_new_state;
+    fcs_collectible_state_t * ptr_state, * ptr_new_state;
+#ifdef FCS_RCS_STATES
+    fcs_state_t * ptr_state_key;
+#endif
     fcs_game_limit_t num_vacant_stacks, num_vacant_freecells;
     fcs_states_linked_list_item_t * save_item;
     int a;
@@ -1186,6 +1335,10 @@ int fc_solve_befs_or_bfs_do_solve(
     {
         TRACE0("Start of loop");
 
+#ifdef FCS_RCS_STATES
+        ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+#endif
+        
 #ifdef DEBUG
         dump_pqueue(soft_thread, "loop_start", scan_specific.pqueue);
 #endif
@@ -1201,19 +1354,35 @@ int fc_solve_befs_or_bfs_do_solve(
         TRACE0("Pruning");
         if (SHOULD_STATE_BE_PRUNED(enable_pruning, ptr_state))
         {
-            fcs_state_keyval_pair_t * derived;
+            fcs_collectible_state_t * derived;
+#ifdef FCS_RCS_STATES
+            fcs_state_t derived_key;
+#endif
 
             if (fc_solve_sfs_raymond_prune(
-                    soft_thread, ptr_state, &derived
+                    soft_thread,
+#ifdef FCS_RCS_STATES
+                    ptr_state_key,
+#endif
+                    ptr_state,
+#ifdef FCS_RCS_STATES
+                    &derived_key,
+#endif
+                    &derived
                 ) == PRUNE_RET_FOLLOW_STATE
             )
             {
                 ptr_state = derived;
+ 
+#ifdef FCS_RCS_STATES
+                ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+#endif
+                
             }
         }
 
         {
-             register int temp_visited = ptr_state->info.visited;
+             register int temp_visited = FCS_S_VISITED(ptr_state);
 
             /*
              * If this is an optimization scan and the state being checked is 
@@ -1247,7 +1416,7 @@ int fc_solve_befs_or_bfs_do_solve(
         num_vacant_freecells = 0;
         for(a=0;a<LOCAL_FREECELLS_NUM;a++)
         {
-            if (fcs_freecell_card_num(ptr_state->s, a) == 0)
+            if (fcs_freecell_card_num(the_state, a) == 0)
             {
                 num_vacant_freecells++;
             }
@@ -1283,12 +1452,15 @@ int fc_solve_befs_or_bfs_do_solve(
             instance->debug_iter_output_func(
                     (void*)instance->debug_iter_output_context,
                     instance->num_times,
-                    ptr_state->info.depth,
+                    FCS_S_DEPTH(ptr_state),
                     (void*)instance,
+#ifdef FCS_RCS_STATES
+                    ptr_state_key,
+#endif
                     ptr_state,
-                    ((ptr_state->info.parent == NULL) ?
+                    ((FCS_S_PARENT(ptr_state) == NULL) ?
                         0 :
-                        ptr_state->info.parent->info.visited_iter
+                        FCS_S_VISITED_ITER(FCS_S_PARENT(ptr_state))
                     )
                     );
         }
@@ -1331,6 +1503,9 @@ int fc_solve_befs_or_bfs_do_solve(
         {
             (*next_test)(
                 soft_thread,
+#ifdef FCS_RCS_STATES
+                ptr_state_key,
+#endif
                 ptr_state,
                 &derived
             );
@@ -1338,7 +1513,7 @@ int fc_solve_befs_or_bfs_do_solve(
 
         if (is_a_complete_scan)
         {
-            ptr_state->info.visited |= FCS_VISITED_ALL_TESTS_DONE;
+            FCS_S_VISITED(ptr_state) |= FCS_VISITED_ALL_TESTS_DONE;
         }
 
         /* Increase the number of iterations by one .
@@ -1360,6 +1535,9 @@ int fc_solve_befs_or_bfs_do_solve(
                     ptr_new_state,
                     befs_rate_state(
                         soft_thread,
+#ifdef FCS_RCS_STATES
+                        fc_solve_lookup_state_key_from_val(instance, ptr_new_state),
+#endif
                         ptr_new_state
                         )
                     );
@@ -1383,7 +1561,7 @@ int fc_solve_befs_or_bfs_do_solve(
 
         if (method == FCS_METHOD_OPTIMIZE)
         {
-            ptr_state->info.visited |= FCS_VISITED_IN_OPTIMIZED_PATH;
+            FCS_S_VISITED(ptr_state) |= FCS_VISITED_IN_OPTIMIZED_PATH;
         }
         else
         {
@@ -1403,7 +1581,7 @@ int fc_solve_befs_or_bfs_do_solve(
             }
         }
 
-        ptr_state->info.visited_iter = instance->num_times-1;
+        FCS_S_VISITED_ITER(ptr_state) = instance->num_times-1;
 
 label_next_state:
         TRACE0("Label next state");
@@ -1469,7 +1647,10 @@ my_return_label:
  */
 extern char * fc_solve_get_the_positions_by_rank_data(
         fc_solve_soft_thread_t * soft_thread,
-        fcs_state_keyval_pair_t* ptr_state
+#ifdef FCS_RCS_STATES
+        fcs_state_t * ptr_state_key,
+#endif
+        fcs_collectible_state_t * ptr_state
         )
 {
     char * * positions_by_rank_location;
@@ -1544,7 +1725,7 @@ extern char * fc_solve_get_the_positions_by_rank_data(
                     int top_card_idx;
                     fcs_card_t dest_card;
 
-                    dest_col = fcs_state_get_col(ptr_state->s, ds);
+                    dest_col = fcs_state_get_col(the_state, ds);
                     top_card_idx = fcs_col_len(dest_col);
 
                     if (unlikely((top_card_idx--) == 0))
@@ -1611,12 +1792,18 @@ extern char * fc_solve_get_the_positions_by_rank_data(
  * */
 int fc_solve_sfs_check_state_begin(
     fc_solve_hard_thread_t * hard_thread,
-    fcs_state_keyval_pair_t * *  out_ptr_new_state,
-    fcs_state_keyval_pair_t * ptr_state,
+#ifdef FCS_RCS_STATES
+    fcs_state_t * out_new_state_key,
+#endif    
+    fcs_collectible_state_t * *  out_ptr_new_state,
+#ifdef FCS_RCS_STATES
+    fcs_state_t * ptr_state_key,
+#endif
+    fcs_collectible_state_t * ptr_state,
     fcs_move_stack_t * moves
     )
 {
-    fcs_state_keyval_pair_t * ptr_new_state;
+    fcs_collectible_state_t * ptr_new_state;
     fc_solve_instance_t * instance;
 
     instance = hard_thread->instance;
@@ -1625,7 +1812,7 @@ int fc_solve_sfs_check_state_begin(
         (instance->list_of_vacant_states != NULL)))
     {
         ptr_new_state = instance->list_of_vacant_states;
-        instance->list_of_vacant_states = instance->list_of_vacant_states->next;
+        instance->list_of_vacant_states = FCS_S_NEXT(instance->list_of_vacant_states);
     }
     else
     {
@@ -1636,24 +1823,30 @@ int fc_solve_sfs_check_state_begin(
     }
 
     fcs_duplicate_state(
+#ifdef FCS_RCS_STATES
+            out_new_state_key,
+#endif
             ptr_new_state,
+#ifdef FCS_RCS_STATES
+            ptr_state_key,
+#endif
             ptr_state
     );
     /* Some BeFS and BFS parameters that need to be initialized in
      * the derived state.
      * */
-    ptr_new_state->info.parent = ptr_state;
-    ptr_new_state->info.moves_to_parent = moves;
+    FCS_S_PARENT(ptr_new_state) = ptr_state;
+    FCS_S_MOVES_TO_PARENT(ptr_new_state) = moves;
     /* Make sure depth is consistent with the game graph.
      * I.e: the depth of every newly discovered state is derived from
      * the state from which it was discovered. */
-    ptr_new_state->info.depth = ptr_new_state->info.depth + 1;
+    (FCS_S_DEPTH(ptr_new_state))++;
     /* Mark this state as a state that was not yet visited */
-    ptr_new_state->info.visited = 0;
+    FCS_S_VISITED(ptr_new_state) = 0;
     /* It's a newly created state which does not have children yet. */
-    ptr_new_state->info.num_active_children = 0;
-    memset(ptr_new_state->info.scan_visited, '\0',
-        sizeof(ptr_new_state->info.scan_visited)
+    FCS_S_NUM_ACTIVE_CHILDREN(ptr_new_state) = 0;
+    memset(&(FCS_S_SCAN_VISITED(ptr_new_state)), '\0',
+        sizeof(FCS_S_SCAN_VISITED(ptr_new_state))
         );
     fcs_move_stack_reset(moves);
 
@@ -1662,10 +1855,17 @@ int fc_solve_sfs_check_state_begin(
     return 0;
 }
 
-void fc_solve_sfs_check_state_end(
+
+extern void fc_solve_sfs_check_state_end(
     fc_solve_soft_thread_t * soft_thread,
-    fcs_state_keyval_pair_t * ptr_state,
-    fcs_state_keyval_pair_t * ptr_new_state,
+#ifdef FCS_RCS_STATES
+    fcs_state_t * ptr_state_key,
+#endif
+    fcs_collectible_state_t * ptr_state,
+#ifdef FCS_RCS_STATES
+    fcs_state_t * ptr_new_state_key,
+#endif
+    fcs_collectible_state_t * ptr_new_state,
     int state_context_value,
     fcs_move_stack_t * moves,
     fcs_derived_states_list_t * derived_states_list
@@ -1676,7 +1876,11 @@ void fc_solve_sfs_check_state_end(
     fc_solve_instance_t * instance;
     fcs_runtime_flags_t calc_real_depth;
     fcs_runtime_flags_t scans_synergy;
-    fcs_state_keyval_pair_t * existing_state;
+    fcs_collectible_state_t * existing_state;
+
+#ifdef FCS_RCS_STATES
+    fcs_state_t * existing_state_key;
+#endif
 
     temp_move = fc_solve_empty_move;
 
@@ -1695,13 +1899,19 @@ void fc_solve_sfs_check_state_end(
 
     if (! fc_solve_check_and_add_state(
         hard_thread,
+#ifdef FCS_RCS_STATES
+        ptr_new_state_key,
+#endif
         ptr_new_state,
+#ifdef FCS_RCS_STATES
+        &existing_state_key,
+#endif
         &existing_state
         ))
     {
         if (hard_thread->allocated_from_list)
         {
-            ptr_new_state->next = instance->list_of_vacant_states;
+            FCS_S_NEXT(ptr_new_state) = instance->list_of_vacant_states;
             instance->list_of_vacant_states = ptr_new_state;
         }
         else
@@ -1716,25 +1926,25 @@ void fc_solve_sfs_check_state_end(
          * already have, then re-assign its parent to this state.
          * */
         if (STRUCT_QUERY_FLAG(instance, FCS_RUNTIME_TO_REPARENT_STATES_REAL) &&
-           (existing_state->info.depth > ptr_state->info.depth+1))
+           (FCS_S_DEPTH(existing_state) > FCS_S_DEPTH(ptr_state)+1))
         {
             /* Make a copy of "moves" because "moves" will be destroyed */
-            existing_state->info.moves_to_parent =
+            FCS_S_MOVES_TO_PARENT(existing_state) =
                 fc_solve_move_stack_compact_allocate(
                     hard_thread, moves
                     );
-            if (!(existing_state->info.visited & FCS_VISITED_DEAD_END))
+            if (!(FCS_S_VISITED(existing_state) & FCS_VISITED_DEAD_END))
             {
-                if ((--existing_state->info.parent->info.num_active_children) == 0)
+                if ((--(FCS_S_NUM_ACTIVE_CHILDREN(FCS_S_PARENT(existing_state)))) == 0)
                 {
                     mark_as_dead_end(
-                        existing_state->info.parent
+                            FCS_S_PARENT(existing_state)
                         );
                 }
-                ptr_state->info.num_active_children++;
+                FCS_S_NUM_ACTIVE_CHILDREN(ptr_state)++;
             }
-            existing_state->info.parent = ptr_state;
-            existing_state->info.depth = ptr_state->info.depth + 1;
+            FCS_S_PARENT(existing_state) = ptr_state;
+            FCS_S_DEPTH(existing_state) = FCS_S_DEPTH(ptr_state) + 1;
         }
         fc_solve_derived_states_list_add_state(
             derived_states_list,
