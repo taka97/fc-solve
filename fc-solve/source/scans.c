@@ -685,7 +685,9 @@ int fc_solve_soft_dfs_do_solve(
                     ].tests[the_soft_dfs_info->test_index]
                     (
                         soft_thread,
+#ifdef FCS_RCS_STATES
                         ptr_state_key,
+#endif
                         ptr_state,
                         derived_states_list
                     );

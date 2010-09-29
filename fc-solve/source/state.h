@@ -507,7 +507,7 @@ typedef fcs_state_extra_info_t fcs_collectible_state_t;
 #define FCS_S_NEXT(s) FCS_S_ACCESSOR(s, parent)
 #else
 typedef fcs_state_keyval_pair_t fcs_collectible_state_t;
-#define FCS_S_ACCESSOR(s, field) ((s->info).field)
+#define FCS_S_ACCESSOR(s, field) (((s)->info).field)
 #define FCS_S_NEXT(s) ((s)->next)
 #endif
 

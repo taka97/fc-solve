@@ -2458,6 +2458,9 @@ extern int fc_solve_sfs_raymond_prune(
         fcs_collectible_state_t * * ptr_ptr_next_state
         )
 {
+#ifndef FCS_RCS_STATES
+#define ptr_state val_ptr_state_val
+#endif
     tests_declare_accessors()
     int stack_idx, fc;
     fcs_cards_column_t col;
@@ -2585,6 +2588,9 @@ extern int fc_solve_sfs_raymond_prune(
 
         return ret_code;
     }
+#ifndef FCS_RCS_STATES
+#undef ptr_state
+#endif
 }
 
 #undef state
