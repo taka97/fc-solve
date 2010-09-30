@@ -359,7 +359,7 @@ typedef struct
 
     fcs_cache_key_info_t * lowest_pri, * highest_pri;
 
-    fcs_cache_key_info_t * list_of_prev_cache_key_infos;
+    fcs_cache_key_info_t * recycle_bin;
 } fcs_lru_cache_t;
 
 #endif

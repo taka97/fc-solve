@@ -307,6 +307,7 @@ typedef struct {
     fcs_collectible_state_t * state_val;
 } cache_parents_stack_item_t;
 
+#define NEXT_CACHE_STATE(s) ((s)->lower_pri)
 fcs_state_t * fc_solve_lookup_state_key_from_val(
     fc_solve_instance_t * instance,
     fcs_collectible_state_t * orig_ptr_state_val
@@ -344,19 +345,32 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
         }
         else
         {
+            /* A new state. */
+            if (cache->recycle_bin)
+            {
+                new_cache_state = cache->recycle_bin;
+                cache->recycle_bin = NEXT_CACHE_STATE(new_cache_state);
+            }
+            else
+            {
+                new_cache_state
+                    = fcs_compact_alloc_ptr(
+                        &(cache->states_values_to_keys_allocator),
+                        sizeof(*new_cache_state)
+                    );
+            }
+
             parents_stack[parents_stack_len-1].new_cache_state
-                = new_cache_state
-                = fcs_compact_alloc_ptr(
-                    &(cache->states_values_to_keys_allocator),
-                    sizeof(*new_cache_state)
-                );
+                = new_cache_state;
 
             *PValue = ((Word_t)new_cache_state);
 
-            new_cache_state->val_ptr = parents_stack[parents_stack_len-1].state_val;
+            new_cache_state->val_ptr
+                = parents_stack[parents_stack_len-1].state_val;
+
             new_cache_state->lower_pri = new_cache_state->higher_pri = NULL;
 
-            /* A new state. */
+            cache->count_elements_in_cache++;
 
             if (!FCS_S_PARENT(parents_stack[parents_stack_len-1].state_val))
             {
@@ -411,7 +425,6 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
             );
         }
 
-        cache->count_elements_in_cache++;
 
         /* Promote new_cache_state to the head of the priority list. */
         if (! cache->lowest_pri)
@@ -463,10 +476,42 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
 
     free(parents_stack);
 
+    if (cache->count_elements_in_cache > cache->max_num_elements_in_cache)
+    {
+        long count = cache->count_elements_in_cache;
+        long limit = cache->max_num_elements_in_cache;
+        
+        while (count > limit)
+        {
+            int Rc_int;
+            fcs_cache_key_info_t * lowest_pri = cache->lowest_pri;
+
+            JLD(
+                Rc_int,
+                cache->states_values_to_keys_map,
+                (Word_t)(lowest_pri->val_ptr)
+            );
+
+            cache->lowest_pri = lowest_pri->higher_pri;
+            cache->lowest_pri->lower_pri = NULL;
+
+            NEXT_CACHE_STATE(lowest_pri)
+                = cache->recycle_bin;
+
+            cache->recycle_bin = lowest_pri;
+            count--;
+        }
+
+        cache->count_elements_in_cache = count;
+    }
+
     return &(new_cache_state->key);
 }
 
+#undef NEXT_CACHE_STATE
+
 #endif
+
 int fc_solve_soft_dfs_do_solve(
     fc_solve_soft_thread_t * soft_thread
     )

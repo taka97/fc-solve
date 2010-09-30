@@ -723,7 +723,7 @@ void fc_solve_init_instance(fc_solve_instance_t * instance)
         );
         cache->lowest_pri = NULL;
         cache->highest_pri = NULL;
-        cache->list_of_prev_cache_key_infos = NULL;
+        cache->recycle_bin = NULL;
         cache->count_elements_in_cache = 0;
         cache->max_num_elements_in_cache = 10000;
     }
