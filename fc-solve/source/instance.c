@@ -519,10 +519,14 @@ fc_solve_instance_t * fc_solve_alloc_instance(void)
      * with one another. */
     STRUCT_TURN_ON_FLAG(instance, FCS_RUNTIME_SCANS_SYNERGY); 
 
-    instance->rcs_states_cache.max_num_elements_in_cache = 10000;
+#define DEFAULT_MAX_NUM_ELEMENTS_IN_CACHE 10000
+    instance->rcs_states_cache.max_num_elements_in_cache
+        = DEFAULT_MAX_NUM_ELEMENTS_IN_CACHE;
 
     return instance;
 }
+
+#undef DEFAULT_MAX_NUM_ELEMENTS_IN_CACHE
 
 static GCC_INLINE void free_instance_hard_thread_callback(fc_solve_hard_thread_t * hard_thread)
 {
