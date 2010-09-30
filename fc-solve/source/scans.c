@@ -195,7 +195,7 @@ static void free_states(fc_solve_instance_t * instance)
     by using some dedicated stacks for the traversal.
   */
 #ifdef FCS_RCS_STATES
-#define the_state (*ptr_state_key)
+#define the_state (state_key)
 #else
 #define the_state (ptr_state->s)
 #endif
@@ -512,6 +512,8 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
 
 #endif
 
+#define ASSIGN_STATE_KEY() (state_key = (*(fc_solve_lookup_state_key_from_val(instance, ptr_state))))
+
 int fc_solve_soft_dfs_do_solve(
     fc_solve_soft_thread_t * soft_thread
     )
@@ -520,7 +522,7 @@ int fc_solve_soft_dfs_do_solve(
     fc_solve_instance_t * instance = hard_thread->instance;
 
 #ifdef FCS_RCS_STATES
-    fcs_state_t * ptr_state_key;
+    fcs_state_t state_key;
 #endif
     fcs_collectible_state_t * ptr_state;
     fcs_soft_dfs_stack_item_t * the_soft_dfs_info;
@@ -556,7 +558,7 @@ int fc_solve_soft_dfs_do_solve(
     derived_states_list = &(the_soft_dfs_info->derived_states_list);
     
 #ifdef FCS_RCS_STATES
-    ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+    ASSIGN_STATE_KEY();
 #endif
 
     rand_gen = &(soft_thread->method_specific.soft_dfs.rand_gen);
@@ -653,7 +655,7 @@ int fc_solve_soft_dfs_do_solve(
                     ptr_state = the_soft_dfs_info->state;
  
 #ifdef FCS_RCS_STATES
-                    ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+                    ASSIGN_STATE_KEY();
 #endif
 
                     soft_thread->num_vacant_freecells = the_soft_dfs_info->num_vacant_freecells;
@@ -694,7 +696,7 @@ int fc_solve_soft_dfs_do_solve(
                         soft_thread->method_specific.soft_dfs.depth,
                         (void*)instance,
 #ifdef FCS_RCS_STATES
-                        ptr_state_key,
+                        &(state_key),
 #endif
                         ptr_state,
                         ((soft_thread->method_specific.soft_dfs.depth == 0) ?
@@ -759,7 +761,7 @@ int fc_solve_soft_dfs_do_solve(
                     if (fc_solve_sfs_raymond_prune(
                         soft_thread, 
 #ifdef FCS_RCS_STATES
-                        ptr_state_key,
+                        &(state_key),
 #endif
                         ptr_state, 
 #ifdef FCS_RCS_STATES
@@ -808,7 +810,7 @@ int fc_solve_soft_dfs_do_solve(
                     (
                         soft_thread,
 #ifdef FCS_RCS_STATES
-                        ptr_state_key,
+                        &(state_key),
 #endif
                         ptr_state,
                         derived_states_list
@@ -934,7 +936,7 @@ int fc_solve_soft_dfs_do_solve(
                         single_derived_state;
 
 #ifdef FCS_RCS_STATES
-                    ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+                    ASSIGN_STATE_KEY();
 #endif
                     
 
@@ -1076,6 +1078,9 @@ static GCC_INLINE pq_rating_t befs_rate_state(
     fcs_collectible_state_t * ptr_state
     )
 {
+#ifdef FCS_RCS_STATES
+#define state_key (*ptr_state_key)
+#endif
 #ifndef FCS_FREECELL_ONLY
     fc_solve_hard_thread_t * hard_thread = soft_thread->hard_thread;
     fc_solve_instance_t * instance = hard_thread->instance;
@@ -1196,6 +1201,10 @@ static GCC_INLINE pq_rating_t befs_rate_state(
 
     return (int)(ret*INT_MAX);
 }
+#ifdef FCS_RCS_STATES
+#undef state_key
+#endif
+
 
 #ifdef FCS_FREECELL_ONLY
 #undef unlimited_sequence_move
@@ -1399,7 +1408,7 @@ int fc_solve_befs_or_bfs_do_solve(
 
     fcs_collectible_state_t * ptr_state, * ptr_new_state;
 #ifdef FCS_RCS_STATES
-    fcs_state_t * ptr_state_key;
+    fcs_state_t state_key;
 #endif
     fcs_game_limit_t num_vacant_stacks, num_vacant_freecells;
     fcs_states_linked_list_item_t * save_item;
@@ -1460,7 +1469,7 @@ int fc_solve_befs_or_bfs_do_solve(
         TRACE0("Start of loop");
 
 #ifdef FCS_RCS_STATES
-        ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+        ASSIGN_STATE_KEY();
 #endif
         
 #ifdef DEBUG
@@ -1486,7 +1495,7 @@ int fc_solve_befs_or_bfs_do_solve(
             if (fc_solve_sfs_raymond_prune(
                     soft_thread,
 #ifdef FCS_RCS_STATES
-                    ptr_state_key,
+                    (&state_key),
 #endif
                     ptr_state,
 #ifdef FCS_RCS_STATES
@@ -1499,7 +1508,7 @@ int fc_solve_befs_or_bfs_do_solve(
                 ptr_state = derived;
  
 #ifdef FCS_RCS_STATES
-                ptr_state_key = fc_solve_lookup_state_key_from_val(instance, ptr_state);
+                ASSIGN_STATE_KEY();
 #endif
                 
             }
@@ -1579,7 +1588,7 @@ int fc_solve_befs_or_bfs_do_solve(
                     FCS_S_DEPTH(ptr_state),
                     (void*)instance,
 #ifdef FCS_RCS_STATES
-                    ptr_state_key,
+                    (&state_key),
 #endif
                     ptr_state,
                     ((FCS_S_PARENT(ptr_state) == NULL) ?
@@ -1628,7 +1637,7 @@ int fc_solve_befs_or_bfs_do_solve(
             (*next_test)(
                 soft_thread,
 #ifdef FCS_RCS_STATES
-                ptr_state_key,
+                &(state_key),
 #endif
                 ptr_state,
                 &derived
@@ -1777,6 +1786,10 @@ extern char * fc_solve_get_the_positions_by_rank_data(
         fcs_collectible_state_t * ptr_state
         )
 {
+#ifdef FCS_RCS_STATES
+#define state_key (*ptr_state_key)
+#endif
+
     char * * positions_by_rank_location;
     switch(soft_thread->method)
     {
@@ -1909,6 +1922,9 @@ extern char * fc_solve_get_the_positions_by_rank_data(
 
     return *positions_by_rank_location;
 }
+#ifdef FCS_RCS_STATES
+#undef state_key
+#endif
 
 /* 
  * These functions are used by the move functions in freecell.c and
