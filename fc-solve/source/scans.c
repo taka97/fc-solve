@@ -307,13 +307,17 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
         )
 {
     PWord_t PValue;
+    fcs_lru_cache_t * cache;
 
-    JLI (PValue, instance->states_values_to_keys_map, 
+    cache = &(instance->rcs_states_cache);
+
+    JLI (PValue, cache->states_values_to_keys_map, 
         ((Word_t)ptr_state_val));
 
     if (*PValue == 0)
     {
         /* A new state. */
+
         if (!FCS_S_PARENT(ptr_state_val))
         {
             *PValue = (Word_t)&(instance->state_copy_ptr->s);
@@ -332,7 +336,7 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
             }
             else
             {
-                JLG (parent_PValue, instance->states_values_to_keys_map,
+                JLG (parent_PValue, cache->states_values_to_keys_map,
                        ((Word_t)(FCS_S_PARENT(ptr_state_val))));
 
                 assert ((*parent_PValue));
@@ -342,7 +346,7 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
 
             new_state_key =
                 fcs_compact_alloc_ptr(
-                    &(instance->states_values_to_keys_allocator),
+                    &(cache->states_values_to_keys_allocator),
                     sizeof(*new_state_key)
                 );
 
@@ -367,6 +371,7 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
 
             *PValue = (Word_t)new_state_key;
         }
+        cache->count_elements_in_cache++;
     }
 
 #ifdef DEBUG

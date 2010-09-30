@@ -337,6 +337,30 @@ enum
     FCS_RUNTIME_SCANS_SYNERGY  = (1 << 6),
 };
 
+#ifdef FCS_RCS_STATES
+struct fcs_cache_key_info_struct
+{
+    fcs_collectible_state_t * extra_info_ptr;
+    fcs_state_t key;
+    /* lower_pri and higher_pri form a doubly linked list. */
+    struct fcs_cache_key_info_struct * lower_pri, * higher_pri;
+};
+
+typedef struct fcs_cache_key_info_struct fcs_cache_key_info_t;
+
+typedef struct
+{
+    Pvoid_t states_values_to_keys_map;
+    fcs_compact_allocator_t states_values_to_keys_allocator;
+    long count_elements_in_cache, max_num_elements_in_cache;
+
+    fcs_cache_key_info_t * lowest_pri, * highest_pri;
+
+    fcs_cache_key_info_t * list_of_prev_cache_key_infos;
+} fcs_lru_cache_t;
+
+#endif
+
 struct fc_solve_instance_struct
 {
 #if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_INDIRECT)
@@ -562,8 +586,7 @@ struct fc_solve_instance_struct
     fcs_tests_order_t opt_tests_order;
 
 #ifdef FCS_RCS_STATES
-    Pvoid_t states_values_to_keys_map;
-    fcs_compact_allocator_t states_values_to_keys_allocator;
+    fcs_lru_cache_t rcs_states_cache;
 #endif
 };
 

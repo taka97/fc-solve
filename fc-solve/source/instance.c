@@ -714,8 +714,20 @@ void fc_solve_init_instance(fc_solve_instance_t * instance)
     }
     
 #ifdef FCS_RCS_STATES
-    instance->states_values_to_keys_map = ((Pvoid_t) NULL);
-    fc_solve_compact_allocator_init(&(instance->states_values_to_keys_allocator));
+    {
+        fcs_lru_cache_t * cache = &(instance->rcs_states_cache);
+        
+        cache->states_values_to_keys_map = ((Pvoid_t) NULL);
+        fc_solve_compact_allocator_init(
+            &(cache->states_values_to_keys_allocator)
+        );
+        cache->lowest_pri = NULL;
+        cache->highest_pri = NULL;
+        cache->list_of_prev_cache_key_infos = NULL;
+        cache->count_elements_in_cache = 0;
+        cache->max_num_elements_in_cache = 10000;
+    }
+
 #endif
 
 }
@@ -1709,8 +1721,12 @@ void fc_solve_finish_instance(
 #ifdef FCS_RCS_STATES
     {
         Word_t Rc_word;
-        JLFA(Rc_word, instance->states_values_to_keys_map);
-        fc_solve_compact_allocator_finish(&(instance->states_values_to_keys_allocator));
+        JLFA(Rc_word, 
+            instance->rcs_states_cache.states_values_to_keys_map
+        );
+        fc_solve_compact_allocator_finish(
+            &(instance->rcs_states_cache.states_values_to_keys_allocator)
+        );
     }
 #endif
 
