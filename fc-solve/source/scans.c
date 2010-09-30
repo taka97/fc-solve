@@ -308,26 +308,29 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
 {
     PWord_t PValue;
     fcs_lru_cache_t * cache;
+    fcs_cache_key_info_t * new_cache_state;
 
     cache = &(instance->rcs_states_cache);
 
     JLI (PValue, cache->states_values_to_keys_map,
         ((Word_t)ptr_state_val));
 
-    if (*PValue == 0)
+    if (*PValue)
     {
-        fcs_cache_key_info_t * new_cache_state;
-
+        new_cache_state = (fcs_cache_key_info_t *)(*PValue);
+    }
+    else
+    {
         new_cache_state =
             fcs_compact_alloc_ptr(
                 &(cache->states_values_to_keys_allocator),
                 sizeof(*new_cache_state)
             );
 
+        *PValue = ((Word_t)new_cache_state);
+
         new_cache_state->val_ptr = ptr_state_val;
         new_cache_state->lower_pri = new_cache_state->higher_pri = NULL;
-
-        *PValue = ((Word_t)new_cache_state);
 
         /* A new state. */
 
@@ -381,6 +384,37 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
         cache->count_elements_in_cache++;
     }
 
+    /* Promote new_cache_state to the head of the priority list. */
+    {
+        if (! cache->lowest_pri)
+        {
+            /* It's the only state. */
+            cache->lowest_pri = new_cache_state;
+            cache->highest_pri = new_cache_state;
+        }
+        else
+        {
+            /* First extract the state from its place in the doubly-linked
+             * list.
+             * */
+            if (new_cache_state->higher_pri)
+            {
+                new_cache_state->higher_pri->lower_pri =
+                    new_cache_state->lower_pri;
+            }
+            if (new_cache_state->lower_pri)
+            {
+                new_cache_state->lower_pri->higher_pri =
+                    new_cache_state->higher_pri;
+            }
+            /* Now promote it to be the highest. */
+            cache->highest_pri->higher_pri = new_cache_state;
+            new_cache_state->lower_pri = cache->highest_pri;
+            new_cache_state->higher_pri = NULL;
+            cache->highest_pri = new_cache_state;
+        }
+    }
+
 #ifdef DEBUG
     {
         fcs_state_t * state = &(((fcs_cache_key_info_t * )(*PValue))->key);
@@ -399,7 +433,7 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
     }
 #endif
 
-    return &(((fcs_cache_key_info_t * )(*PValue))->key);
+    return &(new_cache_state->key);
 }
 
 #endif
