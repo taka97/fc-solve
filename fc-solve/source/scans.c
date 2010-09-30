@@ -301,91 +301,119 @@ static void free_states(fc_solve_instance_t * instance)
     )
 
 #ifdef FCS_RCS_STATES
+
+typedef struct {
+    fcs_cache_key_info_t * new_cache_state;
+    fcs_collectible_state_t * state_val;
+} cache_parents_stack_item_t;
+
 fcs_state_t * fc_solve_lookup_state_key_from_val(
-        fc_solve_instance_t * instance,
-        fcs_collectible_state_t * ptr_state_val
-        )
+    fc_solve_instance_t * instance,
+    fcs_collectible_state_t * orig_ptr_state_val
+)
 {
     PWord_t PValue;
     fcs_lru_cache_t * cache;
+    cache_parents_stack_item_t * parents_stack;
+    int parents_stack_len, parents_stack_max_len;
     fcs_cache_key_info_t * new_cache_state;
 
     cache = &(instance->rcs_states_cache);
 
-    JLI (PValue, cache->states_values_to_keys_map,
-        ((Word_t)ptr_state_val));
+    parents_stack_len = 1;
+    parents_stack_max_len = 16;
 
-    if (*PValue)
+    parents_stack = malloc(sizeof(parents_stack[0]) * parents_stack_max_len);
+    
+    parents_stack[0].state_val = orig_ptr_state_val;
+
+    while (1)
     {
-        new_cache_state = (fcs_cache_key_info_t *)(*PValue);
-    }
-    else
-    {
-        new_cache_state =
-            fcs_compact_alloc_ptr(
-                &(cache->states_values_to_keys_allocator),
-                sizeof(*new_cache_state)
-            );
+        JLI (
+            PValue,
+            cache->states_values_to_keys_map,
+            ((Word_t)parents_stack[parents_stack_len-1].state_val)
+        );
 
-        *PValue = ((Word_t)new_cache_state);
-
-        new_cache_state->val_ptr = ptr_state_val;
-        new_cache_state->lower_pri = new_cache_state->higher_pri = NULL;
-
-        /* A new state. */
-
-        if (!FCS_S_PARENT(ptr_state_val))
+        if (*PValue)
         {
-            new_cache_state->key = instance->state_copy_ptr->s;
+            parents_stack[parents_stack_len-1].new_cache_state
+                = new_cache_state
+                = (fcs_cache_key_info_t *)(*PValue);
+            break;
         }
         else
         {
-            fcs_state_t * parent_state_key;
-            fcs_collectible_state_t temp_new_state_val;
-            int i;
+            parents_stack[parents_stack_len-1].new_cache_state
+                = new_cache_state
+                = fcs_compact_alloc_ptr(
+                    &(cache->states_values_to_keys_allocator),
+                    sizeof(*new_cache_state)
+                );
 
-            PWord_t parent_PValue;
-                
-            if (! FCS_S_PARENT(FCS_S_PARENT(ptr_state_val)))
+            *PValue = ((Word_t)new_cache_state);
+
+            new_cache_state->val_ptr = parents_stack[parents_stack_len-1].state_val;
+            new_cache_state->lower_pri = new_cache_state->higher_pri = NULL;
+
+            /* A new state. */
+
+            if (!FCS_S_PARENT(parents_stack[parents_stack_len-1].state_val))
             {
-                parent_state_key = &(instance->state_copy_ptr->s);
+                new_cache_state->key = instance->state_copy_ptr->s;
+                break;
             }
             else
             {
-                JLG (parent_PValue, cache->states_values_to_keys_map,
-                       ((Word_t)(FCS_S_PARENT(ptr_state_val))));
-
-                assert ((*parent_PValue));
-
-                parent_state_key =
-                    &(((fcs_cache_key_info_t * )(*parent_PValue))->key);
+                parents_stack[parents_stack_len].state_val = 
+                    FCS_S_PARENT(parents_stack[parents_stack_len-1].state_val);
+                if (++parents_stack_len == parents_stack_max_len)
+                {
+                    parents_stack_max_len += 16;
+                    parents_stack =
+                        realloc(
+                            parents_stack,
+                            sizeof(parents_stack[0]) * parents_stack_max_len
+                        );
+                }
             }
+        }
+    }
 
-            fcs_duplicate_state(
+    for (parents_stack_len--; parents_stack_len > 0; parents_stack_len--)
+    {
+        fcs_collectible_state_t temp_new_state_val;
+        int i;
+        
+        new_cache_state = parents_stack[parents_stack_len-1].new_cache_state;
+
+        fcs_collectible_state_t * stack_ptr_this_state_val =
+            parents_stack[parents_stack_len-1].state_val;
+
+        fcs_duplicate_state(
+            &(new_cache_state->key),
+            &(temp_new_state_val),
+            &(parents_stack[parents_stack_len].new_cache_state->key),
+            parents_stack[parents_stack_len].state_val
+        );
+
+        for (i = 0 ;
+            i < stack_ptr_this_state_val->moves_to_parent->num_moves 
+            ; i++)
+        {
+            fc_solve_apply_move(
                 &(new_cache_state->key),
                 &(temp_new_state_val),
-                parent_state_key,
-                FCS_S_PARENT(ptr_state_val)
-                );
-
-            for (i = 0 ; i < ptr_state_val->moves_to_parent->num_moves ; i++)
-            {
-                fc_solve_apply_move(
-                    &(new_cache_state->key),
-                    &(temp_new_state_val),
-                    ptr_state_val->moves_to_parent->moves[i],
-                    INSTANCE_FREECELLS_NUM,
-                    INSTANCE_STACKS_NUM,
-                    INSTANCE_DECKS_NUM
-                );
-            }
+                stack_ptr_this_state_val->moves_to_parent->moves[i],
+                INSTANCE_FREECELLS_NUM,
+                INSTANCE_STACKS_NUM,
+                INSTANCE_DECKS_NUM
+            );
         }
 
         cache->count_elements_in_cache++;
-    }
 
-    /* Promote new_cache_state to the head of the priority list. */
-    {
+        /* Promote new_cache_state to the head of the priority list. */
         if (! cache->lowest_pri)
         {
             /* It's the only state. */
@@ -394,8 +422,8 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
         }
         else
         {
-            /* First extract the state from its place in the doubly-linked
-             * list.
+            /* First remove the state from its place in the doubly-linked
+             * list by linking its neighbours together.
              * */
             if (new_cache_state->higher_pri)
             {
@@ -432,6 +460,8 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
         }
     }
 #endif
+
+    free(parents_stack);
 
     return &(new_cache_state->key);
 }
