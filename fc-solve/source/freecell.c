@@ -2574,7 +2574,7 @@ extern int fc_solve_sfs_raymond_prune(
              * found by other means, we still shouldn't prune it, because
              * it is already "prune-perfect".
              * */
-            FCS_S_VISITED_ITER(ptr_next_state) |= FCS_VISITED_GENERATED_BY_PRUNING;
+            FCS_S_VISITED(ptr_next_state) |= FCS_VISITED_GENERATED_BY_PRUNING;
 
             ret_code = PRUNE_RET_FOLLOW_STATE;
         }
