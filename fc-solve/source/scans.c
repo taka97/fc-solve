@@ -311,20 +311,33 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
 
     cache = &(instance->rcs_states_cache);
 
-    JLI (PValue, cache->states_values_to_keys_map, 
+    JLI (PValue, cache->states_values_to_keys_map,
         ((Word_t)ptr_state_val));
 
     if (*PValue == 0)
     {
+        fcs_cache_key_info_t * new_cache_state;
+
+        new_cache_state =
+            fcs_compact_alloc_ptr(
+                &(cache->states_values_to_keys_allocator),
+                sizeof(*new_cache_state)
+            );
+
+        new_cache_state->val_ptr = ptr_state_val;
+        new_cache_state->lower_pri = new_cache_state->higher_pri = NULL;
+
+        *PValue = ((Word_t)new_cache_state);
+
         /* A new state. */
 
         if (!FCS_S_PARENT(ptr_state_val))
         {
-            *PValue = (Word_t)&(instance->state_copy_ptr->s);
+            new_cache_state->key = instance->state_copy_ptr->s;
         }
         else
         {
-            fcs_state_t * parent_state_key, * new_state_key;
+            fcs_state_t * parent_state_key;
             fcs_collectible_state_t temp_new_state_val;
             int i;
 
@@ -341,17 +354,12 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
 
                 assert ((*parent_PValue));
 
-                parent_state_key = (fcs_state_t *)(*parent_PValue);
+                parent_state_key =
+                    &(((fcs_cache_key_info_t * )(*parent_PValue))->key);
             }
 
-            new_state_key =
-                fcs_compact_alloc_ptr(
-                    &(cache->states_values_to_keys_allocator),
-                    sizeof(*new_state_key)
-                );
-
             fcs_duplicate_state(
-                new_state_key,
+                &(new_cache_state->key),
                 &(temp_new_state_val),
                 parent_state_key,
                 FCS_S_PARENT(ptr_state_val)
@@ -360,7 +368,7 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
             for (i = 0 ; i < ptr_state_val->moves_to_parent->num_moves ; i++)
             {
                 fc_solve_apply_move(
-                    new_state_key,
+                    &(new_cache_state->key),
                     &(temp_new_state_val),
                     ptr_state_val->moves_to_parent->moves[i],
                     INSTANCE_FREECELLS_NUM,
@@ -368,15 +376,14 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
                     INSTANCE_DECKS_NUM
                 );
             }
-
-            *PValue = (Word_t)new_state_key;
         }
+
         cache->count_elements_in_cache++;
     }
 
 #ifdef DEBUG
     {
-        fcs_state_t * state = (fcs_state_t *)(*PValue);
+        fcs_state_t * state = &(((fcs_cache_key_info_t * )(*PValue))->key);
 
         int s=0;
         for (s=0;s<INSTANCE_STACKS_NUM; s++)
@@ -392,8 +399,9 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
     }
 #endif
 
-    return (fcs_state_t *)(*PValue);
+    return &(((fcs_cache_key_info_t * )(*PValue))->key);
 }
+
 #endif
 int fc_solve_soft_dfs_do_solve(
     fc_solve_soft_thread_t * soft_thread

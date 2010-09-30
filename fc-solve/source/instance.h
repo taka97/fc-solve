@@ -340,7 +340,7 @@ enum
 #ifdef FCS_RCS_STATES
 struct fcs_cache_key_info_struct
 {
-    fcs_collectible_state_t * extra_info_ptr;
+    fcs_collectible_state_t * val_ptr;
     fcs_state_t key;
     /* lower_pri and higher_pri form a doubly linked list. */
     struct fcs_cache_key_info_struct * lower_pri, * higher_pri;
