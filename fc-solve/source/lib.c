@@ -2368,6 +2368,32 @@ DLLEXPORT const char * freecell_solver_user_get_last_error_string(
 }
 
 
+int DLLEXPORT freecell_solver_user_set_cache_limit(
+    void * api_instance,
+    long limit
+    )
+{
+#ifndef FCS_RCS_STATES
+    return 0;
+#else
+    fcs_user_t * user;
+    FLARES_LOOP_DECLARE_VARS();
+
+    user = (fcs_user_t*)api_instance;
+
+    if (limit <= 0)
+    {
+        return -1;
+    }
+
+    FLARES_LOOP_START()
+        flare->obj->rcs_states_cache.max_num_elements_in_cache = limit;
+    FLARES_LOOP_END()
+
+    return 0;
+#endif
+}
+
 #ifdef FCS_COMPILE_DEBUG_FUNCTIONS
 
 int DLLEXPORT fc_solve_user_INTERNAL_compile_all_flares_plans(

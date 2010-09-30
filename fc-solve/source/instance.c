@@ -519,6 +519,8 @@ fc_solve_instance_t * fc_solve_alloc_instance(void)
      * with one another. */
     STRUCT_TURN_ON_FLAG(instance, FCS_RUNTIME_SCANS_SYNERGY); 
 
+    instance->rcs_states_cache.max_num_elements_in_cache = 10000;
+
     return instance;
 }
 
@@ -725,7 +727,6 @@ void fc_solve_init_instance(fc_solve_instance_t * instance)
         cache->highest_pri = NULL;
         cache->recycle_bin = NULL;
         cache->count_elements_in_cache = 0;
-        cache->max_num_elements_in_cache = 10000;
     }
 
 #endif
