@@ -87,7 +87,7 @@ void fc_solve_increase_dfs_max_depth(
 }
 
 #define FCS_IS_STATE_DEAD_END(ptr_state) \
-    (FCS_S_VISITED_ITER(ptr_state) & FCS_VISITED_DEAD_END)
+    (FCS_S_VISITED(ptr_state) & FCS_VISITED_DEAD_END)
 
 fcs_bool_t free_states_should_delete(void * key, void * context)
 {
@@ -673,7 +673,7 @@ int fc_solve_soft_dfs_do_solve(
 
             TRACE0("Before iter_handler");
             /* If this is the first test, then count the number of unoccupied
-               freeceels and stacks and check if we are done. */
+               freecells and stacks and check if we are done. */
             if (   (the_soft_dfs_info->test_index == 0)
                 && (the_soft_dfs_info->tests_list_index == 0)
                )
