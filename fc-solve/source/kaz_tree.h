@@ -80,8 +80,10 @@ typedef void (*dnode_free_t)(dnode_t *, void *);
 typedef struct dict_t {
     #if defined(DICT_IMPLEMENTATION) || !defined(KAZLIB_OPAQUE_DEBUG)
     dnode_t dict_nilnode;
+#ifdef NO_FC_SOLVE
     dictcount_t dict_nodecount;
     dictcount_t dict_maxcount;
+#endif
     dict_comp_t dict_compare;
     /* Removed from fc-solve */
 #if 0
@@ -111,14 +113,22 @@ typedef struct dict_load_t {
     #endif
 } dict_load_t;
 
+#ifdef NO_FC_SOLVE
 extern dict_t *dict_create(dictcount_t, dict_comp_t, void * context);
+#else
+extern dict_t *dict_create(dict_comp_t, void * context);
+#endif
 #if 0
 extern void dict_set_allocator(dict_t *, dnode_alloc_t, dnode_free_t, void *);
 #endif
 extern void dict_destroy(dict_t *);
 extern void dict_free_nodes(dict_t *);
 extern void dict_free(dict_t *);
+#ifdef NO_FC_SOLVE
 extern dict_t *dict_init(dict_t *, dictcount_t, dict_comp_t);
+#else
+extern dict_t *dict_init(dict_t *, dict_comp_t);
+#endif
 extern void dict_init_like(dict_t *, const dict_t *);
 #ifdef NO_FC_SOLVE
 extern dict_t *dict_init_alloc(dict_t *, dictcount_t, dict_comp_t,

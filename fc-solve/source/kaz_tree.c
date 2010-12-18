@@ -267,12 +267,16 @@ static int verify_dict_has_node(dnode_t *nil, dnode_t *root, dnode_t *node)
  * Dynamically allocate and initialize a dictionary object.
  */
 
+#ifdef NO_FC_SOLVE
 dict_t *dict_create(dictcount_t maxcount, dict_comp_t comp, void * context)
+#else
+dict_t *dict_create(dict_comp_t comp, void * context)
+#endif
 {
     dict_t *dict = (dict_t *) malloc(sizeof *dict);
 
     if (dict)
-        dict_init(dict, maxcount, comp);
+        dict_init(dict, comp);
 
     dict->context = context;
 
@@ -354,10 +358,10 @@ void dict_destroy(dict_t *dict)
 void dict_free_nodes(dict_t *dict)
 {
     /* Removed for fc-solve. */
-#if 0
+#ifdef NO_FC_SOLVE
     safe_traverse(dict, dict->freenode);
-#endif
     dict->nodecount = 0;
+#endif
     dict->nilnode.left = &dict->nilnode;
     dict->nilnode.right = &dict->nilnode;
 }
@@ -378,7 +382,11 @@ void dict_free(dict_t *dict)
  * Initialize a user-supplied dictionary object.
  */
 
+#ifdef NO_FC_SOLVE
 dict_t *dict_init(dict_t *dict, dictcount_t maxcount, dict_comp_t comp)
+#else
+dict_t *dict_init(dict_t *dict, dict_comp_t comp)
+#endif
 {
     dict->compare = comp;
     /* Removed for fc-solve. */
@@ -391,8 +399,10 @@ dict_t *dict_init(dict_t *dict, dictcount_t maxcount, dict_comp_t comp)
 #endif
 
     dict->context = NULL;
+#ifdef NO_FC_SOLVE
     dict->nodecount = 0;
     dict->maxcount = maxcount;
+#endif
     dict->nilnode.left = &dict->nilnode;
     dict->nilnode.right = &dict->nilnode;
     dict->nilnode.parent = &dict->nilnode;
@@ -417,8 +427,10 @@ void dict_init_like(dict_t *dict, const dict_t *orig)
 #else
 #endif
     dict->context = orig->context;
+#ifdef NO_FC_SOLVE
     dict->nodecount = 0;
     dict->maxcount = orig->maxcount;
+#endif
     dict->nilnode.left = &dict->nilnode;
     dict->nilnode.right = &dict->nilnode;
     dict->nilnode.parent = &dict->nilnode;
@@ -458,18 +470,23 @@ extern dict_t *dict_init_alloc(dict_t *dict, dictcount_t maxcount,
 }
 #endif
 
+#ifdef NO_FC_SOLVE
 /*
  * Remove all nodes from the dictionary (without freeing them in any way).
  */
 
 static void dict_clear(dict_t *dict)
 {
+#ifdef NO_FC_SOLVE
     dict->nodecount = 0;
+#endif
     dict->nilnode.left = &dict->nilnode;
     dict->nilnode.right = &dict->nilnode;
     dict->nilnode.parent = &dict->nilnode;
     assert (dict->nilnode.color == dnode_black);
 }
+
+#endif
 
 
 #ifdef NO_FC_SOLVE
@@ -761,7 +778,9 @@ const void * dict_insert(dict_t *dict, dnode_t *node, const void *key)
     node->left = nil;
     node->right = nil;
 
+#ifdef NO_FC_SOLVE
     dict->nodecount++;
+#endif
 
     /* red black adjustments */
 
@@ -909,7 +928,9 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *target)
     target->right = NULL;
     target->left = NULL;
 
+#ifdef NO_FC_SOLVE
     dict->nodecount--;
+#endif
 
     assert (verify_bintree(dict));
 
@@ -1147,6 +1168,7 @@ void dict_allow_dupes(dict_t *dict)
 #undef dnode_put
 #undef dnode_getkey
 
+#ifdef NO_FC_SOLVE
 dictcount_t dict_count(dict_t *dict)
 {
     return dict->nodecount;
@@ -1161,6 +1183,7 @@ int dict_isfull(dict_t *dict)
 {
     return dict->nodecount == dict->maxcount;
 }
+#endif
 
 int dict_contains(dict_t *dict, dnode_t *node)
 {
@@ -1253,6 +1276,7 @@ void dict_load_begin(dict_load_t *load, dict_t *dict)
     load_begin_internal(load, dict);
 }
 
+#ifdef NO_FC_SOLVE
 void dict_load_next(dict_load_t *load, dnode_t *newnode, const void *key)
 {
     dict_t *dict = load->dictptr;
@@ -1274,7 +1298,9 @@ void dict_load_next(dict_load_t *load, dnode_t *newnode, const void *key)
     nil->right->left = newnode;
     nil->right = newnode;
     newnode->left = nil;
+#ifdef NO_FC_SOLVE
     dict->nodecount++;
+#endif
 }
 
 void dict_load_end(dict_load_t *load)
@@ -1368,7 +1394,9 @@ void dict_merge(dict_t *dest, dict_t *source)
     if (source == dest)
         return;
 
+#ifdef NO_FC_SOLVE
     dest->nodecount = 0;
+#endif
     load_begin_internal(&load, dest);
 
     for (;;) {
@@ -1412,6 +1440,7 @@ void dict_merge(dict_t *dest, dict_t *source)
     dict_clear(source);
     dict_load_end(&load);
 }
+#endif
 
 #ifdef KAZLIB_TEST_MAIN
 

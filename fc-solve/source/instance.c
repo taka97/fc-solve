@@ -1029,10 +1029,7 @@ void fc_solve_start_instance_process_with_board(
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_KAZ_TREE)
 
 #ifdef FCS_RCS_STATES
-    instance->tree = dict_create(ULONG_MAX,
-            fc_solve_rcs_states_compare,
-            instance
-            );
+    instance->tree = dict_create(fc_solve_rcs_states_compare, instance);
 #else
 #error Not implemented.
     instance->tree = fcs_libavl2_states_tree_create(fc_solve_state_compare_with_context, NULL, NULL);
