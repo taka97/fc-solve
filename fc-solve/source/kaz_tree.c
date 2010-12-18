@@ -39,8 +39,12 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <assert.h>
+
+#include "inline.h"
+
 #define DICT_IMPLEMENTATION
 #include "kaz_tree.h"
+
 
 /*
  * These macros provide short convenient names for structure members,
@@ -1024,6 +1028,15 @@ dnode_t *fc_solve_kaz_tree_delete(dict_t *dict, dnode_t *target)
 }
 #endif
 
+static GCC_INLINE dnode_t *dnode_init(dnode_t *dnode, void *data)
+{
+    dnode->data = data;
+    dnode->parent = NULL;
+    dnode->left = NULL;
+    dnode->right = NULL;
+    return dnode;
+}
+
 /*
  * Allocate a node using the dictionary's allocator routine, give it
  * the data item.
@@ -1218,6 +1231,7 @@ static void dnode_free(dnode_t *node, void *context)
 }
 #endif
 
+#ifdef NO_FC_SOLVE
 dnode_t *dnode_create(void *data)
 {
     dnode_t *dnode = (dnode_t *) malloc(sizeof *dnode);
@@ -1227,15 +1241,6 @@ dnode_t *dnode_create(void *data)
         dnode->left = NULL;
         dnode->right = NULL;
     }
-    return dnode;
-}
-
-dnode_t *dnode_init(dnode_t *dnode, void *data)
-{
-    dnode->data = data;
-    dnode->parent = NULL;
-    dnode->left = NULL;
-    dnode->right = NULL;
     return dnode;
 }
 
@@ -1259,11 +1264,14 @@ void dnode_put(dnode_t *dnode, void *data)
 {
     dnode->data = data;
 }
+#endif
 
+#ifdef NO_FC_SOLVE
 int dnode_is_in_a_dict(dnode_t *dnode)
 {
     return (dnode->parent && dnode->left && dnode->right);
 }
+#endif
 
 #ifdef NO_FC_SOLVE
 void dict_process(dict_t *dict, void *context, dnode_process_t function)

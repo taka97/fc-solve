@@ -165,6 +165,7 @@ extern int dict_contains(dict_t *, dnode_t *);
 #ifdef NO_FC_SOLVE
 extern void dict_allow_dupes(dict_t *);
 #endif
+#ifdef NO_FC_SOLVE
 extern int dnode_is_in_a_dict(dnode_t *);
 extern dnode_t *dnode_create(void *);
 extern dnode_t *dnode_init(dnode_t *, void *);
@@ -172,6 +173,7 @@ extern void dnode_destroy(dnode_t *);
 extern void *dnode_get(dnode_t *);
 extern const void *dnode_getkey(dnode_t *);
 extern void dnode_put(dnode_t *, void *);
+#endif
 #ifdef NO_FC_SOLVE
 extern void dict_process(dict_t *, void *, dnode_process_t);
 extern void dict_load_begin(dict_load_t *, dict_t *);
