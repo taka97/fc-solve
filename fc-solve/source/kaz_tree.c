@@ -154,6 +154,7 @@ static void free_nodes(dict_t *dict, dnode_t *node, dnode_t *nil)
 }
 #endif
 
+#ifdef NO_FC_SOLVE
 /*
  * This procedure performs a verification that the given subtree is a binary
  * search tree. It performs an inorder traversal of the tree using the
@@ -185,7 +186,9 @@ static int verify_bintree(dict_t *dict)
     return 1;
 }
 
+#endif
 
+#ifdef NO_FC_SOLVE
 /*
  * This function recursively verifies that the given binary subtree satisfies
  * three of the red black properties. It checks that every red node has only
@@ -223,7 +226,9 @@ static unsigned int verify_redblack(dnode_t *nil, dnode_t *root)
     }
     return 1;
 }
+#endif
 
+#ifdef NO_FC_SOLVE
 /*
  * Compute the actual count of nodes by traversing the tree and
  * return it. This could be compared against the stored count to
@@ -238,6 +243,7 @@ static dictcount_t verify_node_count(dnode_t *nil, dnode_t *root)
         return 1 + verify_node_count(nil, root->left)
             + verify_node_count(nil, root->right);
 }
+#endif
 
 /*
  * Verify that the tree contains the given node. This is done by
@@ -391,7 +397,9 @@ dict_t *dict_init(dict_t *dict, dictcount_t maxcount, dict_comp_t comp)
     dict->nilnode.right = &dict->nilnode;
     dict->nilnode.parent = &dict->nilnode;
     dict->nilnode.color = dnode_black;
+#ifdef NO_FC_SOLVE
     dict->dupes = 0;
+#endif
     return dict;
 }
 
@@ -415,7 +423,9 @@ void dict_init_like(dict_t *dict, const dict_t *orig)
     dict->nilnode.right = &dict->nilnode;
     dict->nilnode.parent = &dict->nilnode;
     dict->nilnode.color = dnode_black;
+#ifdef NO_FC_SOLVE
     dict->dupes = orig->dupes;
+#endif
 
     assert (dict_similar(dict, orig));
 }
@@ -441,7 +451,9 @@ extern dict_t *dict_init_alloc(dict_t *dict, dictcount_t maxcount,
     dict->nilnode.right = &dict->nilnode;
     dict->nilnode.parent = &dict->nilnode;
     dict->nilnode.color = dnode_black;
+#ifdef NO_FC_SOLVE
     dict->dupes = 0;
+#endif
     return dict;
 }
 #endif
@@ -460,6 +472,7 @@ static void dict_clear(dict_t *dict)
 }
 
 
+#ifdef NO_FC_SOLVE
 /*
  * Verify the integrity of the dictionary structure.  This is provided for
  * debugging purposes, and should be placed in assert statements.   Just because
@@ -491,6 +504,7 @@ int dict_verify(dict_t *dict)
         return 0;
     return 1;
 }
+#endif
 
 #ifdef NO_FC_SOLVE
 /*
@@ -530,7 +544,9 @@ dnode_t *dict_lookup(dict_t *dict, const void *key)
 {
     dnode_t *root = dict_root(dict);
     dnode_t *nil = dict_nil(dict);
+#ifdef NO_FC_SOLVE
     dnode_t *saved;
+#endif
     int result;
 
     /* simple binary search adapted for trees that contain duplicate keys */
@@ -542,6 +558,7 @@ dnode_t *dict_lookup(dict_t *dict, const void *key)
         else if (result > 0)
             root = root->right;
         else {
+#ifdef NO_FC_SOLVE
             if (!dict->dupes) { /* no duplicates, return match          */
                 return root;
             } else {            /* could be dupes, find leftmost one    */
@@ -553,6 +570,9 @@ dnode_t *dict_lookup(dict_t *dict, const void *key)
                 } while (root != nil);
                 return saved;
             }
+#else
+            return root;
+#endif
         }
     }
 
@@ -579,12 +599,16 @@ dnode_t *dict_lower_bound(dict_t *dict, const void *key)
             tentative = root;
             root = root->left;
         } else {
+#ifdef NO_FC_SOLVE
             if (!dict->dupes) {
                 return root;
             } else {
                 tentative = root;
                 root = root->left;
             }
+#else
+            return root;
+#endif
         }
     }
 
@@ -611,12 +635,16 @@ dnode_t *dict_upper_bound(dict_t *dict, const void *key)
             tentative = root;
             root = root->right;
         } else {
+#ifdef NO_FC_SOLVE
             if (!dict->dupes) {
                 return root;
             } else {
                 tentative = root;
                 root = root->right;
             }
+#else
+            return root;
+#endif
         }
     }
 
@@ -1105,10 +1133,12 @@ dnode_t *dict_prev(dict_t *dict, dnode_t *curr)
     return (parent == nil) ? NULL : parent;
 }
 
+#ifdef NO_FC_SOLVE
 void dict_allow_dupes(dict_t *dict)
 {
     dict->dupes = 1;
 }
+#endif
 
 #undef dict_count
 #undef dict_isempty

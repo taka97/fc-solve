@@ -92,7 +92,9 @@ typedef struct dict_t {
     dnode_t * dict_recycle_bin; 
 #endif
     void *dict_context;
+#ifdef NO_FC_SOLVE
     int dict_dupes;
+#endif
     #else
     int dict_dummmy;
     #endif
@@ -122,7 +124,9 @@ extern void dict_init_like(dict_t *, const dict_t *);
 extern dict_t *dict_init_alloc(dict_t *, dictcount_t, dict_comp_t,
                                dnode_alloc_t, dnode_free_t, void *);
 #endif
+#ifdef NO_FC_SOLVE
 extern int dict_verify(dict_t *);
+#endif
 extern int dict_similar(const dict_t *, const dict_t *);
 extern dnode_t *dict_lookup(dict_t *, const void *);
 extern dnode_t *dict_lower_bound(dict_t *, const void *);
@@ -141,7 +145,9 @@ extern dictcount_t dict_count(dict_t *);
 extern int dict_isempty(dict_t *);
 extern int dict_isfull(dict_t *);
 extern int dict_contains(dict_t *, dnode_t *);
+#ifdef NO_FC_SOLVE
 extern void dict_allow_dupes(dict_t *);
+#endif
 extern int dnode_is_in_a_dict(dnode_t *);
 extern dnode_t *dnode_create(void *);
 extern dnode_t *dnode_init(dnode_t *, void *);
