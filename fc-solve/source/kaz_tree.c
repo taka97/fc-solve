@@ -23,7 +23,12 @@
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
-
+/*
+ * Adapted from kazlib's dict.h by Shlomi Fish for Freecell Solver:
+ *
+ * http://git.savannah.gnu.org/cgit/kazlib.git/
+ *
+ * */
 /* Removes self-checks. See the kazlib's README for more information
  * about the motivation for this. Without it, everything is much slower.
  *

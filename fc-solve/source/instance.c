@@ -1189,7 +1189,8 @@ void fc_solve_finish_instance(
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBAVL2_TREE)
     fcs_libavl2_states_tree_destroy(instance->tree, NULL);
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_KAZ_TREE)
-    dict_free(instance->tree);
+    dict_free_nodes(instance->tree);
+    dict_destroy(instance->tree);
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GLIB_TREE)
     g_tree_destroy(instance->tree);
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_JUDY)
