@@ -416,6 +416,7 @@ dict_t *dict_init(dict_t *dict, dict_comp_t comp)
     return dict;
 }
 
+#ifdef NO_FC_SOLVE
 /*
  * Initialize a dictionary in the likeness of another dictionary
  */
@@ -444,6 +445,7 @@ void dict_init_like(dict_t *dict, const dict_t *orig)
 
     assert (dict_similar(dict, orig));
 }
+#endif
 
 #ifdef NO_FC_SOLVE
 /*
