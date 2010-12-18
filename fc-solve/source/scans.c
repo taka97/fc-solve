@@ -89,7 +89,7 @@ void fc_solve_increase_dfs_max_depth(
 #define FCS_IS_STATE_DEAD_END(ptr_state) \
     (FCS_S_VISITED(ptr_state) & FCS_VISITED_DEAD_END)
 
-#ifndef FCS_RCS_STATES
+#if ((FCS_STATE_STORAGE == FCS_STATE_STORAGE_INTERNAL_HASH) || (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GOOGLE_DENSE_HASH))
 static fcs_bool_t free_states_should_delete(void * key, void * context)
 {
     fc_solve_instance_t * instance = (fc_solve_instance_t *)context;
@@ -113,7 +113,7 @@ static fcs_bool_t free_states_should_delete(void * key, void * context)
 
 static void free_states(fc_solve_instance_t * instance)
 {
-#ifdef FCS_RCS_STATES
+#if ((FCS_STATE_STORAGE == FCS_STATE_STORAGE_INTERNAL_HASH) || (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GOOGLE_DENSE_HASH))
     return;
 #else
     /* First of all, let's make sure the soft_threads will no longer

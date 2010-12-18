@@ -1033,8 +1033,7 @@ void fc_solve_start_instance_process_with_board(
             fc_solve_rcs_states_compare, instance
             );
 #else
-#error Not implemented.
-    instance->tree = fcs_libavl2_states_tree_create(fc_solve_state_compare_with_context, NULL, NULL);
+    instance->tree = fc_solve_kaz_tree_create(fc_solve_state_compare_with_context, NULL);
 #endif
 
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GLIB_TREE)
