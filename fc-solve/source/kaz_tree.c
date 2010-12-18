@@ -1028,9 +1028,15 @@ dnode_t *fc_solve_kaz_tree_delete(dict_t *dict, dnode_t *target)
 }
 #endif
 
+#ifdef NO_FC_SOLVE
 static GCC_INLINE dnode_t *dnode_init(dnode_t *dnode, void *data)
+#else
+static GCC_INLINE dnode_t *dnode_init(dnode_t *dnode)
+#endif
 {
+#ifdef NO_FC_SOLVE
     dnode->data = data;
+#endif
     dnode->parent = NULL;
     dnode->left = NULL;
     dnode->right = NULL;
@@ -1042,7 +1048,11 @@ static GCC_INLINE dnode_t *dnode_init(dnode_t *dnode, void *data)
  * the data item.
  */
 
+#ifdef NO_FC_SOLVE
 const void * fc_solve_kaz_tree_alloc_insert(dict_t *dict, const void *key, void *data)
+#else
+const void * fc_solve_kaz_tree_alloc_insert(dict_t *dict, const void *key)
+#endif
 {
     dnode_t * from_bin;
     dnode_t * node;
@@ -1063,7 +1073,11 @@ const void * fc_solve_kaz_tree_alloc_insert(dict_t *dict, const void *key, void 
             ;
     }
 
+#ifdef NO_FC_SOLVE
     dnode_init(node, data);
+#else
+    dnode_init(node);
+#endif
 
     if ((ret = fc_solve_kaz_tree_insert(dict, node, key)))
     {

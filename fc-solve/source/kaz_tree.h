@@ -64,7 +64,9 @@ typedef struct dnode_t {
     struct dnode_t *dict_parent;
     dnode_color_t dict_color;
     const void *dict_key;
+#ifdef NO_FC_SOLVE
     void *dict_data;
+#endif
     #else
     int dict_dummy;
     #endif
@@ -147,7 +149,7 @@ extern const void * fc_solve_kaz_tree_insert(dict_t *, dnode_t *, const void *);
 #ifdef NO_FC_SOLVE
 extern dnode_t *fc_solve_kaz_tree_delete(dict_t *, dnode_t *);
 #endif
-extern const void * fc_solve_kaz_tree_alloc_insert(dict_t *, const void *, void *);
+extern const void * fc_solve_kaz_tree_alloc_insert(dict_t *, const void *);
 #ifdef NO_FC_SOLVE
 extern void fc_solve_kaz_tree_delete_free(dict_t *, dnode_t *);
 #endif
