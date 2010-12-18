@@ -113,7 +113,7 @@ static fcs_bool_t free_states_should_delete(void * key, void * context)
 
 static void free_states(fc_solve_instance_t * instance)
 {
-#if ((FCS_STATE_STORAGE == FCS_STATE_STORAGE_INTERNAL_HASH) || (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GOOGLE_DENSE_HASH))
+#if (! ((FCS_STATE_STORAGE == FCS_STATE_STORAGE_INTERNAL_HASH) || (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GOOGLE_DENSE_HASH)))
     return;
 #else
     /* First of all, let's make sure the soft_threads will no longer
