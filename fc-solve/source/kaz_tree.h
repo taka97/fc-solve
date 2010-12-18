@@ -37,6 +37,7 @@
 #include "sfx.h"
 #endif
 
+#include "alloc.h"
 /*
  * Blurb for inclusion into C++ translation units
  */
@@ -54,6 +55,8 @@ typedef unsigned long dictcount_t;
 
 typedef enum { dnode_red, dnode_black } dnode_color_t;
 
+#define DNODE_NEXT(node) ((node)->dict_left)
+
 typedef struct dnode_t {
     #if defined(DICT_IMPLEMENTATION) || !defined(KAZLIB_OPAQUE_DEBUG)
     struct dnode_t *dict_left;
@@ -68,8 +71,11 @@ typedef struct dnode_t {
 } dnode_t;
 
 typedef int (*dict_comp_t)(const void *, const void *, void *);
+/* Removed from fc-solve */
+#if 0
 typedef dnode_t *(*dnode_alloc_t)(void *);
 typedef void (*dnode_free_t)(dnode_t *, void *);
+#endif
 
 typedef struct dict_t {
     #if defined(DICT_IMPLEMENTATION) || !defined(KAZLIB_OPAQUE_DEBUG)
@@ -77,8 +83,14 @@ typedef struct dict_t {
     dictcount_t dict_nodecount;
     dictcount_t dict_maxcount;
     dict_comp_t dict_compare;
+    /* Removed from fc-solve */
+#if 0
     dnode_alloc_t dict_allocnode;
     dnode_free_t dict_freenode;
+#else
+    fcs_compact_allocator_t dict_allocator;
+    dnode_t * dict_recycle_bin; 
+#endif
     void *dict_context;
     int dict_dupes;
     #else
@@ -98,14 +110,18 @@ typedef struct dict_load_t {
 } dict_load_t;
 
 extern dict_t *dict_create(dictcount_t, dict_comp_t, void * context);
+#if 0
 extern void dict_set_allocator(dict_t *, dnode_alloc_t, dnode_free_t, void *);
+#endif
 extern void dict_destroy(dict_t *);
 extern void dict_free_nodes(dict_t *);
 extern void dict_free(dict_t *);
 extern dict_t *dict_init(dict_t *, dictcount_t, dict_comp_t);
 extern void dict_init_like(dict_t *, const dict_t *);
+#ifdef NO_FC_SOLVE
 extern dict_t *dict_init_alloc(dict_t *, dictcount_t, dict_comp_t,
                                dnode_alloc_t, dnode_free_t, void *);
+#endif
 extern int dict_verify(dict_t *);
 extern int dict_similar(const dict_t *, const dict_t *);
 extern dnode_t *dict_lookup(dict_t *, const void *);

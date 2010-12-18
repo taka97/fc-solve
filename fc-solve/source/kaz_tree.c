@@ -76,8 +76,10 @@
 #define dict_nil(D) (&(D)->nilnode)
 #define DICT_DEPTH_MAX 64
 
+#ifdef NO_FC_SOLVE
 static dnode_t *dnode_alloc(void *context);
 static void dnode_free(dnode_t *node, void *context);
+#endif
 
 /*
  * Perform a ``left rotation'' adjustment on the tree.  The given node P and
@@ -271,6 +273,7 @@ dict_t *dict_create(dictcount_t maxcount, dict_comp_t comp, void * context)
     return dict;
 }
 
+#if 0
 /*
  * Select a different set of node allocator routines.
  */
@@ -285,7 +288,9 @@ void dict_set_allocator(dict_t *dict, dnode_alloc_t al,
     dict->freenode = fr ? fr : dnode_free;
     dict->context = context;
 }
+#endif
 
+#ifdef NO_FC_SOLVE
 /*
  * Iterative bottom-up (postorder) traversal utility,
  * which allows the callback to destroy the node.
@@ -321,6 +326,7 @@ static void safe_traverse(dict_t *dict, void (*func)(dnode_t *, void *))
         current = next;
     }
 }
+#endif
 
 /*
  * Free a dynamically allocated dictionary object. Removing the nodes
@@ -329,6 +335,8 @@ static void safe_traverse(dict_t *dict, void (*func)(dnode_t *, void *))
 void dict_destroy(dict_t *dict)
 {
     assert (dict_isempty(dict));
+
+    fc_solve_compact_allocator_finish(&(dict->dict_allocator));
     free(dict);
 }
 
@@ -339,7 +347,10 @@ void dict_destroy(dict_t *dict)
 
 void dict_free_nodes(dict_t *dict)
 {
+    /* Removed for fc-solve. */
+#if 0
     safe_traverse(dict, dict->freenode);
+#endif
     dict->nodecount = 0;
     dict->nilnode.left = &dict->nilnode;
     dict->nilnode.right = &dict->nilnode;
@@ -364,8 +375,15 @@ void dict_free(dict_t *dict)
 dict_t *dict_init(dict_t *dict, dictcount_t maxcount, dict_comp_t comp)
 {
     dict->compare = comp;
+    /* Removed for fc-solve. */
+#if 0
     dict->allocnode = dnode_alloc;
     dict->freenode = dnode_free;
+#else
+    fc_solve_compact_allocator_init(&(dict->dict_allocator));
+    dict->dict_recycle_bin = NULL;
+#endif
+
     dict->context = NULL;
     dict->nodecount = 0;
     dict->maxcount = maxcount;
@@ -384,8 +402,12 @@ dict_t *dict_init(dict_t *dict, dictcount_t maxcount, dict_comp_t comp)
 void dict_init_like(dict_t *dict, const dict_t *orig)
 {
     dict->compare = orig->compare;
+    /* Removed for fc-solve. */
+#if 0
     dict->allocnode = orig->allocnode;
     dict->freenode = orig->freenode;
+#else
+#endif
     dict->context = orig->context;
     dict->nodecount = 0;
     dict->maxcount = orig->maxcount;
@@ -398,6 +420,7 @@ void dict_init_like(dict_t *dict, const dict_t *orig)
     assert (dict_similar(dict, orig));
 }
 
+#ifdef NO_FC_SOLVE
 /*
  * Initialize with allocator
  */
@@ -406,8 +429,11 @@ extern dict_t *dict_init_alloc(dict_t *dict, dictcount_t maxcount,
                                dnode_free_t fr, void *context)
 {
     dict->compare = comp;
+    /* Removed for fc-solve. */
+#if 0
     dict->allocnode = al;
     dict->freenode = fr;
+#endif
     dict->context = context;
     dict->nodecount = 0;
     dict->maxcount = maxcount;
@@ -418,6 +444,7 @@ extern dict_t *dict_init_alloc(dict_t *dict, dictcount_t maxcount,
     dict->dupes = 0;
     return dict;
 }
+#endif
 
 /*
  * Remove all nodes from the dictionary (without freeing them in any way).
@@ -465,6 +492,7 @@ int dict_verify(dict_t *dict)
     return 1;
 }
 
+#ifdef NO_FC_SOLVE
 /*
  * Determine whether two dictionaries are similar: have the same comparison and
  * allocator functions, and same status as to whether duplicates are allowed.
@@ -489,6 +517,7 @@ int dict_similar(const dict_t *left, const dict_t *right)
 
     return 1;
 }
+#endif
 
 /*
  * Locate a node in the dictionary having the given key.
@@ -943,27 +972,51 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *target)
 
 const void * dict_alloc_insert(dict_t *dict, const void *key, void *data)
 {
-    dnode_t *node = dict->allocnode(dict->context);
+    dnode_t * from_bin;
+    dnode_t * node;
+    const void * ret;
+    fcs_compact_allocator_t * allocator;
 
-    if (node) {
-        const void * ret;
 
-        dnode_init(node, data);
-        ret = dict_insert(dict, node, key);
-
-        if (ret)
-        {
-            dict->freenode(node, dict->context);
-        }
-        return ret;
+    allocator = &(dict->dict_allocator);
+    if ((from_bin = dict->dict_recycle_bin) != NULL)
+    {
+        node = dict->dict_recycle_bin;
+        dict->dict_recycle_bin = DNODE_NEXT(node);
     }
-    return NULL;
+    else
+    {
+        node = (dnode_t *)
+            fcs_compact_alloc_ptr(allocator, sizeof(*node))
+            ;
+    }
+
+    dnode_init(node, data);
+
+    if ((ret = dict_insert(dict, node, key)))
+    {
+        if (from_bin)
+        {
+            DNODE_NEXT(node) = dict->dict_recycle_bin;
+            dict->dict_recycle_bin = node;
+        }
+        else
+        {
+            fcs_compact_alloc_release(allocator);
+        }
+    }
+    return ret;
 }
 
 void dict_delete_free(dict_t *dict, dnode_t *node)
 {
     dict_delete(dict, node);
+#ifdef NO_FC_SOLVE
     dict->freenode(node, dict->context);
+#else
+    DNODE_NEXT(node) = dict->dict_recycle_bin;
+    dict->dict_recycle_bin = node;
+#endif
 }
 
 /*
@@ -1084,6 +1137,7 @@ int dict_contains(dict_t *dict, dnode_t *node)
     return verify_dict_has_node(dict_nil(dict), dict_root(dict), node);
 }
 
+#ifdef NO_FC_SOLVE
 static dnode_t *dnode_alloc(void *context)
 {
     return (dnode_t *) malloc(sizeof *dnode_alloc(NULL));
@@ -1093,6 +1147,7 @@ static void dnode_free(dnode_t *node, void *context)
 {
     free(node);
 }
+#endif
 
 dnode_t *dnode_create(void *data)
 {
