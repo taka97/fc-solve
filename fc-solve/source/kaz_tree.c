@@ -245,6 +245,7 @@ static dictcount_t verify_node_count(dnode_t *nil, dnode_t *root)
 }
 #endif
 
+#ifdef NO_FC_SOLVE
 /*
  * Verify that the tree contains the given node. This is done by
  * traversing all of the nodes and comparing their pointers to the
@@ -261,7 +262,7 @@ static int verify_dict_has_node(dnode_t *nil, dnode_t *root, dnode_t *node)
     }
     return 0;
 }
-
+#endif
 
 /*
  * Dynamically allocate and initialize a dictionary object.
@@ -559,7 +560,7 @@ int dict_similar(const dict_t *left, const dict_t *right)
  * located node is returned.
  */
 
-dnode_t *dict_lookup(dict_t *dict, const void *key)
+dnode_t *fc_solve_kaz_tree_lookup(dict_t *dict, const void *key)
 {
     dnode_t *root = dict_root(dict);
     dnode_t *nil = dict_nil(dict);
@@ -598,6 +599,7 @@ dnode_t *dict_lookup(dict_t *dict, const void *key)
     return NULL;
 }
 
+#ifdef NO_FC_SOLVE
 /*
  * Look for the node corresponding to the lowest key that is equal to or
  * greater than the given key.  If there is no such node, return null.
@@ -718,6 +720,8 @@ dnode_t *dict_strict_upper_bound(dict_t *dict, const void *key)
     return tentative;
 }
 
+#endif
+
 /*
  * Insert a node into the dictionary. The node should have been
  * initialized with a data field. All other fields are ignored.
@@ -730,7 +734,7 @@ dnode_t *dict_strict_upper_bound(dict_t *dict, const void *key)
  * function returns true).
  */
 
-const void * dict_insert(dict_t *dict, dnode_t *node, const void *key)
+const void * fc_solve_kaz_tree_insert(dict_t *dict, dnode_t *node, const void *key)
 {
     dnode_t *where = dict_root(dict), *nil = dict_nil(dict);
     dnode_t *parent = nil, *uncle, *grandpa;
@@ -839,13 +843,14 @@ const void * dict_insert(dict_t *dict, dnode_t *node, const void *key)
     return NULL;
 }
 
+#ifdef NO_FC_SOLVE
 /*
  * Delete the given node from the dictionary. If the given node does not belong
  * to the given dictionary, undefined behavior results.  A pointer to the
  * deleted node is returned.
  */
 
-dnode_t *dict_delete(dict_t *dict, dnode_t *target)
+dnode_t *fc_solve_kaz_tree_delete(dict_t *dict, dnode_t *target)
 {
     dnode_t *nil = dict_nil(dict), *child, *delparent = target->parent;
 
@@ -1015,6 +1020,7 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *target)
 
     return target;
 }
+#endif
 
 /*
  * Allocate a node using the dictionary's allocator routine, give it
@@ -1044,7 +1050,7 @@ const void * fc_solve_kaz_tree_alloc_insert(dict_t *dict, const void *key, void 
 
     dnode_init(node, data);
 
-    if ((ret = dict_insert(dict, node, key)))
+    if ((ret = fc_solve_kaz_tree_insert(dict, node, key)))
     {
         if (from_bin)
         {
@@ -1059,9 +1065,10 @@ const void * fc_solve_kaz_tree_alloc_insert(dict_t *dict, const void *key, void 
     return ret;
 }
 
-void dict_delete_free(dict_t *dict, dnode_t *node)
+#ifdef NO_FC_SOLVE
+void fc_solve_kaz_tree_delete_free(dict_t *dict, dnode_t *node)
 {
-    dict_delete(dict, node);
+    fc_solve_kaz_tree_delete(dict, node);
 #ifdef NO_FC_SOLVE
     dict->freenode(node, dict->context);
 #else
@@ -1069,7 +1076,9 @@ void dict_delete_free(dict_t *dict, dnode_t *node)
     dict->dict_recycle_bin = node;
 #endif
 }
+#endif
 
+#ifdef NO_FC_SOLVE
 /*
  * Return the node with the lowest (leftmost) key. If the dictionary is empty
  * (that is, dict_isempty(dict) returns 1) a null pointer is returned.
@@ -1155,6 +1164,7 @@ dnode_t *dict_prev(dict_t *dict, dnode_t *curr)
 
     return (parent == nil) ? NULL : parent;
 }
+#endif
 
 #ifdef NO_FC_SOLVE
 void dict_allow_dupes(dict_t *dict)
@@ -1187,10 +1197,12 @@ int dict_isfull(dict_t *dict)
 }
 #endif
 
+#ifdef NO_FC_SOLVE
 int dict_contains(dict_t *dict, dnode_t *node)
 {
     return verify_dict_has_node(dict_nil(dict), dict_root(dict), node);
 }
+#endif
 
 #ifdef NO_FC_SOLVE
 static dnode_t *dnode_alloc(void *context)
@@ -1251,6 +1263,7 @@ int dnode_is_in_a_dict(dnode_t *dnode)
     return (dnode->parent && dnode->left && dnode->right);
 }
 
+#ifdef NO_FC_SOLVE
 void dict_process(dict_t *dict, void *context, dnode_process_t function)
 {
     dnode_t *node = dict_first(dict), *next;
@@ -1264,6 +1277,7 @@ void dict_process(dict_t *dict, void *context, dnode_process_t function)
         node = next;
     }
 }
+#endif
 
 static void load_begin_internal(dict_load_t *load, dict_t *dict)
 {

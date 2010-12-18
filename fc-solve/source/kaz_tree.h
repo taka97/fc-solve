@@ -136,17 +136,23 @@ extern dict_t *dict_init_alloc(dict_t *, dictcount_t, dict_comp_t,
 #endif
 #ifdef NO_FC_SOLVE
 extern int dict_verify(dict_t *);
-#endif
 extern int dict_similar(const dict_t *, const dict_t *);
-extern dnode_t *dict_lookup(dict_t *, const void *);
+extern dnode_t *fc_solve_kaz_tree_lookup(dict_t *, const void *);
 extern dnode_t *dict_lower_bound(dict_t *, const void *);
 extern dnode_t *dict_upper_bound(dict_t *, const void *);
 extern dnode_t *dict_strict_lower_bound(dict_t *, const void *);
 extern dnode_t *dict_strict_upper_bound(dict_t *, const void *);
-extern const void * dict_insert(dict_t *, dnode_t *, const void *);
-extern dnode_t *dict_delete(dict_t *, dnode_t *);
+#endif
+extern const void * fc_solve_kaz_tree_insert(dict_t *, dnode_t *, const void *);
+#ifdef NO_FC_SOLVE
+extern dnode_t *fc_solve_kaz_tree_delete(dict_t *, dnode_t *);
+#endif
 extern const void * fc_solve_kaz_tree_alloc_insert(dict_t *, const void *, void *);
-extern void dict_delete_free(dict_t *, dnode_t *);
+#ifdef NO_FC_SOLVE
+extern void fc_solve_kaz_tree_delete_free(dict_t *, dnode_t *);
+#endif
+
+#ifdef NO_FC_SOLVE 
 extern dnode_t *dict_first(dict_t *);
 extern dnode_t *dict_last(dict_t *);
 extern dnode_t *dict_next(dict_t *, dnode_t *);
@@ -155,6 +161,7 @@ extern dictcount_t dict_count(dict_t *);
 extern int dict_isempty(dict_t *);
 extern int dict_isfull(dict_t *);
 extern int dict_contains(dict_t *, dnode_t *);
+#endif
 #ifdef NO_FC_SOLVE
 extern void dict_allow_dupes(dict_t *);
 #endif
@@ -165,11 +172,13 @@ extern void dnode_destroy(dnode_t *);
 extern void *dnode_get(dnode_t *);
 extern const void *dnode_getkey(dnode_t *);
 extern void dnode_put(dnode_t *, void *);
+#ifdef NO_FC_SOLVE
 extern void dict_process(dict_t *, void *, dnode_process_t);
 extern void dict_load_begin(dict_load_t *, dict_t *);
 extern void dict_load_next(dict_load_t *, dnode_t *, const void *);
 extern void dict_load_end(dict_load_t *);
 extern void dict_merge(dict_t *, dict_t *);
+#endif
 
 #if defined(DICT_IMPLEMENTATION) || !defined(KAZLIB_OPAQUE_DEBUG)
 #ifdef KAZLIB_SIDEEFFECT_DEBUG
