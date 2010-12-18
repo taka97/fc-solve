@@ -24,6 +24,13 @@
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/* Removes self-checks. See the kazlib's README for more information
+ * about the motivation for this. Without it, everything is much slower.
+ *
+ * Also see "man assert".
+ * */
+#define NDEBUG
+
 #include <stdlib.h>
 #include <stddef.h>
 #include <assert.h>
@@ -63,9 +70,6 @@
 #define dict_root(D) ((D)->nilnode.left)
 #define dict_nil(D) (&(D)->nilnode)
 #define DICT_DEPTH_MAX 64
-
-/* Removes self-checks. See the kazlib's README for more information. */
-#define NDEBUG
 
 static dnode_t *dnode_alloc(void *context);
 static void dnode_free(dnode_t *node, void *context);
