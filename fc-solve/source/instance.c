@@ -1029,7 +1029,9 @@ void fc_solve_start_instance_process_with_board(
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_KAZ_TREE)
 
 #ifdef FCS_RCS_STATES
-    instance->tree = dict_create(fc_solve_rcs_states_compare, instance);
+    instance->tree = fc_solve_kaz_tree_create(
+            fc_solve_rcs_states_compare, instance
+            );
 #else
 #error Not implemented.
     instance->tree = fcs_libavl2_states_tree_create(fc_solve_state_compare_with_context, NULL, NULL);
@@ -1186,8 +1188,8 @@ void fc_solve_finish_instance(
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBAVL2_TREE)
     fcs_libavl2_states_tree_destroy(instance->tree, NULL);
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_KAZ_TREE)
-    dict_free_nodes(instance->tree);
-    dict_destroy(instance->tree);
+    fc_solve_kaz_tree_free_nodes(instance->tree);
+    fc_solve_kaz_tree_destroy(instance->tree);
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GLIB_TREE)
     g_tree_destroy(instance->tree);
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_JUDY)

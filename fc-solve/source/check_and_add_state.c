@@ -571,7 +571,7 @@ fcs_bool_t fc_solve_check_and_add_state(
     instance->tree_new_state = new_state;
 
     if ((*existing_state = (fcs_collectible_state_t *)
-        dict_alloc_insert(instance->tree, new_state, NULL))
+        fc_solve_kaz_tree_alloc_insert(instance->tree, new_state, NULL))
             == NULL
        )
     {

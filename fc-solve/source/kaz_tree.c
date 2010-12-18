@@ -270,7 +270,7 @@ static int verify_dict_has_node(dnode_t *nil, dnode_t *root, dnode_t *node)
 #ifdef NO_FC_SOLVE
 dict_t *dict_create(dictcount_t maxcount, dict_comp_t comp, void * context)
 #else
-dict_t *dict_create(dict_comp_t comp, void * context)
+dict_t *fc_solve_kaz_tree_create(dict_comp_t comp, void * context)
 #endif
 {
     dict_t *dict = (dict_t *) malloc(sizeof *dict);
@@ -342,7 +342,7 @@ static void safe_traverse(dict_t *dict, void (*func)(dnode_t *, void *))
  * Free a dynamically allocated dictionary object. Removing the nodes
  * from the tree before deleting it is required.
  */
-void dict_destroy(dict_t *dict)
+void fc_solve_kaz_tree_destroy(dict_t *dict)
 {
     assert (dict_isempty(dict));
 
@@ -355,7 +355,7 @@ void dict_destroy(dict_t *dict)
  * installed free routine. The dictionary is emptied.
  */
 
-void dict_free_nodes(dict_t *dict)
+void fc_solve_kaz_tree_free_nodes(dict_t *dict)
 {
     /* Removed for fc-solve. */
 #ifdef NO_FC_SOLVE
@@ -366,6 +366,7 @@ void dict_free_nodes(dict_t *dict)
     dict->nilnode.right = &dict->nilnode;
 }
 
+#ifdef NO_FC_SOLVE
 /*
  * Obsolescent function, equivalent to dict_free_nodes
  */
@@ -375,8 +376,9 @@ void dict_free(dict_t *dict)
 #ifdef KAZLIB_OBSOLESCENT_DEBUG
     assert ("call to obsolescent function dict_free()" && 0);
 #endif
-    dict_free_nodes(dict);
+    fc_solve_kaz_tree_free_nodes(dict);
 }
+#endif
 
 /*
  * Initialize a user-supplied dictionary object.
@@ -1019,7 +1021,7 @@ dnode_t *dict_delete(dict_t *dict, dnode_t *target)
  * the data item.
  */
 
-const void * dict_alloc_insert(dict_t *dict, const void *key, void *data)
+const void * fc_solve_kaz_tree_alloc_insert(dict_t *dict, const void *key, void *data)
 {
     dnode_t * from_bin;
     dnode_t * node;

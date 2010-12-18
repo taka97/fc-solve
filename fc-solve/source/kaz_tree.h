@@ -116,13 +116,13 @@ typedef struct dict_load_t {
 #ifdef NO_FC_SOLVE
 extern dict_t *dict_create(dictcount_t, dict_comp_t, void * context);
 #else
-extern dict_t *dict_create(dict_comp_t, void * context);
+extern dict_t * fc_solve_kaz_tree_create(dict_comp_t, void * context);
 #endif
 #if 0
 extern void dict_set_allocator(dict_t *, dnode_alloc_t, dnode_free_t, void *);
 #endif
-extern void dict_destroy(dict_t *);
-extern void dict_free_nodes(dict_t *);
+extern void fc_solve_kaz_tree_destroy(dict_t *);
+extern void fc_solve_kaz_tree_free_nodes(dict_t *);
 extern void dict_free(dict_t *);
 #ifdef NO_FC_SOLVE
 extern dict_t *dict_init(dict_t *, dictcount_t, dict_comp_t);
@@ -145,7 +145,7 @@ extern dnode_t *dict_strict_lower_bound(dict_t *, const void *);
 extern dnode_t *dict_strict_upper_bound(dict_t *, const void *);
 extern const void * dict_insert(dict_t *, dnode_t *, const void *);
 extern dnode_t *dict_delete(dict_t *, dnode_t *);
-extern const void * dict_alloc_insert(dict_t *, const void *, void *);
+extern const void * fc_solve_kaz_tree_alloc_insert(dict_t *, const void *, void *);
 extern void dict_delete_free(dict_t *, dnode_t *);
 extern dnode_t *dict_first(dict_t *);
 extern dnode_t *dict_last(dict_t *);
