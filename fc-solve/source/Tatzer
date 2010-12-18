@@ -158,6 +158,7 @@ GetOptions(
     },
     'c|cols=s' => \$stack_storage,
     'p|pos=s' => \$state_storage,
+    'kazlib' => sub { $state_storage = "KAZ_TREE"; },
     'libavl2-p=s' => \$state_storage_libavl2_tree,
     'libavl2-c=s' => \$stack_storage_libavl2_tree,
     'prefix=s' => \$prefix,

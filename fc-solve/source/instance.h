@@ -93,6 +93,12 @@ extern "C" {
 
 #endif
 
+#if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_KAZ_TREE)
+
+#include "kaz_tree.h"
+
+#endif
+
 #if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_DB_FILE)
 #include <sys/types.h>
 #include <limits.h>
@@ -454,6 +460,8 @@ struct fc_solve_instance_struct
     fcs_libavl2_states_tree_table_t * tree;
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GLIB_TREE)
     GTree * tree;
+#elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_KAZ_TREE)
+    dict_t * tree;
 #endif
 
     /*
@@ -591,7 +599,7 @@ struct fc_solve_instance_struct
 #ifdef FCS_RCS_STATES
     fcs_lru_cache_t rcs_states_cache;
 
-#if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBAVL2_TREE)
+#if ((FCS_STATE_STORAGE == FCS_STATE_STORAGE_LIBAVL2_TREE) || (FCS_STATE_STORAGE == FCS_STATE_STORAGE_KAZ_TREE))
     fcs_state_t * tree_new_state_key;
     fcs_collectible_state_t * tree_new_state;
 #endif
