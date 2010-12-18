@@ -89,6 +89,7 @@ void fc_solve_increase_dfs_max_depth(
 #define FCS_IS_STATE_DEAD_END(ptr_state) \
     (FCS_S_VISITED(ptr_state) & FCS_VISITED_DEAD_END)
 
+#ifndef FCS_RCS_STATES
 static fcs_bool_t free_states_should_delete(void * key, void * context)
 {
     fc_solve_instance_t * instance = (fc_solve_instance_t *)context;
@@ -108,9 +109,13 @@ static fcs_bool_t free_states_should_delete(void * key, void * context)
         return FALSE;
     }
 }
+#endif
 
 static void free_states(fc_solve_instance_t * instance)
 {
+#ifdef FCS_RCS_STATES
+    return;
+#else
     /* First of all, let's make sure the soft_threads will no longer
      * traverse to the freed states that are currently dead end.
      * */
@@ -214,6 +219,7 @@ static void free_states(fc_solve_instance_t * instance)
         free_states_should_delete,
         ((void *)instance)
     );
+#endif
 #endif
 }
 
