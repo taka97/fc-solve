@@ -849,7 +849,6 @@ const void * fc_solve_kaz_tree_insert(dict_t *dict, dnode_t *node, const void *k
     return NULL;
 }
 
-#ifdef NO_FC_SOLVE
 /*
  * Delete the given node from the dictionary. If the given node does not belong
  * to the given dictionary, undefined behavior results.  A pointer to the
@@ -878,7 +877,7 @@ dnode_t *fc_solve_kaz_tree_delete(dict_t *dict, dnode_t *target)
      */
 
     if (target->left != nil && target->right != nil) {
-        dnode_t *next = dict_next(dict, target);
+        dnode_t *next = fc_solve_kaz_tree_next(dict, target);
         dnode_t *nextparent = next->parent;
         dnode_color_t nextcolor = next->color;
 
@@ -1026,7 +1025,6 @@ dnode_t *fc_solve_kaz_tree_delete(dict_t *dict, dnode_t *target)
 
     return target;
 }
-#endif
 
 #ifdef NO_FC_SOLVE
 static GCC_INLINE dnode_t *dnode_init(dnode_t *dnode, void *data)
@@ -1094,7 +1092,6 @@ const void * fc_solve_kaz_tree_alloc_insert(dict_t *dict, const void *key)
     return ret;
 }
 
-#ifdef NO_FC_SOLVE
 void fc_solve_kaz_tree_delete_free(dict_t *dict, dnode_t *node)
 {
     fc_solve_kaz_tree_delete(dict, node);
@@ -1105,7 +1102,6 @@ void fc_solve_kaz_tree_delete_free(dict_t *dict, dnode_t *node)
     dict->dict_recycle_bin = node;
 #endif
 }
-#endif
 
 #ifdef NO_FC_SOLVE
 /*
@@ -1146,8 +1142,9 @@ dnode_t *dict_last(dict_t *dict)
  * no successor, a null pointer is returned rather than a pointer to
  * the nil node.
  */
+#endif
 
-dnode_t *dict_next(dict_t *dict, dnode_t *curr)
+dnode_t * fc_solve_kaz_tree_next(dict_t *dict, dnode_t *curr)
 {
     dnode_t *nil = dict_nil(dict), *parent, *left;
 
@@ -1167,6 +1164,8 @@ dnode_t *dict_next(dict_t *dict, dnode_t *curr)
 
     return (parent == nil) ? NULL : parent;
 }
+
+#ifdef NO_FC_SOLVE
 
 /*
  * Return the given node's predecessor, in the key order.

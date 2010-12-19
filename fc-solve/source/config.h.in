@@ -200,6 +200,11 @@ extern "C" {
 #define FCS_STATE_STORAGE ${FCS_STATE_STORAGE}
 #define FCS_STACK_STORAGE ${FCS_STACK_STORAGE}
 
+#define FCS_RCS_CACHE_STORAGE_JUDY 0
+#define FCS_RCS_CACHE_STORAGE_KAZ_TREE 1
+
+#define FCS_RCS_CACHE_STORAGE ${FCS_RCS_CACHE_STORAGE}
+
 /* Define to 1 if you have the `m' library (-lm). */
 #cmakedefine HAVE_LIBM
 

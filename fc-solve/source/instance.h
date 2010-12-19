@@ -68,7 +68,7 @@ extern "C" {
 
 #endif
 
-#if defined(FCS_RCS_STATES) || (FCS_STATE_STORAGE == FCS_STATE_STORAGE_JUDY) || (defined(INDIRECT_STACK_STATES) && (FCS_STACK_STORAGE == FCS_STACK_STORAGE_JUDY))
+#if ((defined(FCS_RCS_STATES) && (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_JUDY)) || (FCS_STATE_STORAGE == FCS_STATE_STORAGE_JUDY) || (defined(INDIRECT_STACK_STATES) && (FCS_STACK_STORAGE == FCS_STACK_STORAGE_JUDY)))
 
 #include <Judy.h>
 
@@ -93,7 +93,7 @@ extern "C" {
 
 #endif
 
-#if (FCS_STATE_STORAGE == FCS_STATE_STORAGE_KAZ_TREE)
+#if ((FCS_STATE_STORAGE == FCS_STATE_STORAGE_KAZ_TREE) || (defined(FCS_RCS_STATES) && (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_KAZ_TREE)))
 
 #include "kaz_tree.h"
 
@@ -359,7 +359,13 @@ typedef struct fcs_cache_key_info_struct fcs_cache_key_info_t;
 
 typedef struct
 {
+#if (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_JUDY)
     Pvoid_t states_values_to_keys_map;
+#elif (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_KAZ_TREE)
+    dict_t * kaz_tree;
+#else
+#error unknown FCS_RCS_CACHE_STORAGE
+#endif
     fcs_compact_allocator_t states_values_to_keys_allocator;
     long count_elements_in_cache, max_num_elements_in_cache;
 
@@ -1738,6 +1744,11 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
         fc_solve_instance_t * instance,
         fcs_collectible_state_t * ptr_state_val
         );
+
+extern int fc_solve_compare_lru_cache_keys(
+    const void * void_a, const void * void_b, void * param
+);
+
 #endif
 
 #ifdef FCS_RCS_STATES

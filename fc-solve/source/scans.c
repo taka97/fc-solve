@@ -342,13 +342,23 @@ typedef struct {
     fcs_collectible_state_t * state_val;
 } cache_parents_stack_item_t;
 
+extern int fc_solve_compare_lru_cache_keys(
+    const void * void_a, const void * void_b, void * context
+)
+{
+#define GET_PARAM(p) ((unsigned long)((const fcs_cache_key_info_t *)(p))->val_ptr)
+    return GET_PARAM(void_a) - GET_PARAM(void_b);
+}
+
 #define NEXT_CACHE_STATE(s) ((s)->lower_pri)
 fcs_state_t * fc_solve_lookup_state_key_from_val(
     fc_solve_instance_t * instance,
     fcs_collectible_state_t * orig_ptr_state_val
 )
 {
+#if (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_JUDY)
     PWord_t PValue;
+#endif
     fcs_lru_cache_t * cache;
     cache_parents_stack_item_t * parents_stack;
     int parents_stack_len, parents_stack_max_len;
@@ -372,12 +382,12 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
 
     while (1)
     {
+#if (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_JUDY)
         JLI (
             PValue,
             cache->states_values_to_keys_map,
             ((Word_t)parents_stack[parents_stack_len-1].state_val)
         );
-
         if (*PValue)
         {
             parents_stack[parents_stack_len-1].new_cache_state
@@ -385,7 +395,42 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
                 = (fcs_cache_key_info_t *)(*PValue);
             break;
         }
-        else
+#else
+        {
+            fcs_cache_key_info_t * existing_cache_state;
+
+            if (cache->recycle_bin)
+            {
+                new_cache_state = cache->recycle_bin;
+                cache->recycle_bin = NEXT_CACHE_STATE(new_cache_state);
+            }
+            else
+            {
+                new_cache_state
+                    = fcs_compact_alloc_ptr(
+                        &(cache->states_values_to_keys_allocator),
+                        sizeof(*new_cache_state)
+                    );
+            }
+
+            new_cache_state->val_ptr = parents_stack[parents_stack_len-1].state_val;
+            existing_cache_state = (fcs_cache_key_info_t *)fc_solve_kaz_tree_alloc_insert(
+                cache->kaz_tree,
+                new_cache_state
+            );
+
+            if (existing_cache_state)
+            {
+                NEXT_CACHE_STATE( new_cache_state ) = cache->recycle_bin;
+                cache->recycle_bin = new_cache_state;
+
+                parents_stack[parents_stack_len-1].new_cache_state
+                    = new_cache_state = existing_cache_state;
+                break;
+            }
+        }
+#endif
+
         {
             /* A new state. */
             if (cache->recycle_bin)
@@ -405,10 +450,12 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
             parents_stack[parents_stack_len-1].new_cache_state
                 = new_cache_state;
 
+#if (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_JUDY)
             *PValue = ((Word_t)new_cache_state);
 
             new_cache_state->val_ptr
                 = parents_stack[parents_stack_len-1].state_val;
+#endif
 
             new_cache_state->lower_pri = new_cache_state->higher_pri = NULL;
 
@@ -544,14 +591,25 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
 
         while (count > limit)
         {
+#if (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_JUDY)
             int Rc_int;
+#endif
             fcs_cache_key_info_t * lowest_pri = cache->lowest_pri;
 
+#if (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_JUDY)
             JLD(
                 Rc_int,
                 cache->states_values_to_keys_map,
                 (Word_t)(lowest_pri->val_ptr)
             );
+#else
+            fc_solve_kaz_tree_delete_free(
+                cache->kaz_tree,
+                fc_solve_kaz_tree_lookup(
+                    cache->kaz_tree, lowest_pri
+                )
+            );
+#endif
 
             cache->lowest_pri = lowest_pri->higher_pri;
             cache->lowest_pri->lower_pri = NULL;

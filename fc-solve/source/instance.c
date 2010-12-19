@@ -778,7 +778,14 @@ void fc_solve_init_instance(fc_solve_instance_t * instance)
     {
         fcs_lru_cache_t * cache = &(instance->rcs_states_cache);
 
+#if (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_JUDY)
         cache->states_values_to_keys_map = ((Pvoid_t) NULL);
+#elif (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_KAZ_TREE)
+        cache->kaz_tree = fc_solve_kaz_tree_create(fc_solve_compare_lru_cache_keys, NULL);
+#else
+#error Unknown FCS_RCS_CACHE_STORAGE
+#endif
+
         fc_solve_compact_allocator_init(
             &(cache->states_values_to_keys_allocator)
         );
@@ -1249,15 +1256,25 @@ void fc_solve_finish_instance(
 #endif
 
 #ifdef FCS_RCS_STATES
+
+#if (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_JUDY)
     {
         Word_t Rc_word;
         JLFA(Rc_word,
             instance->rcs_states_cache.states_values_to_keys_map
         );
-        fc_solve_compact_allocator_finish(
-            &(instance->rcs_states_cache.states_values_to_keys_allocator)
-        );
     }
+#elif (FCS_RCS_CACHE_STORAGE == FCS_RCS_CACHE_STORAGE_KAZ_TREE)
+    fc_solve_kaz_tree_free_nodes(instance->rcs_states_cache.kaz_tree);
+    fc_solve_kaz_tree_destroy(instance->rcs_states_cache.kaz_tree);
+#else
+#error Unknown FCS_RCS_CACHE_STORAGE
+#endif
+
+    fc_solve_compact_allocator_finish(
+        &(instance->rcs_states_cache.states_values_to_keys_allocator)
+    );
+
 #endif
 
     clean_soft_dfs(instance);

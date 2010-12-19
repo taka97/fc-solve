@@ -139,7 +139,6 @@ extern dict_t *dict_init_alloc(dict_t *, dictcount_t, dict_comp_t,
 #ifdef NO_FC_SOLVE
 extern int dict_verify(dict_t *);
 extern int dict_similar(const dict_t *, const dict_t *);
-extern dnode_t *fc_solve_kaz_tree_lookup(dict_t *, const void *);
 extern dnode_t *dict_lower_bound(dict_t *, const void *);
 extern dnode_t *dict_upper_bound(dict_t *, const void *);
 extern dnode_t *dict_strict_lower_bound(dict_t *, const void *);
@@ -150,14 +149,13 @@ extern const void * fc_solve_kaz_tree_insert(dict_t *, dnode_t *, const void *);
 extern dnode_t *fc_solve_kaz_tree_delete(dict_t *, dnode_t *);
 #endif
 extern const void * fc_solve_kaz_tree_alloc_insert(dict_t *, const void *);
-#ifdef NO_FC_SOLVE
 extern void fc_solve_kaz_tree_delete_free(dict_t *, dnode_t *);
-#endif
+extern dnode_t *fc_solve_kaz_tree_lookup(dict_t *, const void *);
 
+extern dnode_t *fc_solve_kaz_tree_next(dict_t *, dnode_t *);
 #ifdef NO_FC_SOLVE 
 extern dnode_t *dict_first(dict_t *);
 extern dnode_t *dict_last(dict_t *);
-extern dnode_t *dict_next(dict_t *, dnode_t *);
 extern dnode_t *dict_prev(dict_t *, dnode_t *);
 extern dictcount_t dict_count(dict_t *);
 extern int dict_isempty(dict_t *);
