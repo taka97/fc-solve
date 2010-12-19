@@ -395,6 +395,23 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
                 = (fcs_cache_key_info_t *)(*PValue);
             break;
         }
+        else
+        {
+            /* A new state. */
+            if (cache->recycle_bin)
+            {
+                new_cache_state = cache->recycle_bin;
+                cache->recycle_bin = NEXT_CACHE_STATE(new_cache_state);
+            }
+            else
+            {
+                new_cache_state
+                    = fcs_compact_alloc_ptr(
+                        &(cache->states_values_to_keys_allocator),
+                        sizeof(*new_cache_state)
+                    );
+            }
+        }
 #else
         {
             fcs_cache_key_info_t * existing_cache_state;
@@ -431,22 +448,6 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
         }
 #endif
 
-        {
-            /* A new state. */
-            if (cache->recycle_bin)
-            {
-                new_cache_state = cache->recycle_bin;
-                cache->recycle_bin = NEXT_CACHE_STATE(new_cache_state);
-            }
-            else
-            {
-                new_cache_state
-                    = fcs_compact_alloc_ptr(
-                        &(cache->states_values_to_keys_allocator),
-                        sizeof(*new_cache_state)
-                    );
-            }
-
             parents_stack[parents_stack_len-1].new_cache_state
                 = new_cache_state;
 
@@ -480,7 +481,6 @@ fcs_state_t * fc_solve_lookup_state_key_from_val(
                         );
                 }
             }
-        }
     }
 
     for (parents_stack_len--; parents_stack_len > 0; parents_stack_len--)
