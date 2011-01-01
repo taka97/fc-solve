@@ -461,9 +461,10 @@ IF (NOT CMAKE_BUILD_TYPE STREQUAL debug)
         # Optionally link against Google's TCMalloc if it's available:
         # http://goog-perftools.sourceforge.net/
         # This gives better performance for the threaded programs.
-        FIND_LIBRARY(LIBTCMALLOC_LIB tcmalloc)
+        FIND_LIBRARY(LIBTCMALLOC_LIB hoard)
 
         IF(LIBTCMALLOC_LIB STREQUAL "LIBTCMALLOC_LIB-NOTFOUND")
+            MESSAGE(FATAL_ERROR "hoard cannot be found")
             # Do nothing.
         ELSE(LIBTCMALLOC_LIB STREQUAL "LIBTCMALLOC_LIB-NOTFOUND")
             # Cancelling for now to see if it helps with the valgrind problem.
