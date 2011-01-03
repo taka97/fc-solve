@@ -182,3 +182,20 @@ sudo_renice.
     Highlight: see log.txt for the P4-2.4GHz log.
 
 27.2895829677582s
+
+------------------------------
+
+ARGS="--worker-step 16 -l eo" bash scripts/time-threads-num.bash 2 2
+r3497
+With Profile Guided Optimisation (PGO).
+./Tatzer -l x64b --prefix=$HOME/apps/test/fcs/ 
+(With -flto and -fwhole-program).
+sudo_renice.
+-O3
+
+    Highlight: reverted r3307 which recycled the hash and caused a slowdown.
+        Also reordered the struct elements to put commonly used ones first.
+
+27.0319540500641s
+27.027184009552s
+27.0242009162903s
