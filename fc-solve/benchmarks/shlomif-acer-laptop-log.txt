@@ -166,3 +166,17 @@ sudo_renice.
     Highlight: the recycling of the allocators.
 
 27.3198730945587s
+
+------------------------------
+
+ARGS="--worker-step 16 -l eo" bash scripts/time-threads-num.bash 2 2
+r3301
+With Profile Guided Optimisation (PGO).
+./Tatzer -l x64b --prefix=...
+(With -flto and -fwhole-program).
+sudo_renice.
+-O3
+
+    Highlight: see log.txt for the P4-2.4GHz log.
+
+27.2895829677582s
