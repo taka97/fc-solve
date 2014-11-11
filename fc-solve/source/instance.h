@@ -1434,6 +1434,11 @@ static GCC_INLINE int fc_solve_optimize_solution(
     fc_solve_soft_thread_t * soft_thread;
     fc_solve_hard_thread_t * old_hard_thread, * optimization_thread;
 
+    if (!instance->solution_moves.moves)
+    {
+        fc_solve_trace_solution(instance);
+    }
+
     STRUCT_TURN_ON_FLAG(instance, FCS_RUNTIME_TO_REPARENT_STATES_REAL);
 
     if (! instance->optimization_thread)
@@ -1578,12 +1583,6 @@ static GCC_INLINE int fc_solve_resume_instance(
         {
             ret = FCS_STATE_IS_NOT_SOLVEABLE;
         }
-
-        if (ret == FCS_STATE_WAS_SOLVED)
-        {
-            /* Create solution_moves in the first place */
-            fc_solve_trace_solution(instance);
-        }
     }
 
 
@@ -1596,11 +1595,6 @@ static GCC_INLINE int fc_solve_resume_instance(
             if (! STRUCT_QUERY_FLAG(instance, FCS_RUNTIME_IN_OPTIMIZATION_THREAD))
             {
                 ret = fc_solve_optimize_solution(instance);
-            }
-            if (ret == FCS_STATE_WAS_SOLVED)
-            {
-                /* Create the solution_moves in the first place */
-                fc_solve_trace_solution(instance);
             }
         }
     }
@@ -1827,7 +1821,7 @@ static GCC_INLINE void fc_solve_free_tests_order(fcs_tests_order_t * tests_order
     tests_order->num_groups = 0;
 }
 
-static GCC_INLINE void fc_solve_free_instance(fc_solve_instance_t * instance)
+static GCC_INLINE void fc_solve_free_instance(fc_solve_instance_t * const instance)
 {
     fc_solve_foreach_soft_thread(instance, FOREACH_SOFT_THREAD_FREE_INSTANCE, NULL);
 
@@ -1847,6 +1841,12 @@ static GCC_INLINE void fc_solve_free_instance(fc_solve_instance_t * instance)
     if (STRUCT_QUERY_FLAG(instance, FCS_RUNTIME_OPT_TESTS_ORDER_WAS_SET))
     {
         fc_solve_free_tests_order( &(instance->opt_tests_order) );
+    }
+
+    if (instance->solution_moves.moves)
+    {
+        fcs_move_stack_static_destroy(instance->solution_moves);
+        instance->solution_moves.moves = NULL;
     }
 
     free(instance);
