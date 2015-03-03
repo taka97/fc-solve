@@ -1560,12 +1560,12 @@ static GCC_INLINE void fc_solve_initialize_bfs_queue(fc_solve_soft_thread_t * so
 
 
 void fc_solve_soft_thread_init_befs_or_bfs(
-    fc_solve_soft_thread_t * soft_thread
+    fc_solve_soft_thread_t * const soft_thread
     )
 {
-    fc_solve_soft_thread_update_initial_cards_val(soft_thread);
-
     fc_solve_instance_t * const instance = soft_thread->hard_thread->instance;
+    fc_solve_soft_thread_update_initial_cards_val(instance, soft_thread);
+
 
     if (soft_thread->method == FCS_METHOD_A_STAR)
     {

@@ -305,13 +305,14 @@ static GCC_INLINE void clean_soft_dfs( fc_solve_instance_t * const instance )
 
 
 static GCC_INLINE void init_soft_thread(
+    fc_solve_instance_t * const instance,
     fc_solve_hard_thread_t * const hard_thread,
     fc_solve_soft_thread_t * const soft_thread
 )
 {
     soft_thread->hard_thread = hard_thread;
 
-    soft_thread->id = (hard_thread->instance->next_soft_thread_id)++;
+    soft_thread->id = (instance->next_soft_thread_id)++;
 
     DFS_VAR(soft_thread, dfs_max_depth) = 0;
 
@@ -355,7 +356,7 @@ static GCC_INLINE void init_soft_thread(
 
     soft_thread->num_checked_states_step = NUM_CHECKED_STATES_STEP;
 
-    soft_thread->by_depth_tests_order.by_depth_tests[0].tests_order = tests_order_dup(&(soft_thread->hard_thread->instance->instance_tests_order));
+    soft_thread->by_depth_tests_order.by_depth_tests[0].tests_order = tests_order_dup(&(instance->instance_tests_order));
 
     fc_solve_reset_soft_thread(soft_thread);
 
@@ -377,7 +378,7 @@ void fc_solve_instance__init_hard_thread(
 
     hard_thread->soft_threads = NULL;
 
-    fc_solve_new_soft_thread(hard_thread);
+    fc_solve_new_soft_thread(instance, hard_thread);
 
     /* Set a limit on the Hard-Thread's scan. */
     hard_thread->num_checked_states_step = NUM_CHECKED_STATES_STEP;
@@ -1339,6 +1340,7 @@ void fc_solve_finish_instance( fc_solve_instance_t * const instance )
 }
 
 fc_solve_soft_thread_t * fc_solve_new_soft_thread(
+    fc_solve_instance_t * const instance,
     fc_solve_hard_thread_t * const hard_thread
 )
 {
@@ -1355,6 +1357,7 @@ fc_solve_soft_thread_t * fc_solve_new_soft_thread(
     fc_solve_soft_thread_t * ret;
 
     init_soft_thread(
+        instance,
         hard_thread,
         (ret = &(hard_thread->soft_threads[hard_thread->num_soft_threads++]))
     );

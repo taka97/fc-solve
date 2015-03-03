@@ -2217,7 +2217,8 @@ int DLLEXPORT freecell_solver_user_next_soft_thread(
 {
     fcs_user_t * const user = (fcs_user_t *)api_instance;
 
-    fc_solve_soft_thread_t * soft_thread = fc_solve_new_soft_thread(user->soft_thread->hard_thread);
+    typeof(user->soft_thread->hard_thread) hard_thread = user->soft_thread->hard_thread;
+    fc_solve_soft_thread_t * soft_thread = fc_solve_new_soft_thread(hard_thread->instance, hard_thread);
 
     if (soft_thread == NULL)
     {

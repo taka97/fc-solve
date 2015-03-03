@@ -981,10 +981,10 @@ static GCC_INLINE int update_col_cards_under_sequences(
 }
 
 static GCC_INLINE void fc_solve_soft_thread_update_initial_cards_val(
+    fc_solve_instance_t * const instance,
     fc_solve_soft_thread_t * soft_thread
 )
 {
-    fc_solve_instance_t * const instance = soft_thread->hard_thread->instance;
 #ifndef FCS_FREECELL_ONLY
     const int sequences_are_built_by = GET_INSTANCE_SEQUENCES_ARE_BUILT_BY(instance);
 #endif
@@ -1115,11 +1115,11 @@ static GCC_INLINE void fc_solve_initialize_befs_rater(
 #undef unlimited_sequence_move
 
 static GCC_INLINE void fc_solve_soft_thread_init_soft_dfs(
-    fc_solve_soft_thread_t * soft_thread
+    fc_solve_soft_thread_t * const soft_thread
 )
 {
-    fc_solve_soft_thread_update_initial_cards_val(soft_thread);
-    fc_solve_instance_t * instance = soft_thread->hard_thread->instance;
+    fc_solve_instance_t * const instance = soft_thread->hard_thread->instance;
+    fc_solve_soft_thread_update_initial_cards_val(instance, soft_thread);
 
     fcs_state_keyval_pair_t * ptr_orig_state = instance->state_copy_ptr;
     /*
@@ -1686,6 +1686,7 @@ fc_solve_instance_get_first_soft_thread(
 }
 
 extern fc_solve_soft_thread_t * fc_solve_new_soft_thread(
+    fc_solve_instance_t * const instance,
     fc_solve_hard_thread_t * const hard_thread
 );
 
