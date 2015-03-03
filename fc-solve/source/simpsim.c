@@ -141,11 +141,11 @@ static GCC_INLINE const fcs_bool_t fcs_is_ss_true_parent(const fcs_card_t parent
     const fcs_game_limit_t num_vacant_stacks = soft_thread->num_vacant_stacks
 
 static char * get_the_positions_by_rank_data__ss_generator(
+    fc_solve_instance_t * const instance,
     fc_solve_soft_thread_t * const soft_thread,
     const fcs_state_t * const the_state
 )
 {
-    fc_solve_instance_t * const instance = soft_thread->hard_thread->instance;
     SET_GAME_PARAMS();
 
 #define FCS_SS_POS_BY_RANK_WIDTH (13+1)
@@ -179,6 +179,7 @@ static char * get_the_positions_by_rank_data__ss_generator(
 #define CALC_POSITIONS_BY_RANK() \
     char * positions_by_rank = \
         fc_solve_get_the_positions_by_rank_data( \
+            instance, \
             soft_thread, \
             ptr_state_key, \
             get_the_positions_by_rank_data__ss_generator \

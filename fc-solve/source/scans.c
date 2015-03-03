@@ -2082,6 +2082,7 @@ static GCC_INLINE void assign_dest_stack_and_col_ptr(
 }
 
 char * fc_solve_get_the_positions_by_rank_data__freecell_generator(
+    fc_solve_instance_t * const instance,
     fc_solve_soft_thread_t * const soft_thread,
     const fcs_state_t * const ptr_state_key
 )
@@ -2091,7 +2092,6 @@ char * fc_solve_get_the_positions_by_rank_data__freecell_generator(
 #define the_state state_key
 
 #if (!(defined(HARD_CODED_NUM_STACKS) && defined(HARD_CODED_NUM_DECKS)))
-    fc_solve_instance_t * const instance = soft_thread->hard_thread->instance;
     SET_GAME_PARAMS();
 #endif
 
@@ -2176,9 +2176,11 @@ char * fc_solve_get_the_positions_by_rank_data__freecell_generator(
  *
  */
 char * fc_solve_get_the_positions_by_rank_data(
+    fc_solve_instance_t * const instance,
     fc_solve_soft_thread_t * const soft_thread,
     const fcs_state_t * const ptr_state_key,
     char * (*generator)(
+        fc_solve_instance_t * const instance,
         fc_solve_soft_thread_t * const soft_thread,
         const fcs_state_t * const ptr_state_key
     )
@@ -2199,7 +2201,7 @@ char * fc_solve_get_the_positions_by_rank_data(
 
     if (unlikely(! *positions_by_rank_location))
     {
-        *positions_by_rank_location = generator(soft_thread, ptr_state_key);
+        *positions_by_rank_location = generator(instance, soft_thread, ptr_state_key);
     }
 
     return *positions_by_rank_location;

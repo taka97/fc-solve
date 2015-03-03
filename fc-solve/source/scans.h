@@ -47,14 +47,17 @@ extern "C" {
 #define FCS_POS_BY_RANK_WIDTH (MAX_NUM_DECKS << 3)
 
 extern char * fc_solve_get_the_positions_by_rank_data__freecell_generator(
+    fc_solve_instance_t * const instance,
     fc_solve_soft_thread_t * const soft_thread,
     const fcs_state_t * const ptr_state_key
 );
 
 extern char * fc_solve_get_the_positions_by_rank_data(
+        fc_solve_instance_t * const instance,
         fc_solve_soft_thread_t * const soft_thread,
         const fcs_state_t * const ptr_state_key,
         char * (*generator)(
+            fc_solve_instance_t * const instance,
             fc_solve_soft_thread_t * const soft_thread,
             const fcs_state_t * const ptr_state_key
         )

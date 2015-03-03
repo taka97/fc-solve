@@ -185,6 +185,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_freecell_cards_to_founds)
  * into freeeclls and empty columns
  */
 static GCC_INLINE int empty_two_cols_from_new_state(
+    const fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
     const fc_solve_soft_thread_t * const soft_thread,
     fcs_kv_state_t * const kv_ptr_new_state,
     fcs_move_stack_t * const moves,
@@ -203,11 +205,11 @@ static GCC_INLINE int empty_two_cols_from_new_state(
     int * col_num_cards = num_cards_to_move_from_columns;
 
 #if ((!defined(HARD_CODED_NUM_FREECELLS)) || (!defined(HARD_CODED_NUM_STACKS)))
-    SET_INSTANCE_GAME_PARAMS(soft_thread->hard_thread->instance);
+    SET_INSTANCE_GAME_PARAMS(instance);
 #endif
 
 #ifdef INDIRECT_STACK_STATES
-    char * const indirect_stacks_buffer = soft_thread->hard_thread->indirect_stacks_buffer;
+    char * const indirect_stacks_buffer = hard_thread->indirect_stacks_buffer;
 #endif
 
 
@@ -337,6 +339,7 @@ static GCC_INLINE int empty_two_cols_from_new_state(
 #define CALC_POSITIONS_BY_RANK() \
     char * positions_by_rank = \
         fc_solve_get_the_positions_by_rank_data( \
+            instance, \
             soft_thread, \
             ptr_state_key, \
             fc_solve_get_the_positions_by_rank_data__freecell_generator \
@@ -483,6 +486,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_freecell_cards_on_top_of_stacks)
                         cols_indexes[2] = -1;
 
                         empty_two_cols_from_new_state(
+                                instance,
+                                hard_thread,
                                 soft_thread,
                                 NEW_STATE_BY_REF(),
                                 moves,
@@ -580,6 +585,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_non_top_stack_cards_to_founds)
                         cols_indexes[2] = -1;
 
                         empty_two_cols_from_new_state(
+                            instance,
+                            hard_thread,
                             soft_thread,
                             NEW_STATE_BY_REF(),
                             moves,
@@ -711,6 +718,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stac
                                 cols_indexes[2] = -1;
 
                                 int last_dest = empty_two_cols_from_new_state(
+                                    instance,
+                                    hard_thread,
                                     soft_thread,
                                     NEW_STATE_BY_REF(),
                                     moves,
@@ -723,6 +732,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_stack_cards_to_a_parent_on_the_same_stac
                                 int source_index = last_dest & 0xFF;
 
                                 empty_two_cols_from_new_state(
+                                    instance,
+                                    hard_thread,
                                     soft_thread,
                                     NEW_STATE_BY_REF(),
                                     moves,
@@ -886,6 +897,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_stack_cards_to_different_stacks)
                     cols_indexes[2] = -1;
 
                     empty_two_cols_from_new_state(
+                        instance,
+                        hard_thread,
                         soft_thread,
                         NEW_STATE_BY_REF(),
                         moves,
@@ -1069,6 +1082,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_sequences_to_free_stacks)
                             cols_indexes[2] = -1;
 
                             empty_ret = empty_two_cols_from_new_state(
+                                instance,
+                                hard_thread,
                                 soft_thread,
                                 NEW_STATE_BY_REF(),
                                 moves,
@@ -1332,6 +1347,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_cards_to_a_different_parent)
                     cols_indexes[2] = -1;
 
                     empty_two_cols_from_new_state(
+                        instance,
+                        hard_thread,
                         soft_thread,
                         NEW_STATE_BY_REF(),
                         moves,
@@ -1892,7 +1909,7 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_freecell_card_to_empty_stack)
 
 #define CALC_FOUNDATION_TO_PUT_CARD_ON__STATE_PARAMS() pass_new_state.key, card
 
-#define CALC_FOUNDATION_TO_PUT_CARD_ON() calc_foundation_to_put_card_on(soft_thread, CALC_FOUNDATION_TO_PUT_CARD_ON__STATE_PARAMS())
+#define CALC_FOUNDATION_TO_PUT_CARD_ON() calc_foundation_to_put_card_on(instance, soft_thread, CALC_FOUNDATION_TO_PUT_CARD_ON__STATE_PARAMS())
 
 #ifdef FCS_FREECELL_ONLY
 #define SEQS_ARE_BUILT_BY_RANK() FALSE
@@ -1901,15 +1918,12 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_freecell_card_to_empty_stack)
 #endif
 
 static GCC_INLINE int calc_foundation_to_put_card_on(
+    const fc_solve_instance_t * const instance,
     const fc_solve_soft_thread_t * const soft_thread,
     const fcs_state_t * const my_ptr_state,
     const fcs_card_t card
 )
 {
-#ifndef FCS_FREECELL_ONLY
-    const fc_solve_instance_t * const instance = soft_thread->hard_thread->instance;
-#endif
-
     tests_define_seqs_built_by();
 
     for (int deck = 0 ; deck < INSTANCE_DECKS_NUM ; deck++)
