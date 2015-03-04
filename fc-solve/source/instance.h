@@ -942,7 +942,9 @@ extern void fc_solve_start_instance_process_with_board(
 );
 
 extern int fc_solve_befs_or_bfs_do_solve(
-    fc_solve_soft_thread_t * soft_thread
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
+    fc_solve_soft_thread_t * const soft_thread
 );
 
 extern void fc_solve_increase_dfs_max_depth(
@@ -1226,8 +1228,17 @@ static GCC_INLINE void fc_solve_soft_thread_init_soft_dfs(
     return;
 }
 
-extern int fc_solve_soft_dfs_do_solve(fc_solve_soft_thread_t * soft_thread);
-extern int fc_solve_patsolve_do_solve(fc_solve_soft_thread_t * soft_thread);
+extern int fc_solve_soft_dfs_do_solve(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
+    fc_solve_soft_thread_t * const soft_thread
+);
+
+extern int fc_solve_patsolve_do_solve(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
+    fc_solve_soft_thread_t * const soft_thread
+);
 
 extern void fc_solve_soft_thread_init_befs_or_bfs(
     fc_solve_soft_thread_t * soft_thread
@@ -1347,15 +1358,15 @@ static GCC_INLINE int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
         switch(soft_thread->super_method_type)
         {
             case FCS_SUPER_METHOD_DFS:
-            ret = fc_solve_soft_dfs_do_solve(soft_thread);
+            ret = fc_solve_soft_dfs_do_solve(instance, hard_thread, soft_thread);
             break;
 
             case FCS_SUPER_METHOD_BEFS_BRFS:
-            ret = fc_solve_befs_or_bfs_do_solve(soft_thread);
+            ret = fc_solve_befs_or_bfs_do_solve(instance, hard_thread, soft_thread);
             break;
 
             case FCS_SUPER_METHOD_PATSOLVE:
-            ret = fc_solve_patsolve_do_solve(soft_thread);
+            ret = fc_solve_patsolve_do_solve(instance, hard_thread, soft_thread);
             break;
 
             default:
@@ -1554,7 +1565,7 @@ static GCC_INLINE int fc_solve_optimize_solution(
 
     STRUCT_TURN_ON_FLAG(instance, FCS_RUNTIME_IN_OPTIMIZATION_THREAD);
 
-    return fc_solve_befs_or_bfs_do_solve( soft_thread );
+    return fc_solve_befs_or_bfs_do_solve( instance, optimization_thread, soft_thread );
 }
 
 /* Resume a solution process that was stopped in the middle */
@@ -1563,7 +1574,6 @@ static GCC_INLINE int fc_solve_resume_instance(
 )
 {
     int ret = FCS_STATE_SUSPEND_PROCESS;
-    fc_solve_hard_thread_t * hard_thread;
 
     /*
      * If the optimization thread is defined, it means we are in the
@@ -1574,9 +1584,13 @@ static GCC_INLINE int fc_solve_resume_instance(
      * */
     if (STRUCT_QUERY_FLAG(instance, FCS_RUNTIME_IN_OPTIMIZATION_THREAD))
     {
+        typeof (instance->optimization_thread) hard_thread =
+            instance->optimization_thread;
         ret =
             fc_solve_befs_or_bfs_do_solve(
-                &(instance->optimization_thread->soft_threads[0])
+                instance,
+                hard_thread,
+                &(hard_thread->soft_threads[0])
             );
     }
     else
@@ -1585,7 +1599,7 @@ static GCC_INLINE int fc_solve_resume_instance(
             instance->hard_threads + instance->num_hard_threads
             ;
 
-        hard_thread = instance->current_hard_thread;
+        fc_solve_hard_thread_t * hard_thread = instance->current_hard_thread;
         /*
          * instance->num_hard_threads_finished signals to us that
          * all the incomplete soft threads terminated. It is necessary

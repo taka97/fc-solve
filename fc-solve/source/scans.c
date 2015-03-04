@@ -978,12 +978,11 @@ static int compare_rating_with_index(const void * void_a, const void * void_b)
  * the traversal.
  */
 int fc_solve_soft_dfs_do_solve(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
     fc_solve_soft_thread_t * const soft_thread
     )
 {
-    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;
-    fc_solve_instance_t * const instance = hard_thread->instance;
-
     DECLARE_STATE();
 
     int by_depth_max_depth, by_depth_min_depth;
@@ -1678,11 +1677,12 @@ static void dump_pqueue (
  *  It goes on in this fashion until the final state was reached or
  *  there are no more states in the queue.
 */
-int fc_solve_befs_or_bfs_do_solve( fc_solve_soft_thread_t * const soft_thread )
+int fc_solve_befs_or_bfs_do_solve(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
+    fc_solve_soft_thread_t * const soft_thread
+)
 {
-    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;
-    fc_solve_instance_t * const instance = hard_thread->instance;
-
     DECLARE_NEW_STATE();
     DECLARE_STATE();
 
@@ -2373,10 +2373,11 @@ extern void fc_solve_sfs_check_state_end(
  * Patsolve scan.
  */
 int fc_solve_patsolve_do_solve(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
     fc_solve_soft_thread_t * const soft_thread
     )
 {
-    typeof(soft_thread->hard_thread) hard_thread = soft_thread->hard_thread;
     typeof(soft_thread->pats_scan) pats_scan = soft_thread->pats_scan;
 
     typeof(hard_thread->num_checked_states) delta =
@@ -2392,7 +2393,7 @@ int fc_solve_patsolve_do_solve(
 
     typeof(start_from) after_scan_delta = pats_scan->num_checked_states - start_from;
     hard_thread->num_checked_states += after_scan_delta;
-    hard_thread->instance->num_checked_states += after_scan_delta;
+    instance->num_checked_states += after_scan_delta;
 
     const typeof(pats_scan->status) status = pats_scan->status;
     return
