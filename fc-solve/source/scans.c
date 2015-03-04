@@ -1628,14 +1628,15 @@ void fc_solve_soft_thread_init_befs_or_bfs(
 #ifdef DEBUG
 #if 0
 static void dump_pqueue (
-    fc_solve_soft_thread_t * soft_thread,
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
+    fc_solve_soft_thread_t * const soft_thread,
     const char * stage_id,
     PQUEUE * pq
     )
 {
     int i;
     char * s;
-    fc_solve_instance_t * instance = soft_thread->hard_thread->instance;
 
     if (strcmp(soft_thread->name, "11"))
     {
@@ -1664,7 +1665,7 @@ static void dump_pqueue (
     printf("\n\n</pqueue_dump>\n\n");
 }
 #else
-#define dump_pqueue(a,b,c) {}
+#define dump_pqueue(a,b,c,d,e) {}
 #endif
 #endif
 
@@ -1747,7 +1748,7 @@ int fc_solve_befs_or_bfs_do_solve(
         TRACE0("Start of loop");
 
 #ifdef DEBUG
-        dump_pqueue(soft_thread, "loop_start", scan_specific.pqueue);
+        dump_pqueue(instance, hard_thread, soft_thread, "loop_start", scan_specific.pqueue);
 #endif
 
         /*
@@ -1984,7 +1985,7 @@ label_next_state:
         {
             fcs_collectible_state_t * new_ptr_state;
 #ifdef DEBUG
-            dump_pqueue(soft_thread, "before_pop", scan_specific.pqueue);
+            dump_pqueue(instance, hard_thread, soft_thread, "before_pop", scan_specific.pqueue);
 #endif
             /* It is an BeFS scan */
             fc_solve_PQueuePop(
@@ -2278,6 +2279,8 @@ int fc_solve_sfs_check_state_begin(
 #undef ptr_state
 
 extern void fc_solve_sfs_check_state_end(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
     fc_solve_soft_thread_t * const soft_thread,
     fcs_kv_state_t * const raw_ptr_state_raw,
     fcs_kv_state_t * const raw_ptr_new_state_raw,
@@ -2286,8 +2289,6 @@ extern void fc_solve_sfs_check_state_end(
     fcs_derived_states_list_t * const derived_states_list
     )
 {
-    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;
-    fc_solve_instance_t * const instance = hard_thread->instance;
 #ifndef FCS_WITHOUT_DEPTH_FIELD
     const fcs_runtime_flags_t calc_real_depth
         = STRUCT_QUERY_FLAG(instance, FCS_RUNTIME_CALC_REAL_DEPTH);

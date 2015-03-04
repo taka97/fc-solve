@@ -94,7 +94,7 @@ extern "C" {
 
 #define sfs_check_state_end() \
     { \
-        fc_solve_sfs_check_state_end(soft_thread, raw_ptr_state_raw, &pass_new_state, state_context_value, moves, derived_states_list); \
+        fc_solve_sfs_check_state_end(instance, hard_thread, soft_thread, raw_ptr_state_raw, &pass_new_state, state_context_value, moves, derived_states_list); \
     }
 
 /*

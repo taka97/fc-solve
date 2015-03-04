@@ -71,6 +71,8 @@ extern int fc_solve_sfs_check_state_begin(
     );
 
 extern void fc_solve_sfs_check_state_end(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
     fc_solve_soft_thread_t * const soft_thread,
     fcs_kv_state_t * const key_ptr_state_key,
     fcs_kv_state_t * const key_ptr_new_state_key,
