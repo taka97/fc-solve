@@ -1464,12 +1464,12 @@ static GCC_INLINE int run_hard_thread(
 }
 
 extern void fc_solve_trace_solution(
-    fc_solve_instance_t * instance
+    fc_solve_instance_t * const instance
 );
 
 extern void fc_solve_instance__init_hard_thread(
-    fc_solve_instance_t * instance,
-    fc_solve_hard_thread_t * hard_thread
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread
 );
 
 extern void fc_solve_free_soft_thread_by_depth_test_array(fc_solve_soft_thread_t * soft_thread);
