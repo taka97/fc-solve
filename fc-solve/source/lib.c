@@ -166,6 +166,7 @@ typedef struct
     double flares_iters_factor;
 
     fc_solve_soft_thread_t * soft_thread;
+    fc_solve_hard_thread_t * hard_thread;
 
     DECLARE_IND_BUF_T(indirect_stacks_buffer)
     char * state_string_copy;
@@ -1585,7 +1586,7 @@ void DLLEXPORT freecell_solver_user_set_solving_method(
                 typeof(soft_thread->pats_scan) pats_scan
                     = soft_thread->pats_scan = SMALLOC1(soft_thread->pats_scan);
                 fc_solve_pats__init_soft_thread(pats_scan,
-                    soft_thread->hard_thread->instance);
+                    user->active_flare->obj);
 
                 pats_scan->to_stack = 1;
 
@@ -2217,8 +2218,8 @@ int DLLEXPORT freecell_solver_user_next_soft_thread(
 {
     fcs_user_t * const user = (fcs_user_t *)api_instance;
 
-    typeof(user->soft_thread->hard_thread) hard_thread = user->soft_thread->hard_thread;
-    fc_solve_soft_thread_t * soft_thread = fc_solve_new_soft_thread(hard_thread->instance, hard_thread);
+    typeof(user->hard_thread) hard_thread = user->hard_thread;
+    fc_solve_soft_thread_t * const soft_thread = fc_solve_new_soft_thread(user->active_flare->obj, hard_thread);
 
     if (soft_thread == NULL)
     {
@@ -2246,14 +2247,15 @@ int DLLEXPORT freecell_solver_user_next_hard_thread(
 {
     fcs_user_t * const user = (fcs_user_t *)api_instance;
 
-    fc_solve_soft_thread_t * const soft_thread = fc_solve_new_hard_thread(user->active_flare->obj);
+    fc_solve_hard_thread_t * const hard_thread = fc_solve_new_hard_thread(user->active_flare->obj);
 
-    if (soft_thread == NULL)
+    if (hard_thread == NULL)
     {
         return 1;
     }
 
-    user->soft_thread = soft_thread;
+    user->hard_thread = hard_thread;
+    user->soft_thread = &(hard_thread->soft_threads[0]);
 
     return 0;
 }
@@ -2319,7 +2321,7 @@ int DLLEXPORT freecell_solver_user_set_hard_thread_prelude(
 {
     fcs_user_t * const user = (fcs_user_t *)api_instance;
 
-    fc_solve_hard_thread_t * const hard_thread = user->soft_thread->hard_thread;
+    fc_solve_hard_thread_t * const hard_thread = user->hard_thread;
 
     if (hard_thread->prelude_as_string != NULL)
     {
@@ -2479,8 +2481,7 @@ static int user_next_flare(fcs_user_t * user)
      * Switch the soft_thread variable so it won't refer to the old
      * instance
      * */
-    user->soft_thread =
-        fc_solve_instance_get_first_soft_thread(user->active_flare->obj);
+    user->soft_thread = (user->hard_thread = user->active_flare->obj->hard_threads)->soft_threads;
 
 #ifndef FCS_FREECELL_ONLY
     fc_solve_apply_preset_by_ptr(flare->obj, &(user->common_preset));

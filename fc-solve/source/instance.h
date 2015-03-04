@@ -579,8 +579,6 @@ typedef struct
 
 struct fc_solve_hard_thread_struct
 {
-    fc_solve_instance_t * instance;
-
     struct fc_solve_soft_thread_struct * soft_threads;
 
     /*
@@ -737,8 +735,6 @@ struct fc_solve__patsolve_thread_struct;
 
 struct fc_solve_soft_thread_struct
 {
-    fc_solve_hard_thread_t * hard_thread;
-
     /*
      * The ID of the soft thread inside the instance.
      * Used for the state-specific flags.
@@ -1709,7 +1705,7 @@ extern fc_solve_soft_thread_t * fc_solve_new_soft_thread(
     fc_solve_hard_thread_t * const hard_thread
 );
 
-static GCC_INLINE fc_solve_soft_thread_t * fc_solve_new_hard_thread(
+static GCC_INLINE fc_solve_hard_thread_t * fc_solve_new_hard_thread(
     fc_solve_instance_t * const instance
 )
 {
@@ -1724,17 +1720,6 @@ static GCC_INLINE fc_solve_soft_thread_t * fc_solve_new_hard_thread(
     instance->hard_threads =
         SREALLOC( instance->hard_threads, instance->num_hard_threads+1 );
 
-    /* Since we SREALLOC()ed the hard_threads, their addresses changed,
-     * so we need to update it.
-     * */
-    HT_LOOP_START()
-    {
-        ST_LOOP_START()
-        {
-            soft_thread->hard_thread = hard_thread;
-        }
-    }
-
     fc_solve_instance__init_hard_thread(
         instance,
         (ret = &(instance->hard_threads[instance->num_hard_threads]))
@@ -1742,7 +1727,7 @@ static GCC_INLINE fc_solve_soft_thread_t * fc_solve_new_hard_thread(
 
     instance->num_hard_threads++;
 
-    return &(ret->soft_threads[0]);
+    return ret;
 }
 
 /* This is the commmon code from fc_solve_instance__init_hard_thread() and

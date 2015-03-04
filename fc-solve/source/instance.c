@@ -310,8 +310,6 @@ static GCC_INLINE void init_soft_thread(
     fc_solve_soft_thread_t * const soft_thread
 )
 {
-    soft_thread->hard_thread = hard_thread;
-
     soft_thread->id = (instance->next_soft_thread_id)++;
 
     DFS_VAR(soft_thread, dfs_max_depth) = 0;
@@ -372,8 +370,6 @@ void fc_solve_instance__init_hard_thread(
     fc_solve_hard_thread_t * const hard_thread
 )
 {
-    hard_thread->instance = instance;
-
     hard_thread->num_soft_threads = 0;
 
     hard_thread->soft_threads = NULL;
