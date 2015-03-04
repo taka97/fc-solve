@@ -1112,11 +1112,11 @@ static GCC_INLINE void fc_solve_initialize_befs_rater(
 #undef unlimited_sequence_move
 
 static GCC_INLINE void fc_solve_soft_thread_init_soft_dfs(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
     fc_solve_soft_thread_t * const soft_thread
 )
 {
-    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;
-    fc_solve_instance_t * const instance = hard_thread->instance;
     fc_solve_soft_thread_update_initial_cards_val(instance, soft_thread);
 
     fcs_state_keyval_pair_t * ptr_orig_state = instance->state_copy_ptr;
@@ -1312,7 +1312,7 @@ static GCC_INLINE int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
          * */
         if (! STRUCT_QUERY_FLAG(soft_thread, FCS_SOFT_THREAD_INITIALIZED))
         {
-            fc_solve_soft_thread_init_soft_dfs(soft_thread);
+            fc_solve_soft_thread_init_soft_dfs(instance, hard_thread, soft_thread);
             fc_solve_soft_thread_init_befs_or_bfs(soft_thread);
 
             typeof(soft_thread->pats_scan) pats_scan = soft_thread->pats_scan;

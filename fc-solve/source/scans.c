@@ -326,6 +326,7 @@ static GCC_INLINE void free_states(fc_solve_instance_t * instance)
 
 
 static GCC_INLINE pq_rating_t befs_rate_state(
+    const fc_solve_instance_t * const instance,
     const fc_solve_soft_thread_t * const soft_thread,
     const fc_solve_state_weighting_t * const weighting,
     const fcs_state_t * const state,
@@ -333,7 +334,6 @@ static GCC_INLINE pq_rating_t befs_rate_state(
 )
 {
 #ifndef FCS_FREECELL_ONLY
-    const fc_solve_instance_t * const instance = soft_thread->hard_thread->instance;
     const int sequences_are_built_by =
         GET_INSTANCE_SEQUENCES_ARE_BUILT_BY(instance)
         ;
@@ -1348,6 +1348,7 @@ int fc_solve_soft_dfs_do_solve(
                                     for (a = 0 ; a < num_states ; a++)
                                     {
                                         rand_array[a].rating = befs_rate_state(
+                                            instance,
                                             soft_thread,
                                             weighting,
 #ifdef FCS_RCS_STATES
@@ -1918,6 +1919,7 @@ int fc_solve_befs_or_bfs_do_solve( fc_solve_soft_thread_t * const soft_thread )
                     pqueue,
                     ptr_new_state,
                     befs_rate_state(
+                        instance,
                         soft_thread,
                         WEIGHTING(soft_thread),
                         new_pass.key,
