@@ -156,7 +156,9 @@ struct fc_solve_soft_thread_struct;
 
 
 typedef void (*fc_solve_solve_for_state_test_t)(
-    struct fc_solve_soft_thread_struct *,
+    struct fc_solve_instance_struct * const instance,
+    struct fc_solve_hard_thread_struct * const hard_thread,
+    struct fc_solve_soft_thread_struct * const soft_thread,
     fcs_kv_state_t *,
     fcs_derived_states_list_t *
 );
@@ -1935,6 +1937,8 @@ static GCC_INLINE void fc_solve_free_instance(fc_solve_instance_t * const instan
 
 #define DECLARE_MOVE_FUNCTION(name) \
 extern void name( \
+        fc_solve_instance_t * const instance, \
+        fc_solve_hard_thread_t * const hard_thread, \
         fc_solve_soft_thread_t * const soft_thread, \
         fcs_kv_state_t * const raw_ptr_state_raw, \
         fcs_derived_states_list_t * const derived_states_list \

@@ -180,8 +180,6 @@ static GCC_INLINE void fc_solve_move_sequence_function(
 
 #ifdef FCS_FREECELL_ONLY
 
-#define tests_define_accessors_freecell_only() {}
-
 #define tests__is_filled_by_any_card() TRUE
 
 #define tests__is_filled_by_kings_only() FALSE
@@ -189,9 +187,6 @@ static GCC_INLINE void fc_solve_move_sequence_function(
 #define tests__is_filled_by_none() FALSE
 
 #else
-
-#define tests_define_accessors_freecell_only() \
-    fc_solve_instance_t * const instance = hard_thread->instance;
 
 #define tests__is_filled_by_any_card() \
     (empty_stacks_fill == FCS_ES_FILLED_BY_ANY_CARD)
@@ -208,11 +203,9 @@ static GCC_INLINE void fc_solve_move_sequence_function(
  * This macro defines these accessors to have some value.
  * */
 #define tests_define_accessors_no_stacks()                                  \
-    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;        \
     fcs_move_stack_t * const moves = &(hard_thread->reusable_move_stack);         \
     int state_context_value = 0;                                            \
     fcs_kv_state_t pass_new_state;                                          \
-    tests_define_accessors_freecell_only();   \
     tests_define_accessors_rcs_states();
 
 #ifdef INDIRECT_STACK_STATES

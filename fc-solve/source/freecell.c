@@ -1965,6 +1965,8 @@ static GCC_INLINE int calc_foundation_to_put_card_on(
 }
 
 extern int fc_solve_sfs_raymond_prune(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
     fc_solve_soft_thread_t * const soft_thread,
     fcs_kv_state_t * const raw_ptr_state_raw,
     fcs_collectible_state_t * * const ptr_next_state_val

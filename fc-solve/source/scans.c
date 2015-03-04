@@ -1204,6 +1204,8 @@ int fc_solve_soft_dfs_do_solve(
                     fcs_collectible_state_t * derived;
 
                     if (fc_solve_sfs_raymond_prune(
+                        instance,
+                        hard_thread,
                         soft_thread,
                         STATE_TO_PASS(),
                         &derived
@@ -1257,6 +1259,8 @@ int fc_solve_soft_dfs_do_solve(
                     the_soft_dfs_info->tests_list_index
                     ].tests[the_soft_dfs_info->test_index]
                     (
+                        instance,
+                        hard_thread,
                         soft_thread,
                         STATE_TO_PASS(),
                         derived_states_list
@@ -1765,6 +1769,8 @@ int fc_solve_befs_or_bfs_do_solve(
             fcs_collectible_state_t * after_pruning_state;
 
             if (fc_solve_sfs_raymond_prune(
+                    instance,
+                    hard_thread,
                     soft_thread,
                     STATE_TO_PASS(),
                     &after_pruning_state
@@ -1876,6 +1882,8 @@ int fc_solve_befs_or_bfs_do_solve(
            )
         {
             (*next_test)(
+                instance,
+                hard_thread,
                 soft_thread,
                 STATE_TO_PASS(),
                 &derived
