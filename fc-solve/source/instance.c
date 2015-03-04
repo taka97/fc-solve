@@ -1347,7 +1347,7 @@ fc_solve_soft_thread_t * fc_solve_new_soft_thread(
 {
     /* Make sure we are not exceeding the maximal number of soft threads
      * for an instance. */
-    if (hard_thread->instance->next_soft_thread_id == MAX_NUM_SCANS)
+    if (instance->next_soft_thread_id == MAX_NUM_SCANS)
     {
         return NULL;
     }

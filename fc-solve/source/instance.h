@@ -1249,22 +1249,22 @@ extern void fc_solve_soft_thread_init_befs_or_bfs(
 );
 
 
-static GCC_INLINE int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
+static GCC_INLINE int run_hard_thread(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread
+)
 {
-    fc_solve_soft_thread_t * soft_thread;
-    fcs_int_limit_t num_checked_states_started_at;
-    int ret;
-    fc_solve_instance_t * instance = hard_thread->instance;
-    int * st_idx_ptr = &(hard_thread->st_idx);
+    int * const st_idx_ptr = &(hard_thread->st_idx);
     /*
      * Again, making sure that not all of the soft_threads in this
      * hard thread are finished.
      * */
 
-    ret = FCS_STATE_SUSPEND_PROCESS;
+    int ret = FCS_STATE_SUSPEND_PROCESS;
     while(hard_thread->num_soft_threads_finished < hard_thread->num_soft_threads)
     {
-        soft_thread = &(hard_thread->soft_threads[*st_idx_ptr]);
+        fc_solve_soft_thread_t * const soft_thread =
+            &(hard_thread->soft_threads[*st_idx_ptr]);
         /*
          * Move to the next thread if it's already finished
          * */
@@ -1308,7 +1308,8 @@ static GCC_INLINE int run_hard_thread(fc_solve_hard_thread_t * hard_thread)
          * Keep record of the number of iterations since this
          * thread started.
          * */
-        num_checked_states_started_at = hard_thread->num_checked_states;
+        const fcs_int_limit_t num_checked_states_started_at
+            = hard_thread->num_checked_states;
         /*
          * Calculate a soft thread-wise limit for this hard
          * thread to run.
@@ -1626,7 +1627,7 @@ static GCC_INLINE int fc_solve_resume_instance(
                 hard_thread++
             )
             {
-                ret = run_hard_thread(hard_thread);
+                ret = run_hard_thread(instance, hard_thread);
                 if ((ret == FCS_STATE_IS_NOT_SOLVEABLE) ||
                     (ret == FCS_STATE_WAS_SOLVED) ||
                     (
