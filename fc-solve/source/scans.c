@@ -1537,10 +1537,11 @@ int fc_solve_soft_dfs_do_solve(
         sizeof(fcs_states_linked_list_item_t) \
     ));
 
-static GCC_INLINE void fc_solve_initialize_bfs_queue(fc_solve_soft_thread_t * soft_thread)
+static GCC_INLINE void fc_solve_initialize_bfs_queue(
+    fc_solve_hard_thread_t * const hard_thread,
+    fc_solve_soft_thread_t * const soft_thread
+    )
 {
-    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;
-
     /* Initialize the BFS queue. We have one dummy element at the beginning
        in order to make operations simpler. */
     my_brfs_queue =
@@ -1560,11 +1561,11 @@ static GCC_INLINE void fc_solve_initialize_bfs_queue(fc_solve_soft_thread_t * so
 
 
 void fc_solve_soft_thread_init_befs_or_bfs(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
     fc_solve_soft_thread_t * const soft_thread
     )
 {
-    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;
-    fc_solve_instance_t * const instance = hard_thread->instance;
     fc_solve_soft_thread_update_initial_cards_val(instance, soft_thread);
 
 
@@ -1587,7 +1588,7 @@ void fc_solve_soft_thread_init_befs_or_bfs(
     }
     else
     {
-        fc_solve_initialize_bfs_queue(soft_thread);
+        fc_solve_initialize_bfs_queue(hard_thread, soft_thread);
     }
 
     if (! BEFS_M_VAR(soft_thread, tests_list))
