@@ -2227,6 +2227,7 @@ char * fc_solve_get_the_positions_by_rank_data(
  * simpsim.c.
  * */
 int fc_solve_sfs_check_state_begin(
+    fc_solve_instance_t * const instance,
     fc_solve_hard_thread_t * const hard_thread,
     fcs_kv_state_t * const out_new_state_out,
     fcs_kv_state_t * const raw_ptr_state_raw,
@@ -2235,7 +2236,6 @@ int fc_solve_sfs_check_state_begin(
 {
 #define ptr_state (raw_ptr_state_raw->val)
     fcs_collectible_state_t * raw_ptr_new_state;
-    fc_solve_instance_t * const instance = hard_thread->instance;
 
     if ((hard_thread->allocated_from_list =
         (instance->list_of_vacant_states != NULL)))

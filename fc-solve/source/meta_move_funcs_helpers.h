@@ -84,12 +84,14 @@ extern "C" {
 #define NEW_STATE_BY_REF() (&pass_new_state)
 #define state  (state_key)
 
-#define sfs_check_state_begin()                                     \
-    {         \
-        fc_solve_sfs_check_state_begin(hard_thread,  \
+#define sfs_check_state_begin()                       \
+    {                                                 \
+        fc_solve_sfs_check_state_begin(               \
+                instance,                             \
+                hard_thread,                          \
                 &pass_new_state,                      \
-                raw_ptr_state_raw,                   \
-                moves);                              \
+                raw_ptr_state_raw,                    \
+                moves);                               \
     }
 
 #define sfs_check_state_end() \
