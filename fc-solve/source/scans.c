@@ -1563,7 +1563,8 @@ void fc_solve_soft_thread_init_befs_or_bfs(
     fc_solve_soft_thread_t * const soft_thread
     )
 {
-    fc_solve_instance_t * const instance = soft_thread->hard_thread->instance;
+    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;
+    fc_solve_instance_t * const instance = hard_thread->instance;
     fc_solve_soft_thread_update_initial_cards_val(instance, soft_thread);
 
 
@@ -1578,6 +1579,8 @@ void fc_solve_soft_thread_init_befs_or_bfs(
 #define WEIGHTING(soft_thread) (&(BEFS_VAR(soft_thread, weighting)))
 
         fc_solve_initialize_befs_rater(
+            instance,
+            hard_thread,
             soft_thread,
             WEIGHTING(soft_thread)
             );

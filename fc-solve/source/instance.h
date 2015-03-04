@@ -1021,6 +1021,8 @@ extern const double fc_solve_default_befs_weights[FCS_NUM_BEFS_WEIGHTS];
 #define is_filled_by_any_card() (INSTANCE_EMPTY_STACKS_FILL == FCS_ES_FILLED_BY_ANY_CARD)
 #endif
 static GCC_INLINE void fc_solve_initialize_befs_rater(
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
     fc_solve_soft_thread_t * const soft_thread,
     fc_solve_state_weighting_t * weighting
 )
@@ -1048,11 +1050,6 @@ static GCC_INLINE void fc_solve_initialize_befs_rater(
     }
 #define pass (*raw_pass_raw)
 #define ptr_state_key (raw_pass_raw->key)
-
-#ifndef HARD_CODED_NUM_STACKS
-    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;
-    fc_solve_instance_t * const instance = hard_thread->instance;
-#endif
 
 #if ((!defined(HARD_CODED_NUM_FREECELLS)) || (!defined(HARD_CODED_NUM_STACKS)) || (!defined(HARD_CODED_NUM_DECKS)))
     SET_GAME_PARAMS();
@@ -1118,7 +1115,8 @@ static GCC_INLINE void fc_solve_soft_thread_init_soft_dfs(
     fc_solve_soft_thread_t * const soft_thread
 )
 {
-    fc_solve_instance_t * const instance = soft_thread->hard_thread->instance;
+    fc_solve_hard_thread_t * const hard_thread = soft_thread->hard_thread;
+    fc_solve_instance_t * const instance = hard_thread->instance;
     fc_solve_soft_thread_update_initial_cards_val(instance, soft_thread);
 
     fcs_state_keyval_pair_t * ptr_orig_state = instance->state_copy_ptr;
@@ -1208,6 +1206,8 @@ static GCC_INLINE void fc_solve_soft_thread_init_soft_dfs(
                         tests_order_groups[group_idx].weighting;
 
                     fc_solve_initialize_befs_rater(
+                        instance,
+                        hard_thread,
                         soft_thread,
                         &(tests_list_struct_ptr->weighting)
                     );
