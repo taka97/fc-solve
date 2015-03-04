@@ -1209,6 +1209,7 @@ void fc_solve_start_instance_process_with_board(
         pass.val = &(state_copy_ptr->info);
 
         fc_solve_check_and_add_state(
+            instance,
             instance->hard_threads,
             &pass,
             &no_use

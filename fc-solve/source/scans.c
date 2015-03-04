@@ -2309,6 +2309,7 @@ extern void fc_solve_sfs_check_state_end(
 #define ptr_state (raw_ptr_state_raw->val)
 
     if (! fc_solve_check_and_add_state(
+        instance,
         hard_thread,
         raw_ptr_new_state_raw,
         &existing_state

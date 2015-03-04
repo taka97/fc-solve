@@ -314,6 +314,7 @@ static GCC_INLINE void on_state_new(
 }
 
 fcs_bool_t fc_solve_check_and_add_state(
+    fc_solve_instance_t * const instance,
     fc_solve_hard_thread_t * const hard_thread,
     fcs_kv_state_t * const new_state,
     fcs_kv_state_t * const existing_state_raw
@@ -328,8 +329,6 @@ fcs_bool_t fc_solve_check_and_add_state(
 #define new_state_key      (new_state->key)
 
 #define ON_STATE_NEW() on_state_new(instance, hard_thread, new_state->val);
-
-    fc_solve_instance_t * const instance = hard_thread->instance;
 
     /* #if'ing out because it doesn't belong here. */
 #if 0
