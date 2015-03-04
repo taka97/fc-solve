@@ -80,11 +80,11 @@ static GCC_INLINE ub4 perl_hash_function(
  * replaced_with_cached macro above.
  * */
 static GCC_INLINE void fc_solve_cache_stacks(
-        fc_solve_hard_thread_t * const hard_thread,
-        fcs_kv_state_t * const new_state
-        )
+    fc_solve_instance_t * const instance,
+    fc_solve_hard_thread_t * const hard_thread,
+    fcs_kv_state_t * const new_state
+)
 {
-    fc_solve_instance_t * const instance = hard_thread->instance;
 #ifndef HARD_CODED_NUM_STACKS
     SET_GAME_PARAMS();
 #endif
@@ -246,7 +246,7 @@ static GCC_INLINE void fc_solve_cache_stacks(
 
 #else /* #ifdef INDIRECT_STACK_STATES */
 
-#define fc_solve_cache_stacks(hard_thread, new_state_key) \
+#define fc_solve_cache_stacks(instance, hard_thread, new_state_key) \
     {}
 
 #endif
@@ -340,7 +340,7 @@ fcs_bool_t fc_solve_check_and_add_state(
     }
 #endif
 
-    fc_solve_cache_stacks(hard_thread, new_state);
+    fc_solve_cache_stacks(instance, hard_thread, new_state);
 
     {
         fc_solve_canonize_state(
