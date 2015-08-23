@@ -33,10 +33,13 @@ Class('FC_Solve_UI',
             _is_expanded: { is: rw, init: false },
             _expanded_pristine_output: { is: rw },
             _unexpanded_pristine_output: { is: rw },
+            _is1based: { is: rw },
         },
         methods: {
-            _is_one_based_checked: function() {
-                return $("#one_based").is(':checked');
+            _calc_is_1_based: function() {
+                var that = this;
+
+                that._is1based = ($("#one_based").is(':checked') ? true : false);
             },
             _is_unicode_suits_checked: function() {
                 return $("#unicode_suits").is(':checked');
@@ -52,13 +55,15 @@ Class('FC_Solve_UI',
             _process_pristine_output: function(text) {
                 var that = this;
 
-                return (that._is_one_based_checked()
+                return (that._is1based
                     ? that._one_based_process(text)
                     : text
                 );
             },
             _update_output: function () {
                 var that = this;
+
+                that._calc_is_1_based();
 
                 that._webui_output_set_text(
                     that._process_pristine_output(that._calc_pristine_output())
@@ -71,7 +76,7 @@ Class('FC_Solve_UI',
                     var seq = that._instance._proto_states_and_moves_seq;
 
                     var _render_state = function(s) {
-                        return "<li class=\"state\"><pre>" + s.str + "</pre></li>\n\n";
+                        return "<li class=\"state\"><pre>" + that._unicode_proc(s.str) + "</pre></li>\n\n";
                     };
 
                     var _out_state = function(i) {
@@ -80,7 +85,7 @@ Class('FC_Solve_UI',
 
                     _out_state(0);
                     for (var i = 1; i < seq.length - 1; i+=2) {
-                        html += "<li id=\"move_" + i + "\" class=\"move unexpanded\"><span class=\"mega_move\">" + seq[i].m.str + "</span>\n<button id=\"expand_move_" + i + "\" class=\"expand_move\">Expand Move</button>\n</li>\n";
+                        html += "<li id=\"move_" + i + "\" class=\"move unexpanded\"><span class=\"mega_move\">" + that._process_pristine_output(seq[i].m.str) + "</span>\n<button id=\"expand_move_" + i + "\" class=\"expand_move\">Expand Move</button>\n</li>\n";
 
                         _out_state(i+1);
                     }
@@ -236,6 +241,11 @@ Class('FC_Solve_UI',
                 $("#output").attr("disabled", true);
 
                 return;
+            },
+            _unicode_proc: function(s) {
+                var that = this;
+
+                return that._instance.unicode_preprocess(s);
             },
             do_solve: function() {
                 var that = this;
