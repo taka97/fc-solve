@@ -138,6 +138,9 @@ static GCC_INLINE void fc_solve_alloc_instance(fc_solve_instance_t * const insta
 #undef DEFAULT_MAX_NUM_ELEMENTS_IN_CACHE
 
 #endif
+#ifndef FCS_DISABLE_SIMPLE_SIMON
+            .is_simple_simon = FALSE,
+#endif
     };
 
 #ifndef FCS_FREECELL_ONLY
@@ -732,6 +735,12 @@ static GCC_INLINE void fc_solve_free_instance_soft_thread_callback(
         soft_thread->pats_scan = NULL;
     }
 #endif
+
+    if (BEFS_M_VAR(soft_thread, befs_positions_by_rank))
+    {
+        free(BEFS_M_VAR(soft_thread, befs_positions_by_rank));
+        BEFS_M_VAR(soft_thread, befs_positions_by_rank) = NULL;
+    }
 }
 
 static GCC_INLINE void fc_solve_free_instance(fc_solve_instance_t * const instance)
@@ -955,7 +964,7 @@ static GCC_INLINE int fc_solve_optimize_solution(
         {
             .num = 1,
             .by_depth_tests =
-            SMALLOC1(soft_thread->by_depth_tests_order.by_depth_tests);
+            SMALLOC1(soft_thread->by_depth_tests_order.by_depth_tests),
         };
         soft_thread->by_depth_tests_order.by_depth_tests[0] =
             (typeof( soft_thread->by_depth_tests_order.by_depth_tests[0] ))

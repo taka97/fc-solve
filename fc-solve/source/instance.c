@@ -114,6 +114,7 @@ static GCC_INLINE void soft_thread_clean_soft_dfs(
             free(info_ptr->derived_states_list.states);
             free(info_ptr->derived_states_random_indexes);
         }
+        free (info_ptr->positions_by_rank);
     }
 
     free(soft_dfs_info);

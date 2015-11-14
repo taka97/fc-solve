@@ -117,6 +117,34 @@ extern "C" {
 
 #include "meta_alloc.h"
 
+#ifndef FCS_DISABLE_SIMPLE_SIMON
+#define FCS_SS_POS_BY_RANK_WIDTH (13+1)
+#define FCS_SS_POS_BY_RANK_LEN ( FCS_SS_POS_BY_RANK_WIDTH * 4 )
+#endif
+
+/* We need 2 chars per card - one for the column_idx and one
+ * for the card_idx.
+ *
+ * We also need it times 13 for each of the ranks.
+ *
+ * We need (4*LOCAL_DECKS_NUM+1) slots to hold the cards plus a
+ * (-1,-1) (= end) padding.
+ * */
+#define FCS_POS_BY_RANK_WIDTH (MAX_NUM_DECKS << 3)
+
+/* We don't keep track of kings (rank == 13). */
+#define NUM_POS_BY_RANK_SLOTS 13
+#define FCS_POS_BY_RANK_LEN ( NUM_POS_BY_RANK_SLOTS * FCS_POS_BY_RANK_WIDTH )
+typedef struct {
+    char col, height;
+} fcs_pos_by_rank_t;
+
+#ifndef FCS_DISABLE_SIMPLE_SIMON
+#define FCS_BOTH__POS_BY_RANK__SIZE (max(FCS_SS_POS_BY_RANK_LEN * sizeof(fcs_pos_by_rank_t), FCS_POS_BY_RANK_LEN))
+#else
+#define FCS_BOTH__POS_BY_RANK__SIZE FCS_POS_BY_RANK_LEN
+#endif
+
 /*
  * This is a linked list item that is used to implement a queue for the BFS
  * scan.
@@ -911,6 +939,14 @@ struct fc_solve_instance_struct
      * but hopefully it will work.
      * */
     fcs_state_keyval_pair_t * initial_non_canonized_state;
+
+#ifndef FCS_DISABLE_SIMPLE_SIMON
+    /*
+     * Whether or not this is a Simple Simon-like game.
+     * */
+    fcs_bool_t is_simple_simon;
+#endif
+
 };
 
 
