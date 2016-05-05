@@ -353,21 +353,17 @@ void DLLEXPORT freecell_solver_user_limit_current_instance_iterations(
     ((fcs_user_t *)api_instance)->current_instance->limit = max_iters;
 }
 
-static GCC_INLINE fc_solve_soft_thread_t * const api_soft_thread(void * const api_instance)
-{
-    return ((fcs_user_t * const)api_instance)->soft_thread;
-}
-
 int DLLEXPORT freecell_solver_user_set_depth_tests_order(
-    void * const api_instance,
-    const int min_depth,
-    const char * const tests_order,
-    char * * const error_string
+    void * api_instance,
+    int min_depth,
+    const char * tests_order,
+    char * * error_string
     )
 {
     int depth_idx;
+    int ret_code;
 
-    fc_solve_soft_thread_t * const soft_thread = api_soft_thread(api_instance);
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
 
     *error_string = NULL;
 
@@ -389,11 +385,11 @@ int DLLEXPORT freecell_solver_user_set_depth_tests_order(
                 depth_idx++
             )
         {
-            if (depth_idx == soft_thread->by_depth_tests_order.num-1)
+            if (depth_idx == user->soft_thread->by_depth_tests_order.num-1)
             {
                 break;
             }
-            else if (min_depth < soft_thread
+            else if (min_depth < user->soft_thread
                     ->by_depth_tests_order.by_depth_tests[depth_idx].max_depth
                     )
             {
@@ -404,31 +400,31 @@ int DLLEXPORT freecell_solver_user_set_depth_tests_order(
         depth_idx++;
     }
 
-    if (depth_idx == soft_thread->by_depth_tests_order.num)
+    if (depth_idx == user->soft_thread->by_depth_tests_order.num)
     {
-        soft_thread->by_depth_tests_order.by_depth_tests =
+        user->soft_thread->by_depth_tests_order.by_depth_tests =
             SREALLOC(
-                soft_thread->by_depth_tests_order.by_depth_tests,
-                ++soft_thread->by_depth_tests_order.num
+                user->soft_thread->by_depth_tests_order.by_depth_tests,
+                ++user->soft_thread->by_depth_tests_order.num
                 );
 
-        soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].tests_order.num_groups = 0;
-        soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].tests_order.groups = NULL;
+        user->soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].tests_order.num_groups = 0;
+        user->soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].tests_order.groups = NULL;
     }
 
     if (depth_idx > 0)
     {
-        soft_thread->
+        user->soft_thread->
             by_depth_tests_order.by_depth_tests[depth_idx-1].max_depth = min_depth;
     }
 
-    soft_thread->
+    user->soft_thread->
         by_depth_tests_order.by_depth_tests[depth_idx].max_depth = INT_MAX;
 
     char static_error_string[120];
-    const int ret_code =
+    ret_code =
         fc_solve_apply_tests_order(
-            &(soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].tests_order),
+            &(user->soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].tests_order),
             tests_order,
             static_error_string
             );
@@ -438,18 +434,18 @@ int DLLEXPORT freecell_solver_user_set_depth_tests_order(
         *error_string = strdup(static_error_string);
     }
 
-    for (int further_depth_idx = depth_idx+1; further_depth_idx < soft_thread->by_depth_tests_order.num ; further_depth_idx++)
+    for (int further_depth_idx = depth_idx+1; further_depth_idx < user->soft_thread->by_depth_tests_order.num ; further_depth_idx++)
     {
         fc_solve_free_tests_order(&(
-                soft_thread->by_depth_tests_order
+                user->soft_thread->by_depth_tests_order
                 .by_depth_tests[further_depth_idx].tests_order
         ));
     }
 
-    soft_thread->by_depth_tests_order.by_depth_tests =
+    user->soft_thread->by_depth_tests_order.by_depth_tests =
         SREALLOC(
-            soft_thread->by_depth_tests_order.by_depth_tests,
-            soft_thread->by_depth_tests_order.num = depth_idx+1
+            user->soft_thread->by_depth_tests_order.by_depth_tests,
+            user->soft_thread->by_depth_tests_order.num = depth_idx+1
         );
 
     return ret_code;
@@ -1449,7 +1445,7 @@ static void user_free_resources(
 }
 
 void DLLEXPORT freecell_solver_user_free(
-    void * const api_instance
+    void * api_instance
     )
 {
     fcs_user_t * const user = (fcs_user_t *)api_instance;
@@ -1463,7 +1459,7 @@ int DLLEXPORT freecell_solver_user_get_current_depth(
     void * const api_instance
     )
 {
-    return (DFS_VAR(api_soft_thread(api_instance), depth));
+    return (DFS_VAR(((const fcs_user_t * const)api_instance)->soft_thread, depth));
 }
 
 extern int DLLEXPORT freecell_solver_user_set_patsolve_x_param(
@@ -1474,7 +1470,10 @@ extern int DLLEXPORT freecell_solver_user_set_patsolve_x_param(
     )
 {
 #ifndef FCS_DISABLE_PATSOLVE
-    const_SLOT(pats_scan, api_soft_thread(api_instance));
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
+
+    fc_solve_soft_thread_t * const soft_thread = user->soft_thread;
+    const_SLOT(pats_scan, soft_thread);
 
     if (! pats_scan)
     {
@@ -1501,7 +1500,10 @@ extern int DLLEXPORT freecell_solver_user_set_patsolve_y_param(
     )
 {
 #ifndef FCS_DISABLE_PATSOLVE
-    const_SLOT(pats_scan, api_soft_thread(api_instance));
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
+
+    fc_solve_soft_thread_t * const soft_thread = user->soft_thread;
+    const_SLOT(pats_scan, soft_thread);
 
     if (! pats_scan)
     {
@@ -1524,13 +1526,16 @@ void DLLEXPORT freecell_solver_user_set_solving_method(
     const int method
     )
 {
-    /* TODO : break backcompat with it. */
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
+
+    fc_solve_soft_thread_t * const soft_thread = user->soft_thread;
+    fcs_super_method_type_t super_method_type = FCS_SUPER_METHOD_BEFS_BRFS;
+
     if (method == FCS_METHOD_HARD_DFS)
     {
         return freecell_solver_user_set_solving_method(api_instance, FCS_METHOD_SOFT_DFS);
     }
-    fcs_super_method_type_t super_method_type = FCS_SUPER_METHOD_BEFS_BRFS;
-    fc_solve_soft_thread_t * const soft_thread = api_soft_thread(api_instance);
+
     switch ((soft_thread->method = method))
     {
         case FCS_METHOD_RANDOM_DFS:
@@ -2003,8 +2008,9 @@ int DLLEXPORT freecell_solver_user_set_a_star_weight(
     const double weight
 )
 {
-    fc_solve_soft_thread_t * const soft_thread = api_soft_thread(api_instance);
-    if ((my_index < 0) || (my_index >= (int)(COUNT(BEFS_VAR(soft_thread, weighting).befs_weights.weights))))
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
+
+    if ((my_index < 0) || (my_index >= (int)(COUNT(BEFS_VAR(user->soft_thread, weighting).befs_weights.weights))))
     {
         return 1;
     }
@@ -2013,7 +2019,7 @@ int DLLEXPORT freecell_solver_user_set_a_star_weight(
         return 2;
     }
 
-    BEFS_VAR(soft_thread, weighting).befs_weights.weights[my_index] = weight;
+    BEFS_VAR(user->soft_thread, weighting).befs_weights.weights[my_index] = weight;
 
     return 0;
 
@@ -2026,7 +2032,9 @@ double DLLEXPORT fc_solve_user_INTERNAL_get_befs_weight(
     const int my_index
     )
 {
-    return BEFS_VAR(api_soft_thread(api_instance), weighting).befs_weights.weights[my_index];
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
+
+    return BEFS_VAR(user->soft_thread, weighting).befs_weights.weights[my_index];
 }
 
 #endif
@@ -2219,10 +2227,11 @@ void DLLEXPORT freecell_solver_user_set_random_seed(
     const int seed
 )
 {
-    fc_solve_soft_thread_t * const soft_thread = api_soft_thread(api_instance);
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
+
     fc_solve_rand_init(
-            &(DFS_VAR(soft_thread, rand_gen)),
-            (DFS_VAR(soft_thread, rand_seed) = seed)
+            &(DFS_VAR(user->soft_thread, rand_gen)),
+            (DFS_VAR(user->soft_thread, rand_seed) = seed)
             );
 }
 
@@ -2297,7 +2306,9 @@ extern void DLLEXPORT freecell_solver_user_set_soft_thread_step(
     const int num_checked_states_step
     )
 {
-    api_soft_thread(api_instance)->num_checked_states_step = num_checked_states_step;
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
+
+    user->soft_thread->num_checked_states_step = num_checked_states_step;
 }
 
 int DLLEXPORT freecell_solver_user_next_hard_thread(
@@ -2346,10 +2357,10 @@ void DLLEXPORT freecell_solver_user_set_soft_thread_name(
     const freecell_solver_str_t name
     )
 {
-    fc_solve_soft_thread_t * const soft_thread = api_soft_thread(api_instance);
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
 
-    strncpy (soft_thread->name, name, COUNT(soft_thread->name));
-    soft_thread->name[COUNT(soft_thread->name)-1] = '\0';
+    strncpy (user->soft_thread->name, name, COUNT(user->soft_thread->name));
+    user->soft_thread->name[COUNT(user->soft_thread->name)-1] = '\0';
 }
 
 void DLLEXPORT freecell_solver_user_set_flare_name(
@@ -2469,15 +2480,15 @@ extern int DLLEXPORT freecell_solver_user_set_pruning(
     char * * error_string
     )
 {
-    fc_solve_soft_thread_t * const soft_thread = api_soft_thread(api_instance);
+    fcs_user_t * const user = (fcs_user_t *)api_instance;
 
     if (!strcmp(pruning, "r:tf"))
     {
-        soft_thread->enable_pruning = TRUE;
+        user->soft_thread->enable_pruning = TRUE;
     }
     else if (pruning[0] == '\0')
     {
-        soft_thread->enable_pruning = FALSE;
+        user->soft_thread->enable_pruning = FALSE;
     }
     else
     {
@@ -2797,7 +2808,7 @@ int DLLEXPORT fc_solve_user_INTERNAL_get_num_by_depth_tests_order(
     void * const api_instance
     )
 {
-    return api_soft_thread(api_instance)->by_depth_tests_order.num;
+    return (((fcs_user_t * const)api_instance)->soft_thread->by_depth_tests_order.num);
 }
 
 int DLLEXPORT fc_solve_user_INTERNAL_get_by_depth_tests_max_depth(
@@ -2805,7 +2816,7 @@ int DLLEXPORT fc_solve_user_INTERNAL_get_by_depth_tests_max_depth(
     const int depth_idx
     )
 {
-    return api_soft_thread(api_instance)->by_depth_tests_order.by_depth_tests[depth_idx].max_depth;
+    return (((fcs_user_t * const)api_instance)->soft_thread->by_depth_tests_order.by_depth_tests[depth_idx].max_depth);
 }
 
 #endif
