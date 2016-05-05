@@ -2629,7 +2629,6 @@ DLLEXPORT const char * freecell_solver_user_get_lib_version(
     return VERSION;
 }
 
-/* TODO : optionally Remove from the API */
 DLLEXPORT const char * freecell_solver_user_get_current_soft_thread_name(
     void * const api_instance
     )
