@@ -294,23 +294,6 @@ static inline QueueInC * deref(SV * const obj) {
     return (QueueInC*)SvIV(SvRV(obj));
 }
 
-static inline fcs_offloading_queue_t * q(SV * const obj) {
-    return &(deref(obj)->q);
-}
-
-void insert(SV* obj, int item_i) {
-    fcs_offloading_queue_item_t item = (fcs_offloading_queue_item_t)item_i;
-    fcs_offloading_queue__insert(q(obj), &item);
-}
-
-SV* extract(SV* obj) {
-    fcs_offloading_queue_item_t item;
-
-    return (fcs_offloading_queue__extract(q(obj), &item))
-    ? newSViv((int)item)
-    : &PL_sv_undef;
-}
-
 void DESTROY(SV* obj) {
   QueueInC * s = deref(obj);
   free(s->q.offload_dir_path);
