@@ -33,7 +33,6 @@ typedef const unsigned char *fcs_offloading_queue_item_t;
 
 typedef struct
 {
-    size_t num_items_per_page;
     long page_index, queue_id;
     size_t write_to_idx;
     size_t read_from_idx;
@@ -41,15 +40,14 @@ typedef struct
 } fcs_offloading_queue_page_t;
 
 static inline void fcs_offloading_queue_page__init(
-    fcs_offloading_queue_page_t *const page, const size_t num_items_per_page,
+    fcs_offloading_queue_page_t *const page,
     const long page_index, const long queue_id)
 {
     fcs_offloading_queue_page_t new_page = {
-        .num_items_per_page = num_items_per_page,
         .page_index = page_index,
         .queue_id = queue_id,
         .data =
-            malloc(sizeof(fcs_offloading_queue_item_t) * num_items_per_page)};
+            malloc(sizeof(fcs_offloading_queue_item_t) * 100)};
     *page = new_page;
     page->write_to_idx = 0;
     page->read_from_idx = 0;
@@ -66,7 +64,6 @@ static inline void fcs_offloading_queue_page__destroy(
 
 typedef struct
 {
-    int num_items_per_page;
     const char *offload_dir_path;
     long num_inserted, num_items_in_queue, num_extracted;
     long id;
@@ -84,15 +81,14 @@ static inline void fcs_offloading_queue__init(
     fcs_offloading_queue_t *const queue, const char *const offload_dir_path,
     const long id)
 {
-    queue->num_items_per_page = NUM_ITEMS_PER_PAGE;
     queue->offload_dir_path = offload_dir_path;
     queue->num_inserted = queue->num_items_in_queue = queue->num_extracted = 0;
     queue->id = id;
 
     fcs_offloading_queue_page__init(
-        &(queue->pages[0]), NUM_ITEMS_PER_PAGE, 0, queue->id);
+        &(queue->pages[0]), 0, queue->id);
     fcs_offloading_queue_page__init(
-        &(queue->pages[1]), NUM_ITEMS_PER_PAGE, 0, queue->id);
+        &(queue->pages[1]), 0, queue->id);
 
     queue->page_idx_to_read_from = queue->page_idx_to_write_to = 0;
     queue->page_idx_for_backup = 1;
