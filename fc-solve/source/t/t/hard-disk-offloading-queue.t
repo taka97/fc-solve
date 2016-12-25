@@ -70,18 +70,6 @@ static inline void fcs_offloading_queue_page__destroy(
     page->data = NULL;
 }
 
-static inline bool fcs_offloading_queue_page__can_extract(
-    const fcs_offloading_queue_page_t *const page)
-{
-    return (page->read_from_idx < page->write_to_idx);
-}
-
-static inline bool fcs_offloading_queue_page__can_insert(
-    const fcs_offloading_queue_page_t *const page)
-{
-    return (page->write_to_idx < page->num_items_per_page);
-}
-
 static inline const char *fcs_offloading_queue_page__calc_filename(
     fcs_offloading_queue_page_t *const page, char *const buffer,
     const char *const offload_dir_path)
@@ -90,42 +78,6 @@ static inline const char *fcs_offloading_queue_page__calc_filename(
         page->queue_id, page->page_index);
 
     return buffer;
-}
-
-static inline void fcs_offloading_queue_page__start_after(
-    fcs_offloading_queue_page_t *const page,
-    const fcs_offloading_queue_page_t *const other_page)
-{
-    page->page_index = other_page->page_index + 1;
-    fcs_offloading_queue_page__recycle(page);
-}
-
-static inline void fcs_offloading_queue_page__bump(
-    fcs_offloading_queue_page_t *const page)
-{
-    fcs_offloading_queue_page__start_after(page, page);
-}
-
-static inline void fcs_offloading_queue_page__read_next_from_disk(
-    fcs_offloading_queue_page_t *const page, const char *const offload_dir_path)
-{
-    fcs_offloading_queue_page__bump(page);
-    char page_filename[PATH_MAX + 1];
-    fcs_offloading_queue_page__calc_filename(
-        page, page_filename, offload_dir_path);
-
-    FILE *const f = fopen(page_filename, "rb");
-    fread(page->data, sizeof(fcs_offloading_queue_item_t),
-        page->num_items_per_page, f);
-    fclose(f);
-
-    /* We need to set this limit because it's a read-only page that we
-     * retrieve from the disk and otherwise ->can_extract() will return
-     * false for most items.
-     * */
-    page->write_to_idx = page->num_items_per_page;
-
-    unlink(page_filename);
 }
 
 static inline void fcs_offloading_queue_page__offload(
