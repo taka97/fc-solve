@@ -33,14 +33,6 @@ typedef struct
     const char *offload_dir_path;
 } fcs_offloading_queue_t;
 
-const size_t NUM_ITEMS_PER_PAGE = (128 * 1024);
-static inline void fcs_offloading_queue__init(
-    fcs_offloading_queue_t *const queue, const char *const offload_dir_path
-    )
-{
-    queue->offload_dir_path = offload_dir_path;
-}
-
 typedef struct
 {
     fcs_offloading_queue_t q;
@@ -51,7 +43,7 @@ SV* _proto_new(const char * offload_dir_path) {
 
         New(42, s, 1, QueueInC);
 
-        fcs_offloading_queue__init(&(s->q), strdup(offload_dir_path));
+        s->q.offload_dir_path = strdup(offload_dir_path);
         SV*      obj_ref = newSViv(0);
         SV*      obj = newSVrv(obj_ref, "FC_Solve::QueueInC");
         sv_setiv(obj, (IV)s);
