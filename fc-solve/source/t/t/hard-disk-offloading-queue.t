@@ -64,7 +64,6 @@ static inline void fcs_offloading_queue_page__destroy(
 typedef struct
 {
     const char *offload_dir_path;
-    long id;
     /*
      * page_idx_to_write_to, page_idx_for_backup and page_idx_to_read_from
      * always point to the two "pages" below, but they can be swapped and
@@ -76,11 +75,10 @@ typedef struct
 
 const size_t NUM_ITEMS_PER_PAGE = (128 * 1024);
 static inline void fcs_offloading_queue__init(
-    fcs_offloading_queue_t *const queue, const char *const offload_dir_path,
-    const long id)
+    fcs_offloading_queue_t *const queue, const char *const offload_dir_path
+    )
 {
     queue->offload_dir_path = offload_dir_path;
-    queue->id = id;
 
     fcs_offloading_queue_page__init(
         &(queue->pages[0]), 0);
@@ -102,12 +100,12 @@ typedef struct
     fcs_offloading_queue_t q;
 } QueueInC;
 
-SV* _proto_new(const char * offload_dir_path, long queue_id) {
+SV* _proto_new(const char * offload_dir_path) {
         QueueInC * s;
 
         New(42, s, 1, QueueInC);
 
-        fcs_offloading_queue__init(&(s->q), strdup(offload_dir_path), queue_id);
+        fcs_offloading_queue__init(&(s->q), strdup(offload_dir_path));
         SV*      obj_ref = newSViv(0);
         SV*      obj = newSVrv(obj_ref, "FC_Solve::QueueInC");
         sv_setiv(obj, (IV)s);
@@ -159,7 +157,6 @@ sub new
 
     return FC_Solve::QueueInC::_proto_new(
         $args->{offload_dir_path},
-        ( $args->{queue_id} || 0 )
     );
 }
 
