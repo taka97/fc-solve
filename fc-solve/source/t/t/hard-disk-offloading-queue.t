@@ -64,6 +64,7 @@ static inline void fcs_offloading_queue_page__destroy(
 
 typedef struct
 {
+    const char *offload_dir_path;
     long num_inserted, num_items_in_queue, num_extracted;
     long id;
     /*
@@ -77,9 +78,10 @@ typedef struct
 
 const size_t NUM_ITEMS_PER_PAGE = (128 * 1024);
 static inline void fcs_offloading_queue__init(
-    fcs_offloading_queue_t *const queue,
+    fcs_offloading_queue_t *const queue, const char *const offload_dir_path,
     const long id)
 {
+    queue->offload_dir_path = offload_dir_path;
     queue->num_inserted = queue->num_items_in_queue = queue->num_extracted = 0;
     queue->id = id;
 
@@ -108,7 +110,7 @@ SV* _proto_new(int num_items_per_page, const char * offload_dir_path, long queue
 
         New(42, s, 1, QueueInC);
 
-        fcs_offloading_queue__init(&(s->q), queue_id);
+        fcs_offloading_queue__init(&(s->q), strdup(offload_dir_path), queue_id);
         SV*      obj_ref = newSViv(0);
         SV*      obj = newSVrv(obj_ref, "FC_Solve::QueueInC");
         sv_setiv(obj, (IV)s);
@@ -122,6 +124,7 @@ static inline QueueInC * deref(SV * const obj) {
 
 void DESTROY(SV* obj) {
   QueueInC * s = deref(obj);
+  free(s->q.offload_dir_path);
   fcs_offloading_queue__destroy(&s->q);
   Safefree(s);
 }
