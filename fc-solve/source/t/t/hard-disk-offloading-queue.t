@@ -30,16 +30,6 @@ sub load
 #include <unistd.h>
 #include <stdbool.h>
 
-typedef bool fcs_bool_t;
-
-#ifndef FALSE
-#define FALSE false
-#endif
-
-#ifndef TRUE
-#define TRUE true
-#endif
-
 typedef const unsigned char *fcs_offloading_queue_item_t;
 
 typedef struct
@@ -81,7 +71,7 @@ static inline void fcs_offloading_queue_page__destroy(
     page->data = NULL;
 }
 
-static inline fcs_bool_t fcs_offloading_queue_page__can_extract(
+static inline bool fcs_offloading_queue_page__can_extract(
     const fcs_offloading_queue_page_t *const page)
 {
     return (page->read_from_idx < page->write_to_idx);
@@ -96,7 +86,7 @@ static inline void fcs_offloading_queue_page__extract(
         sizeof(*out_item));
 }
 
-static inline fcs_bool_t fcs_offloading_queue_page__can_insert(
+static inline bool fcs_offloading_queue_page__can_insert(
     const fcs_offloading_queue_page_t *const page)
 {
     return (page->write_to_idx < page->num_items_per_page);
@@ -242,14 +232,14 @@ static inline void fcs_offloading_queue__insert(
     queue->num_items_in_queue++;
 }
 
-static inline fcs_bool_t fcs_offloading_queue__extract(
+static inline bool fcs_offloading_queue__extract(
     fcs_offloading_queue_t *const queue,
     fcs_offloading_queue_item_t *const return_item)
 {
     if (queue->num_items_in_queue == 0)
     {
         *return_item = NULL;
-        return FALSE;
+        return false;
     }
 
     if (!fcs_offloading_queue_page__can_extract(
@@ -280,7 +270,7 @@ static inline fcs_bool_t fcs_offloading_queue__extract(
     fcs_offloading_queue_page__extract(
         queue->pages + queue->page_idx_to_read_from, return_item);
 
-    return TRUE;
+    return true;
 }
 
 typedef struct
