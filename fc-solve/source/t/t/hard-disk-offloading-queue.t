@@ -65,7 +65,6 @@ static inline void fcs_offloading_queue_page__destroy(
 typedef struct
 {
     const char *offload_dir_path;
-    long num_inserted, num_items_in_queue, num_extracted;
     long id;
     /*
      * page_idx_to_write_to, page_idx_for_backup and page_idx_to_read_from
@@ -82,7 +81,6 @@ static inline void fcs_offloading_queue__init(
     const long id)
 {
     queue->offload_dir_path = offload_dir_path;
-    queue->num_inserted = queue->num_items_in_queue = queue->num_extracted = 0;
     queue->id = id;
 
     fcs_offloading_queue_page__init(
