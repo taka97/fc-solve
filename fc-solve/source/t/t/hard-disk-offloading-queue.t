@@ -16,18 +16,11 @@ sub load {
     my ($self) = @_;
 
     my $src = <<'EOF';
-/*
- * offloading_queue.h - header file for the offloading-to-hard-disk
- * queue.
- */
-
 #include <string.h>
-#include <limits.h>
-#include <stdio.h>
 
 typedef struct
 {
-    const char *offload_dir_path;
+    const char *string_ptr;
 } fcs_offloading_queue_t;
 
 typedef struct
@@ -35,12 +28,12 @@ typedef struct
     fcs_offloading_queue_t q;
 } QueueInC;
 
-SV* _proto_new(const char * offload_dir_path) {
+SV* _proto_new(const char * string_ptr) {
         QueueInC * s;
 
         New(42, s, 1, QueueInC);
 
-        s->q.offload_dir_path = strdup(offload_dir_path);
+        s->q.string_ptr = strdup(string_ptr);
         SV*      obj_ref = newSViv(0);
         SV*      obj = newSVrv(obj_ref, "FC_Solve::QueueInC");
         sv_setiv(obj, (IV)s);
@@ -50,7 +43,7 @@ SV* _proto_new(const char * offload_dir_path) {
 
 void DESTROY(SV* obj) {
   QueueInC * s = (QueueInC*)SvIV(SvRV(obj));
-  free((void*)s->q.offload_dir_path);
+  free((void*)s->q.string_ptr);
   Safefree(s);
 }
 
@@ -82,13 +75,13 @@ __PACKAGE__->load;
 
 package main;
 
-my $queue_offload_dir_path = "./foobar/queue-offload-dir";
+my $str = "./foobar/queue-offload-dir";
 {
-    my $queue = FC_Solve::QueueInC::_proto_new($queue_offload_dir_path);
+    my $queue = FC_Solve::QueueInC::_proto_new($str);
 }
 
 {
-    my $queue = FC_Solve::QueueInC::_proto_new($queue_offload_dir_path);
+    my $queue = FC_Solve::QueueInC::_proto_new($str);
 
     my $map_idx_to_item = sub { my ($idx) = @_; return $idx * 3 + 1; };
 }
