@@ -4,8 +4,6 @@ use strict;
 use warnings;
 
 use Test::More tests => 1;
-use File::Spec ();
-use File::Path qw(mkpath);
 
 package FC_Solve::QueueInC;
 
@@ -84,10 +82,7 @@ __PACKAGE__->load;
 
 package main;
 
-my $queue_offload_dir_path =
-  File::Spec->catdir( File::Spec->curdir(), "queue-offload-dir" );
-mkpath($queue_offload_dir_path);
-
+my $queue_offload_dir_path = "./foobar/queue-offload-dir";
 {
     my $queue = FC_Solve::QueueInC::_proto_new($queue_offload_dir_path);
 }
