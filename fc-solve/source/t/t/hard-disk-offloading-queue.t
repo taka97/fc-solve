@@ -76,27 +76,10 @@ static inline bool fcs_offloading_queue_page__can_extract(
     return (page->read_from_idx < page->write_to_idx);
 }
 
-static inline void fcs_offloading_queue_page__extract(
-    fcs_offloading_queue_page_t *const page,
-    fcs_offloading_queue_item_t *const out_item)
-{
-    memcpy(out_item,
-        (page->data + sizeof(*out_item) * ((page->read_from_idx)++)),
-        sizeof(*out_item));
-}
-
 static inline bool fcs_offloading_queue_page__can_insert(
     const fcs_offloading_queue_page_t *const page)
 {
     return (page->write_to_idx < page->num_items_per_page);
-}
-
-static inline void fcs_offloading_queue_page__insert(
-    fcs_offloading_queue_page_t *const page,
-    const fcs_offloading_queue_item_t *const in_item)
-{
-    memcpy(page->data + ((page->write_to_idx)++) * sizeof(*in_item), in_item,
-        sizeof(*in_item));
 }
 
 static inline const char *fcs_offloading_queue_page__calc_filename(
@@ -197,79 +180,6 @@ static inline void fcs_offloading_queue__destroy(fcs_offloading_queue_t *queue)
 {
     fcs_offloading_queue_page__destroy(&(queue->pages[0]));
     fcs_offloading_queue_page__destroy(&(queue->pages[1]));
-}
-
-static inline void fcs_offloading_queue__insert(
-    fcs_offloading_queue_t *queue, const fcs_offloading_queue_item_t *item)
-{
-    if (!fcs_offloading_queue_page__can_insert(
-            queue->pages + queue->page_idx_to_write_to))
-    {
-        if (queue->pages[queue->page_idx_to_read_from].page_index !=
-            queue->pages[queue->page_idx_to_write_to].page_index)
-        {
-            fcs_offloading_queue_page__offload(
-                queue->pages + queue->page_idx_to_write_to,
-                queue->offload_dir_path);
-            fcs_offloading_queue_page__bump(
-                queue->pages + queue->page_idx_to_write_to);
-        }
-        else
-        {
-            queue->page_idx_to_write_to = queue->page_idx_for_backup;
-            fcs_offloading_queue_page__start_after(
-                queue->pages + queue->page_idx_to_write_to,
-                queue->pages + queue->page_idx_to_read_from);
-            queue->page_idx_for_backup = -1;
-        }
-    }
-
-    fcs_offloading_queue_page__insert(
-        queue->pages + queue->page_idx_to_write_to, item);
-
-    queue->num_inserted++;
-    queue->num_items_in_queue++;
-}
-
-static inline bool fcs_offloading_queue__extract(
-    fcs_offloading_queue_t *const queue,
-    fcs_offloading_queue_item_t *const return_item)
-{
-    if (queue->num_items_in_queue == 0)
-    {
-        *return_item = NULL;
-        return false;
-    }
-
-    if (!fcs_offloading_queue_page__can_extract(
-            queue->pages + queue->page_idx_to_read_from))
-    {
-        /* Cannot really happen due to the num_items_in_queue check.
-         *
-         * if (queue->_page_idx_to_read_from->page_index ==
-         *     queue->_page_idx_to_write_to->page_index)
-        */
-        if (queue->pages[queue->page_idx_to_read_from].page_index + 1 ==
-            queue->pages[queue->page_idx_to_write_to].page_index)
-        {
-            queue->page_idx_for_backup = queue->page_idx_to_read_from;
-            queue->page_idx_to_read_from = queue->page_idx_to_write_to;
-        }
-        else
-        {
-            fcs_offloading_queue_page__read_next_from_disk(
-                queue->pages + queue->page_idx_to_read_from,
-                queue->offload_dir_path);
-        }
-    }
-
-    queue->num_items_in_queue--;
-    queue->num_extracted++;
-
-    fcs_offloading_queue_page__extract(
-        queue->pages + queue->page_idx_to_read_from, return_item);
-
-    return true;
 }
 
 typedef struct
