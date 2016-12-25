@@ -27,9 +27,6 @@ sub load
 #include <string.h>
 #include <limits.h>
 #include <stdio.h>
-#include <stdbool.h>
-
-typedef const unsigned char *fcs_offloading_queue_item_t;
 
 typedef struct
 {
@@ -62,12 +59,8 @@ SV* _proto_new(const char * offload_dir_path) {
         return obj_ref;
 }
 
-static inline QueueInC * deref(SV * const obj) {
-    return (QueueInC*)SvIV(SvRV(obj));
-}
-
 void DESTROY(SV* obj) {
-  QueueInC * s = deref(obj);
+  QueueInC * s = (QueueInC*)SvIV(SvRV(obj));
   free(s->q.offload_dir_path);
   Safefree(s);
 }
