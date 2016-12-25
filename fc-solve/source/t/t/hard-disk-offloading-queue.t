@@ -33,14 +33,7 @@ typedef const unsigned char *fcs_offloading_queue_item_t;
 
 typedef struct
 {
-    long page_index;
-    unsigned char *data;
-} fcs_offloading_queue_page_t;
-
-typedef struct
-{
     const char *offload_dir_path;
-    fcs_offloading_queue_page_t pages[2];
 } fcs_offloading_queue_t;
 
 const size_t NUM_ITEMS_PER_PAGE = (128 * 1024);
