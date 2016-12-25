@@ -37,26 +37,6 @@ typedef struct
     unsigned char *data;
 } fcs_offloading_queue_page_t;
 
-static inline void fcs_offloading_queue_page__init(
-    fcs_offloading_queue_page_t *const page,
-    const long page_index)
-{
-    fcs_offloading_queue_page_t new_page = {
-        .page_index = page_index,
-        .data =
-            malloc(sizeof(fcs_offloading_queue_item_t) * 100)};
-    *page = new_page;
-
-    return;
-}
-
-static inline void fcs_offloading_queue_page__destroy(
-    fcs_offloading_queue_page_t *const page)
-{
-    free(page->data);
-    page->data = NULL;
-}
-
 typedef struct
 {
     const char *offload_dir_path;
