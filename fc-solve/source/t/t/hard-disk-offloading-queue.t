@@ -53,7 +53,7 @@ SV* _proto_new(const char * offload_dir_path) {
 
 void DESTROY(SV* obj) {
   QueueInC * s = (QueueInC*)SvIV(SvRV(obj));
-  free(s->q.offload_dir_path);
+  free((void*)s->q.offload_dir_path);
   Safefree(s);
 }
 
