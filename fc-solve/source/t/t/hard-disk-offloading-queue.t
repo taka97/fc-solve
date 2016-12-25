@@ -34,8 +34,6 @@ typedef const unsigned char *fcs_offloading_queue_item_t;
 typedef struct
 {
     long page_index;
-    size_t write_to_idx;
-    size_t read_from_idx;
     unsigned char *data;
 } fcs_offloading_queue_page_t;
 
@@ -48,8 +46,6 @@ static inline void fcs_offloading_queue_page__init(
         .data =
             malloc(sizeof(fcs_offloading_queue_item_t) * 100)};
     *page = new_page;
-    page->write_to_idx = 0;
-    page->read_from_idx = 0;
 
     return;
 }
