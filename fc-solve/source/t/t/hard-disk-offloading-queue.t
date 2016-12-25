@@ -12,7 +12,7 @@ package FC_Solve::QueueInC;
 use Config;
 use Inline;
 
-use FC_Solve::Paths qw( $IS_WIN );
+my $IS_WIN = ( $^O eq "MSWin32" );
 
 sub load
 {
