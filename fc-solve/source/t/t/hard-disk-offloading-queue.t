@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 1103;
+use Test::More tests => 3;
 use File::Spec ();
 use File::Path qw(mkpath);
 
@@ -408,42 +408,6 @@ sub run_queue_tests
         );
 
         my $map_idx_to_item = sub { my ($idx) = @_; return $idx * 3 + 1; };
-
-        # TEST:$num_items=1000;
-        foreach my $item_idx ( 1 .. 1_000 )
-        {
-            $queue->insert( $map_idx_to_item->($item_idx) );
-        }
-
-        foreach my $item_idx ( 1 .. 1_000 )
-        {
-            # TEST:$c=$c+$num_items;
-            is(
-                scalar( $queue->extract() ),
-                $map_idx_to_item->($item_idx),
-                "$blurb_base - Testing the extraction of item no. $item_idx"
-            );
-        }
-
-        # Now let's test the final statistics.
-
-        # Now let's add more items after the queue is empty.
-
-        # TEST:$num_items=100;
-        foreach my $item_idx ( 1 .. 100 )
-        {
-            $queue->insert( $map_idx_to_item->($item_idx) );
-        }
-
-        foreach my $item_idx ( 1 .. 100 )
-        {
-            # TEST:$c=$c+$num_items;
-            is(
-                scalar( $queue->extract() ),
-                $map_idx_to_item->($item_idx),
-                "$blurb_base - Testing the extraction of item no. $item_idx"
-            );
-        }
 
     }
 
