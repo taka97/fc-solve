@@ -14,8 +14,7 @@ use Inline;
 
 my $IS_WIN = ( $^O eq "MSWin32" );
 
-sub load
-{
+sub load {
     my ($self) = @_;
 
     my $src = <<'EOF';
@@ -62,11 +61,10 @@ EOF
     my $pkg = 'FC_Solve::QueueInC';
 
     my @workaround_for_a_heisenbug =
-        ( $IS_WIN ? ( optimize => '-g' ) : () );
+      ( $IS_WIN ? ( optimize => '-g' ) : () );
 
     my $ccflags = "$Config{ccflags} -std=gnu99";
-    if ($IS_WIN)
-    {
+    if ($IS_WIN) {
         $ccflags =~ s#(^|\s)-[Of][a-zA-Z0-9_\-]*#$1#gms;
     }
 
@@ -84,43 +82,30 @@ EOF
 
 __PACKAGE__->load;
 
-sub new
-{
+sub new {
     my ( $class, $args ) = @_;
 
-    return FC_Solve::QueueInC::_proto_new(
-        $args->{offload_dir_path},
-    );
+    return FC_Solve::QueueInC::_proto_new( $args->{offload_dir_path}, );
 }
 
 package main;
 
 my $queue_offload_dir_path =
-    File::Spec->catdir( File::Spec->curdir(), "queue-offload-dir" );
+  File::Spec->catdir( File::Spec->curdir(), "queue-offload-dir" );
 mkpath($queue_offload_dir_path);
 
 # TEST:$c=0;
-sub run_queue_tests
-{
+sub run_queue_tests {
     my ( $blurb_base, $class_name ) = @_;
 
     {
-        my $queue = $class_name->new(
-            {
-                offload_dir_path   => $queue_offload_dir_path,
-            }
-        );
+        my $queue = FC_Solve::QueueInC::_proto_new($queue_offload_dir_path);
     }
 
     {
-        my $queue = $class_name->new(
-            {
-                offload_dir_path   => $queue_offload_dir_path,
-            }
-        );
+        my $queue = FC_Solve::QueueInC::_proto_new($queue_offload_dir_path);
 
         my $map_idx_to_item = sub { my ($idx) = @_; return $idx * 3 + 1; };
-
     }
 
     # TEST:$c++
