@@ -40,13 +40,6 @@ typedef struct
     unsigned char *data;
 } fcs_offloading_queue_page_t;
 
-static inline void fcs_offloading_queue_page__recycle(
-    fcs_offloading_queue_page_t *const page)
-{
-    page->write_to_idx = 0;
-    page->read_from_idx = 0;
-}
-
 static inline void fcs_offloading_queue_page__init(
     fcs_offloading_queue_page_t *const page, const size_t num_items_per_page,
     const long page_index, const long queue_id)
@@ -58,7 +51,8 @@ static inline void fcs_offloading_queue_page__init(
         .data =
             malloc(sizeof(fcs_offloading_queue_item_t) * num_items_per_page)};
     *page = new_page;
-    fcs_offloading_queue_page__recycle(page);
+    page->write_to_idx = 0;
+    page->read_from_idx = 0;
 
     return;
 }
@@ -68,30 +62,6 @@ static inline void fcs_offloading_queue_page__destroy(
 {
     free(page->data);
     page->data = NULL;
-}
-
-static inline const char *fcs_offloading_queue_page__calc_filename(
-    fcs_offloading_queue_page_t *const page, char *const buffer,
-    const char *const offload_dir_path)
-{
-    sprintf(buffer, "%s/fcs_queue%lXq_%020lX.page", offload_dir_path,
-        page->queue_id, page->page_index);
-
-    return buffer;
-}
-
-static inline void fcs_offloading_queue_page__offload(
-    fcs_offloading_queue_page_t *const page, const char *const offload_dir_path)
-{
-    char page_filename[PATH_MAX + 1];
-
-    fcs_offloading_queue_page__calc_filename(
-        page, page_filename, offload_dir_path);
-
-    FILE *const f = fopen(page_filename, "wb");
-    fwrite(page->data, sizeof(fcs_offloading_queue_item_t),
-        page->num_items_per_page, f);
-    fclose(f);
 }
 
 typedef struct
