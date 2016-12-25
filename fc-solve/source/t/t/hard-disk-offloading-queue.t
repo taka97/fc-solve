@@ -33,7 +33,7 @@ SV* _proto_new(const char * string_ptr) {
 
         New(42, s, 1, QueueInC);
 
-        s->q.string_ptr = strdup(string_ptr);
+        s->q.string_ptr = savepv(string_ptr);
         SV*      obj_ref = newSViv(0);
         SV*      obj = newSVrv(obj_ref, "FC_Solve::QueueInC");
         sv_setiv(obj, (IV)s);
@@ -43,7 +43,7 @@ SV* _proto_new(const char * string_ptr) {
 
 void DESTROY(SV* obj) {
   QueueInC * s = (QueueInC*)SvIV(SvRV(obj));
-  free((void*)s->q.string_ptr);
+  Safefree((void*)s->q.string_ptr);
   Safefree(s);
 }
 
