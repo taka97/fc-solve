@@ -69,17 +69,10 @@ static inline void fcs_offloading_queue__init(
     )
 {
     queue->offload_dir_path = offload_dir_path;
-
-    fcs_offloading_queue_page__init(
-        &(queue->pages[0]), 0);
-    fcs_offloading_queue_page__init(
-        &(queue->pages[1]), 0);
 }
 
 static inline void fcs_offloading_queue__destroy(fcs_offloading_queue_t *queue)
 {
-    fcs_offloading_queue_page__destroy(&(queue->pages[0]));
-    fcs_offloading_queue_page__destroy(&(queue->pages[1]));
 }
 
 typedef struct
