@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 1;
 use File::Spec ();
 use File::Path qw(mkpath);
 
@@ -374,28 +374,6 @@ sub run_queue_tests
                 offload_dir_path   => $queue_offload_dir_path,
             }
         );
-
-        # TEST:$c++;
-        ok( $queue, "$blurb_base - Queue was initialized." );
-
-        $queue->insert(1);
-
-        $queue->insert(200);
-
-        $queue->insert(33);
-
-        # TEST:$c++
-        is( scalar( $queue->extract() ),
-            1, "$blurb_base - Extracted 1 from queue." );
-
-        # TEST:$c++
-        is( scalar( $queue->extract() ),
-            200, "$blurb_base - Extracted 1 from queue." );
-
-        # Now trying to add an item after a few were extracted and see how
-        # the statistics are affected.
-        $queue->insert(4);
-
     }
 
     {
