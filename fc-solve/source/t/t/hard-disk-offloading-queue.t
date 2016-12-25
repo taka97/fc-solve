@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 1113;
+use Test::More tests => 1103;
 use File::Spec ();
 use File::Path qw(mkpath);
 
@@ -312,10 +312,6 @@ SV* extract(SV* obj) {
     : &PL_sv_undef;
 }
 
-long get_num_items_in_queue(SV* obj) {
-    return q(obj)->num_items_in_queue;
-}
-
 void DESTROY(SV* obj) {
   QueueInC * s = deref(obj);
   free(s->q.offload_dir_path);
@@ -400,52 +396,24 @@ sub run_queue_tests
         # TEST:$c++;
         ok( $queue, "$blurb_base - Queue was initialized." );
 
-        # TEST:$c++
-        is( $queue->get_num_items_in_queue(),
-            0, "$blurb_base - No items in queue." );
-
         $queue->insert(1);
-
-        # TEST:$c++
-        is( $queue->get_num_items_in_queue(),
-            1, "$blurb_base - 1 items in queue." );
 
         $queue->insert(200);
 
-        # TEST:$c++
-        is( $queue->get_num_items_in_queue(),
-            2, "$blurb_base - 2 items in queue." );
-
         $queue->insert(33);
-
-        # TEST:$c++
-        is( $queue->get_num_items_in_queue(),
-            3, "$blurb_base - 3 items in queue." );
 
         # TEST:$c++
         is( scalar( $queue->extract() ),
             1, "$blurb_base - Extracted 1 from queue." );
 
-        # TEST:$c++;
-        is( $queue->get_num_items_in_queue(),
-            2, "$blurb_base - 2 items in queue (after one extracted." );
-
         # TEST:$c++
         is( scalar( $queue->extract() ),
             200, "$blurb_base - Extracted 1 from queue." );
-
-        # TEST:$c++;
-        is( $queue->get_num_items_in_queue(),
-            1, "$blurb_base - 1 items in queue (after two extracted.)" );
 
         # Now trying to add an item after a few were extracted and see how
         # the statistics are affected.
         $queue->insert(4);
 
-        # TEST:$c++;
-        is( $queue->get_num_items_in_queue(), 2,
-"$blurb_base - 2 items in queue (after two extracted and one added.)"
-        );
     }
 
     {
@@ -476,10 +444,6 @@ sub run_queue_tests
 
         # Now let's test the final statistics.
 
-        # TEST:$c++;
-        is( $queue->get_num_items_in_queue(),
-            0, "$blurb_base - 0 items in queue." );
-
         # Now let's add more items after the queue is empty.
 
         # TEST:$num_items=100;
@@ -487,10 +451,6 @@ sub run_queue_tests
         {
             $queue->insert( $map_idx_to_item->($item_idx) );
         }
-
-        # TEST:$c++;
-        is( $queue->get_num_items_in_queue(),
-            100, "$blurb_base - 100 items in queue." );
 
         foreach my $item_idx ( 1 .. 100 )
         {
@@ -501,10 +461,6 @@ sub run_queue_tests
                 "$blurb_base - Testing the extraction of item no. $item_idx"
             );
         }
-
-        # TEST:$c++;
-        is( $queue->get_num_items_in_queue(),
-            0, "$blurb_base - 100 items in queue." );
 
     }
 
