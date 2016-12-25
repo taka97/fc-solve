@@ -18,7 +18,7 @@ sub load
 {
     my ($self) = @_;
 
-    my %args = ( C => <<'EOF', );
+    my $src = <<'EOF';
 #define FCS_DBM_USE_OFFLOADING_QUEUE
 
 #include "offloading_queue.h"
@@ -85,9 +85,6 @@ EOF
 
     my $pkg = 'FC_Solve::QueueInC';
 
-    my $src = delete( $args{C} );
-    my $libs = delete( $args{l} ) // '';
-
     my @workaround_for_a_heisenbug =
         ( $IS_WIN ? ( optimize => '-g' ) : () );
 
@@ -104,9 +101,8 @@ EOF
         INC               => "-I" . $ENV{FCS_PATH} . " -I" . $ENV{FCS_SRC_PATH},
         CCFLAGS           => $ccflags,
         CLEAN_AFTER_BUILD => 0,
-        LIBS              => "-L$ENV{FCS_PATH} $libs",
+        LIBS              => "-L$ENV{FCS_PATH}",
         @workaround_for_a_heisenbug,
-        %args,
     );
 
 =begin debug
@@ -123,11 +119,6 @@ EOF
 =cut
 
     Inline->bind(@inline_params);
-
-    if ($@)
-    {
-        die $@;
-    }
 
     return;
 }
