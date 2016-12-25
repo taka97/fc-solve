@@ -3,12 +3,11 @@
 use strict;
 use warnings;
 
-use Test::More tests => 2262;
+use Test::More tests => 1131;
 use File::Spec ();
 use File::Path qw(mkpath);
 
-use FC_Solve::QueuePrototype ();
-use FC_Solve::QueueInC       ();
+use FC_Solve::QueueInC ();
 
 my $queue_offload_dir_path =
     File::Spec->catdir( File::Spec->curdir(), "queue-offload-dir" );
@@ -211,9 +210,6 @@ sub run_queue_tests
 }
 
 # TEST:$run_queue_tests=$c;
-
-# TEST*$run_queue_tests
-run_queue_tests( 'Perl queue', 'FC_Solve::QueuePrototype' );
 
 # TEST*$run_queue_tests
 run_queue_tests( 'C queue', 'FC_Solve::QueueInC' );
