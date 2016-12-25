@@ -88,30 +88,18 @@ my $queue_offload_dir_path =
   File::Spec->catdir( File::Spec->curdir(), "queue-offload-dir" );
 mkpath($queue_offload_dir_path);
 
-# TEST:$c=0;
-sub run_queue_tests {
-    my ( $blurb_base, $class_name ) = @_;
-
-    {
-        my $queue = FC_Solve::QueueInC::_proto_new($queue_offload_dir_path);
-    }
-
-    {
-        my $queue = FC_Solve::QueueInC::_proto_new($queue_offload_dir_path);
-
-        my $map_idx_to_item = sub { my ($idx) = @_; return $idx * 3 + 1; };
-    }
-
-    # TEST:$c++
-    pass("Placeholder test");
-
-    return;
+{
+    my $queue = FC_Solve::QueueInC::_proto_new($queue_offload_dir_path);
 }
 
-# TEST:$run_queue_tests=$c;
+{
+    my $queue = FC_Solve::QueueInC::_proto_new($queue_offload_dir_path);
 
-# TEST*$run_queue_tests
-run_queue_tests( 'C queue', 'FC_Solve::QueueInC' );
+    my $map_idx_to_item = sub { my ($idx) = @_; return $idx * 3 + 1; };
+}
+
+# TEST
+pass("Placeholder test");
 
 =head1 COPYRIGHT & LICENSE
 
