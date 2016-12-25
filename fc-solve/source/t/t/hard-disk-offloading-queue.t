@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 use File::Spec ();
 use File::Path qw(mkpath);
 
@@ -410,6 +410,9 @@ sub run_queue_tests
         my $map_idx_to_item = sub { my ($idx) = @_; return $idx * 3 + 1; };
 
     }
+
+    # TEST:$c++
+    pass("Placeholder test");
 
     return;
 }
