@@ -64,12 +64,6 @@ static inline void fcs_offloading_queue_page__destroy(
 typedef struct
 {
     const char *offload_dir_path;
-    /*
-     * page_idx_to_write_to, page_idx_for_backup and page_idx_to_read_from
-     * always point to the two "pages" below, but they can be swapped and
-     * page_idx_for_backup may be NULL.
-     */
-    int page_idx_to_write_to, page_idx_for_backup, page_idx_to_read_from;
     fcs_offloading_queue_page_t pages[2];
 } fcs_offloading_queue_t;
 
@@ -84,9 +78,6 @@ static inline void fcs_offloading_queue__init(
         &(queue->pages[0]), 0);
     fcs_offloading_queue_page__init(
         &(queue->pages[1]), 0);
-
-    queue->page_idx_to_read_from = queue->page_idx_to_write_to = 0;
-    queue->page_idx_for_backup = 1;
 }
 
 static inline void fcs_offloading_queue__destroy(fcs_offloading_queue_t *queue)
