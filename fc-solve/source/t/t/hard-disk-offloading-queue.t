@@ -102,7 +102,7 @@ typedef struct
     fcs_offloading_queue_t q;
 } QueueInC;
 
-SV* _proto_new(int num_items_per_page, const char * offload_dir_path, long queue_id) {
+SV* _proto_new(const char * offload_dir_path, long queue_id) {
         QueueInC * s;
 
         New(42, s, 1, QueueInC);
@@ -158,7 +158,6 @@ sub new
     my ( $class, $args ) = @_;
 
     return FC_Solve::QueueInC::_proto_new(
-        $args->{num_items_per_page},
         $args->{offload_dir_path},
         ( $args->{queue_id} || 0 )
     );
@@ -178,7 +177,6 @@ sub run_queue_tests
     {
         my $queue = $class_name->new(
             {
-                num_items_per_page => 10,
                 offload_dir_path   => $queue_offload_dir_path,
             }
         );
@@ -187,7 +185,6 @@ sub run_queue_tests
     {
         my $queue = $class_name->new(
             {
-                num_items_per_page => 10,
                 offload_dir_path   => $queue_offload_dir_path,
             }
         );
