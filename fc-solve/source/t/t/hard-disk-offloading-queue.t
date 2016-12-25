@@ -19,8 +19,6 @@ sub load
     my ($self) = @_;
 
     my $src = <<'EOF';
-#define FCS_DBM_USE_OFFLOADING_QUEUE
-
 /*
  * offloading_queue.h - header file for the offloading-to-hard-disk
  * queue.
@@ -30,7 +28,18 @@ sub load
 #include <limits.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "bool.h"
+#include <stdbool.h>
+
+typedef bool fcs_bool_t;
+
+#ifndef FALSE
+#define FALSE false
+#endif
+
+#ifndef TRUE
+#define TRUE true
+#endif
+
 typedef const unsigned char *fcs_offloading_queue_item_t;
 
 typedef struct
