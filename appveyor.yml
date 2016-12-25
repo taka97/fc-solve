@@ -46,11 +46,6 @@ test_script:
     - set FCS_USE_TEST_RUN=1
     - mkdir fc-solve\b
     - cd fc-solve\b
-    - perl ../source/Tatzer -G "MinGW Makefiles"
-    - SET PATH=C:\projects\fc-solve\fc-solve\scripts\win32;%PATH%
-    - echo %PATH%
-    - gmake
-    - gmake boards
     # Trying this hack to take more precendence for Inline::C / etc.
     - SET PATH=C:\strawberry\c\bin;C:\strawberry\perl\site\bin;C:\strawberry\perl\bin;C:\_P5\bin;%PATH%
     # - perl ../source/run-tests.pl --glob="hard-disk-offloading-queue*.{py,t}"
