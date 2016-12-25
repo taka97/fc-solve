@@ -44,10 +44,6 @@ static inline void fcs_offloading_queue__init(
     queue->offload_dir_path = offload_dir_path;
 }
 
-static inline void fcs_offloading_queue__destroy(fcs_offloading_queue_t *queue)
-{
-}
-
 typedef struct
 {
     fcs_offloading_queue_t q;
@@ -73,7 +69,6 @@ static inline QueueInC * deref(SV * const obj) {
 void DESTROY(SV* obj) {
   QueueInC * s = deref(obj);
   free(s->q.offload_dir_path);
-  fcs_offloading_queue__destroy(&s->q);
   Safefree(s);
 }
 
