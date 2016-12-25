@@ -82,12 +82,6 @@ EOF
 
 __PACKAGE__->load;
 
-sub new {
-    my ( $class, $args ) = @_;
-
-    return FC_Solve::QueueInC::_proto_new( $args->{offload_dir_path}, );
-}
-
 package main;
 
 my $queue_offload_dir_path =
