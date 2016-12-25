@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 1123;
+use Test::More tests => 1113;
 use File::Spec ();
 use File::Path qw(mkpath);
 
@@ -312,10 +312,6 @@ SV* extract(SV* obj) {
     : &PL_sv_undef;
 }
 
-long get_num_inserted(SV* obj) {
-    return q(obj)->num_inserted;
-}
-
 long get_num_items_in_queue(SV* obj) {
     return q(obj)->num_items_in_queue;
 }
@@ -405,17 +401,10 @@ sub run_queue_tests
         ok( $queue, "$blurb_base - Queue was initialized." );
 
         # TEST:$c++
-        is( $queue->get_num_inserted(),
-            0, "$blurb_base - No items were inserted yet." );
-
-        # TEST:$c++
         is( $queue->get_num_items_in_queue(),
             0, "$blurb_base - No items in queue." );
 
         $queue->insert(1);
-
-        # TEST:$c++
-        is( $queue->get_num_inserted(), 1, "$blurb_base - 1 item." );
 
         # TEST:$c++
         is( $queue->get_num_items_in_queue(),
@@ -424,16 +413,10 @@ sub run_queue_tests
         $queue->insert(200);
 
         # TEST:$c++
-        is( $queue->get_num_inserted(), 2, "$blurb_base - 2 item." );
-
-        # TEST:$c++
         is( $queue->get_num_items_in_queue(),
             2, "$blurb_base - 2 items in queue." );
 
         $queue->insert(33);
-
-        # TEST:$c++
-        is( $queue->get_num_inserted(), 3, "$blurb_base - 3 item." );
 
         # TEST:$c++
         is( $queue->get_num_items_in_queue(),
@@ -444,10 +427,6 @@ sub run_queue_tests
             1, "$blurb_base - Extracted 1 from queue." );
 
         # TEST:$c++;
-        is( $queue->get_num_inserted(),
-            3, "$blurb_base - 3 Items were inserted so far." );
-
-        # TEST:$c++;
         is( $queue->get_num_items_in_queue(),
             2, "$blurb_base - 2 items in queue (after one extracted." );
 
@@ -456,20 +435,12 @@ sub run_queue_tests
             200, "$blurb_base - Extracted 1 from queue." );
 
         # TEST:$c++;
-        is( $queue->get_num_inserted(),
-            3, "$blurb_base - 3 Items were inserted so far." );
-
-        # TEST:$c++;
         is( $queue->get_num_items_in_queue(),
             1, "$blurb_base - 1 items in queue (after two extracted.)" );
 
         # Now trying to add an item after a few were extracted and see how
         # the statistics are affected.
         $queue->insert(4);
-
-        # TEST:$c++;
-        is( $queue->get_num_inserted(),
-            4, "$blurb_base - 4 Items were inserted so far." );
 
         # TEST:$c++;
         is( $queue->get_num_items_in_queue(), 2,
@@ -506,10 +477,6 @@ sub run_queue_tests
         # Now let's test the final statistics.
 
         # TEST:$c++;
-        is( $queue->get_num_inserted(),
-            1_000, "$blurb_base - 1,000 items were inserted" );
-
-        # TEST:$c++;
         is( $queue->get_num_items_in_queue(),
             0, "$blurb_base - 0 items in queue." );
 
@@ -520,10 +487,6 @@ sub run_queue_tests
         {
             $queue->insert( $map_idx_to_item->($item_idx) );
         }
-
-        # TEST:$c++;
-        is( $queue->get_num_inserted(),
-            1_100, "$blurb_base - 1,100 items were inserted" );
 
         # TEST:$c++;
         is( $queue->get_num_items_in_queue(),
@@ -538,10 +501,6 @@ sub run_queue_tests
                 "$blurb_base - Testing the extraction of item no. $item_idx"
             );
         }
-
-        # TEST:$c++;
-        is( $queue->get_num_inserted(),
-            1_100, "$blurb_base - 1,100 items were inserted" );
 
         # TEST:$c++;
         is( $queue->get_num_items_in_queue(),
