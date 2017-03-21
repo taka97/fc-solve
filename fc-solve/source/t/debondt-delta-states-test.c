@@ -36,6 +36,7 @@
 
 #include "../card.c"
 #include "../state.c"
+#include "is_parent.c"
 #include "../delta_states_debondt_impl.h"
 #include "../dbm_solver_key.h"
 #include "../indirect_buffer.h"
