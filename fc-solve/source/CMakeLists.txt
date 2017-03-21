@@ -207,7 +207,6 @@ ADD_CUSTOM_COMMAND(
 SET (is_parent_gen "${CMAKE_CURRENT_SOURCE_DIR}/scripts/gen_is_parent_lookup_c.pl")
 SET (is_parent_args "${is_parent_gen}")
 SET (is_parent_output "${CMAKE_CURRENT_BINARY_DIR}/is_parent.c" "${CMAKE_CURRENT_BINARY_DIR}/is_parent.h")
-add_gen_c(${is_parent_output})
 ADD_CUSTOM_COMMAND(
     OUTPUT ${is_parent_output}
     COMMAND "${PERL_EXECUTABLE}"
