@@ -167,6 +167,7 @@ OBJECTS :=                     \
           cmd_line.o          \
           freecell.o          \
           instance.o          \
+          is_parent.o         \
           lib.o               \
           meta_alloc.o        \
           move.o              \
