@@ -74,6 +74,8 @@ fc-solve/source/fc-solve.txt
 fc-solve/source/fc-solve.xml
 fc-solve/source/freecell-solver.spec
 fc-solve/source/ids.txt
+fc-solve/source/is_parent.c
+fc-solve/source/is_parent.h
 fc-solve/source/patsolve-shlomif
 fc-solve/source/rate_state.c
 fc-solve/source/scripts/ids-whitelist.txt
