@@ -24,10 +24,10 @@ static inline void fc_solve__assign_dest_stack_and_col_ptr(
     const int8_t dest_col, const fcs_card_t dest_card)
 {
 #ifdef FCS_FREECELL_ONLY
-    int8_t *ptr = &positions_by_rank[(dest_card - 4) << 1];
+    int8_t *ptr = &positions_by_rank[dest_card << 1];
 #else
     int8_t *ptr = &positions_by_rank[(FCS_POS_BY_RANK_WIDTH *
-                                         (fcs_card_rank(dest_card) - 1)) +
+                                         (fcs_card_rank(dest_card))) +
                                      (fcs_card_suit(dest_card) << 1)];
 #endif
 

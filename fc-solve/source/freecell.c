@@ -345,7 +345,7 @@ static inline empty_two_cols_ret_t empty_two_cols_from_new_state(
 #else
 #define FCS_POS_IDX_TO_CHECK_START_LOOP(src_card)                              \
     const int8_t *pos_idx_to_check = &positions_by_rank[(                      \
-        FCS_POS_BY_RANK_WIDTH * (fcs_card_rank(src_card)))];                   \
+        FCS_POS_BY_RANK_WIDTH * (1 + fcs_card_rank(src_card)))];               \
     const int8_t *const last_pos_idx =                                         \
         pos_idx_to_check + FCS_POS_BY_RANK_WIDTH;                              \
                                                                                \

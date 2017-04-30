@@ -117,8 +117,9 @@ extern "C" {
  * */
 #define FCS_POS_BY_RANK_WIDTH (MAX_NUM_DECKS << 3)
 
-/* We don't keep track of kings (rank == 13). */
-#define NUM_POS_BY_RANK_SLOTS 13
+/* We don't keep track of kings (rank == 13), but we need an extra 1
+ * for offset. */
+#define NUM_POS_BY_RANK_SLOTS 14
 #define FCS_POS_BY_RANK_LEN (NUM_POS_BY_RANK_SLOTS * FCS_POS_BY_RANK_WIDTH)
 typedef struct
 {

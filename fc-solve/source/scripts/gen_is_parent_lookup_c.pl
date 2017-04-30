@@ -47,7 +47,7 @@ foreach my $parent_suit (@SUITS)
             ($FCS_POS_BY_RANK_WIDTH) * ( $parent_rank - 1 ) +
             ( $parent_suit << 1 );
 
-        my $start    = $FCS_POS_BY_RANK_WIDTH * $parent_rank;
+        my $start    = $FCS_POS_BY_RANK_WIDTH * ( $parent_rank + 1 );
         my $end      = $start + $FCS_POS_BY_RANK_WIDTH;
         my $offset_s = $start + ( ( ( $parent_suit & 0b1 ) ^ 0b1 ) << 1 );
 
