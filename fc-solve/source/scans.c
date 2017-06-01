@@ -41,17 +41,18 @@ void fc_solve_increase_dfs_max_depth(fc_solve_soft_thread_t *const soft_thread)
     for (; soft_dfs_info < end_soft_dfs_info; soft_dfs_info++)
     {
         *soft_dfs_info = (fcs_soft_dfs_stack_item_t){
-            .state = NULL,
-            .move_func_list_idx = 0,
-            .move_func_idx = 0,
-            .current_state_index = 0,
-            .derived_states_list =
-                {
-                    .num_states = 0, .states = NULL,
-                },
-            .derived_states_random_indexes = NULL,
-            .derived_states_random_indexes_max_size = 0,
-        };
+            .i = {
+                .state = NULL,
+                .move_func_list_idx = 0,
+                .move_func_idx = 0,
+                .current_state_index = 0,
+                .derived_states_list =
+                    {
+                        .num_states = 0, .states = NULL,
+                    },
+                .derived_states_random_indexes = NULL,
+                .derived_states_random_indexes_max_size = 0,
+            }};
     }
 
     DFS_VAR(soft_thread, dfs_max_depth) = new_dfs_max_depth;

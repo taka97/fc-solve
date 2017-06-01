@@ -567,7 +567,8 @@ static inline void free_states_handle_soft_dfs_soft_thread(
 
     for (; soft_dfs_info < end_soft_dfs_info; soft_dfs_info++)
     {
-        const_AUTO(rand_indexes, soft_dfs_info->derived_states_random_indexes);
+        const_AUTO(
+            rand_indexes, soft_dfs_info->i.derived_states_random_indexes);
 
         /*
          * We start from current_state_index instead of current_state_index+1
@@ -575,14 +576,14 @@ static inline void free_states_handle_soft_dfs_soft_thread(
          * by current_state_index++ instead of ++current_state_index .
          * */
         fcs_rating_with_index_t *dest_rand_index_ptr =
-            rand_indexes + soft_dfs_info->current_state_index;
+            rand_indexes + soft_dfs_info->i.current_state_index;
         const fcs_rating_with_index_t *rand_index_ptr = dest_rand_index_ptr;
 
         fcs_rating_with_index_t *const end_rand_index_ptr =
-            rand_indexes + soft_dfs_info->derived_states_list.num_states;
+            rand_indexes + soft_dfs_info->i.derived_states_list.num_states;
 
         fcs_derived_states_list_item_t *const states =
-            soft_dfs_info->derived_states_list.states;
+            soft_dfs_info->i.derived_states_list.states;
         for (; rand_index_ptr < end_rand_index_ptr; rand_index_ptr++)
         {
             if (!fcs__is_state_a_dead_end(
@@ -591,7 +592,7 @@ static inline void free_states_handle_soft_dfs_soft_thread(
                 *(dest_rand_index_ptr++) = *(rand_index_ptr);
             }
         }
-        soft_dfs_info->derived_states_list.num_states =
+        soft_dfs_info->i.derived_states_list.num_states =
             dest_rand_index_ptr - rand_indexes;
     }
 }
@@ -750,16 +751,14 @@ static inline int fc_solve_soft_dfs_do_solve(
 #define DEPTH() (*depth_ptr)
     ssize_t *const depth_ptr = &(DFS_VAR(soft_thread, depth));
 
-    var_AUTO(
-        the_soft_dfs_info, &(DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()]));
+    var_AUTO(dfs_item, (DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()]).i);
 
     ssize_t dfs_max_depth = DFS_VAR(soft_thread, dfs_max_depth);
     const_SLOT(enable_pruning, soft_thread);
 
     DECLARE_STATE();
-    ASSIGN_ptr_state(the_soft_dfs_info->state);
-    fcs_derived_states_list_t derived_list =
-        the_soft_dfs_info->derived_states_list;
+    ASSIGN_ptr_state(dfs_item.state);
+#define derived_list dfs_item.derived_states_list
     fcs_rand_t *const rand_gen = &(DFS_VAR(soft_thread, rand_gen));
     calculate_real_depth(calc_real_depth, PTR_STATE);
     const_AUTO(by_depth_units,
@@ -815,19 +814,15 @@ static inline int fc_solve_soft_dfs_do_solve(
             /* Because the address of DFS_VAR(soft_thread, soft_dfs_info) may
              * be changed
              * */
-            the_soft_dfs_info = &(DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()]);
             dfs_max_depth = DFS_VAR(soft_thread, dfs_max_depth);
-            /* This too has to be re-synced */
-            derived_list = the_soft_dfs_info->derived_states_list;
         }
 
         TRACE0("Before current_state_index check");
         /* All the resultant states in the last test conducted were covered */
-        if (the_soft_dfs_info->current_state_index == derived_list.num_states)
+        if (dfs_item.current_state_index == derived_list.num_states)
         {
             /* Check if we already tried all the tests here. */
-            if (the_soft_dfs_info->move_func_list_idx ==
-                THE_MOVE_FUNCS_LIST.num_lists)
+            if (dfs_item.move_func_list_idx == THE_MOVE_FUNCS_LIST.num_lists)
             {
                 /* Backtrack to the previous depth. */
 
@@ -837,19 +832,17 @@ static inline int fc_solve_soft_dfs_do_solve(
                     MARK_AS_DEAD_END(PTR_STATE);
                 }
 
+                DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i = dfs_item;
                 if (unlikely(--DEPTH() < 0))
                 {
                     break;
                 }
-                the_soft_dfs_info->derived_states_list = derived_list;
-                --the_soft_dfs_info;
-                derived_list = the_soft_dfs_info->derived_states_list;
-                ASSIGN_ptr_state(the_soft_dfs_info->state);
+                dfs_item = DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i;
+                ASSIGN_ptr_state(dfs_item.state);
                 VERIFY_PTR_STATE_TRACE0("Verify Foo");
                 soft_thread->num_vacant_freecells =
-                    the_soft_dfs_info->num_vacant_freecells;
-                soft_thread->num_vacant_stacks =
-                    the_soft_dfs_info->num_vacant_stacks;
+                    dfs_item.num_vacant_freecells;
+                soft_thread->num_vacant_stacks = dfs_item.num_vacant_stacks;
 
                 if (unlikely(DEPTH() < by_depth_min_depth))
                 {
@@ -865,8 +858,8 @@ static inline int fc_solve_soft_dfs_do_solve(
             TRACE0("Before iter_handler");
             /* If this is the first test, then count the number of unoccupied
                freecells and stacks and check if we are done. */
-            if ((the_soft_dfs_info->move_func_idx == 0) &&
-                (the_soft_dfs_info->move_func_list_idx == 0))
+            if ((dfs_item.move_func_idx == 0) &&
+                (dfs_item.move_func_list_idx == 0))
             {
 #ifndef FCS_WITHOUT_ITER_HANDLER
                 TRACE0("In iter_handler");
@@ -912,14 +905,15 @@ static inline int fc_solve_soft_dfs_do_solve(
                     again.
                   */
                 soft_thread->num_vacant_freecells =
-                    the_soft_dfs_info->num_vacant_freecells =
-                        num_vacant_freecells;
-                soft_thread->num_vacant_stacks =
-                    the_soft_dfs_info->num_vacant_stacks = num_vacant_stacks;
-                fc_solve__calc_positions_by_rank_data(soft_thread,
-                    &FCS_SCANS_the_state, (the_soft_dfs_info->positions_by_rank)
+                    dfs_item.num_vacant_freecells = num_vacant_freecells;
+                soft_thread->num_vacant_stacks = dfs_item.num_vacant_stacks =
+                    num_vacant_stacks;
+                fc_solve__calc_positions_by_rank_data(
+                    soft_thread, &FCS_SCANS_the_state,
+                    DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()]
+                        .positions_by_rank
 #ifndef FCS_DISABLE_SIMPLE_SIMON
-                                              ,
+                    ,
                     is_simple_simon
 #endif
                     );
@@ -931,62 +925,53 @@ static inline int fc_solve_soft_dfs_do_solve(
                         fc_solve_sfs_raymond_prune(soft_thread, &pass);
                     if (derived)
                     {
-                        the_soft_dfs_info->move_func_list_idx =
+                        dfs_item.move_func_list_idx =
                             THE_MOVE_FUNCS_LIST.num_lists;
                         fc_solve_derived_states_list_add_state(
                             &derived_list, derived, 0);
-                        if (the_soft_dfs_info
-                                ->derived_states_random_indexes_max_size < 1)
+                        if (dfs_item.derived_states_random_indexes_max_size < 1)
                         {
-                            the_soft_dfs_info
-                                ->derived_states_random_indexes_max_size = 1;
-                            the_soft_dfs_info
-                                ->derived_states_random_indexes = SREALLOC(
-                                the_soft_dfs_info
-                                    ->derived_states_random_indexes,
-                                the_soft_dfs_info
-                                    ->derived_states_random_indexes_max_size);
+                            dfs_item.derived_states_random_indexes_max_size = 1;
+                            dfs_item.derived_states_random_indexes = SREALLOC(
+                                dfs_item.derived_states_random_indexes,
+                                dfs_item
+                                    .derived_states_random_indexes_max_size);
                         }
 
-                        the_soft_dfs_info->derived_states_random_indexes[0]
-                            .idx = 0;
+                        dfs_item.derived_states_random_indexes[0].idx = 0;
                     }
                 }
             }
 
             TRACE0("After iter_handler");
-            const_AUTO(orig_idx, the_soft_dfs_info->move_func_list_idx);
+            const_AUTO(orig_idx, dfs_item.move_func_list_idx);
             const fc_solve_state_weighting_t *const weighting =
                 &(THE_MOVE_FUNCS_LIST.lists[orig_idx].weighting);
 
-            if (the_soft_dfs_info->move_func_list_idx <
-                THE_MOVE_FUNCS_LIST.num_lists)
+            if (dfs_item.move_func_list_idx < THE_MOVE_FUNCS_LIST.num_lists)
             {
                 /* Always do the first test */
                 local_shuffling_type =
-                    THE_MOVE_FUNCS_LIST
-                        .lists[the_soft_dfs_info->move_func_list_idx]
+                    THE_MOVE_FUNCS_LIST.lists[dfs_item.move_func_list_idx]
                         .shuffling_type;
 
                 do
                 {
                     VERIFY_PTR_STATE_TRACE0("Verify Bar");
 
-                    THE_MOVE_FUNCS_LIST
-                        .lists[the_soft_dfs_info->move_func_list_idx]
-                        .move_funcs[the_soft_dfs_info->move_func_idx](
+                    THE_MOVE_FUNCS_LIST.lists[dfs_item.move_func_list_idx]
+                        .move_funcs[dfs_item.move_func_idx](
                             soft_thread, &pass, &derived_list);
 
                     VERIFY_PTR_STATE_TRACE0("Verify Glanko");
 
                     /* Move the counter to the next test */
-                    if ((++the_soft_dfs_info->move_func_idx) ==
-                        THE_MOVE_FUNCS_LIST
-                            .lists[the_soft_dfs_info->move_func_list_idx]
+                    if ((++dfs_item.move_func_idx) ==
+                        THE_MOVE_FUNCS_LIST.lists[dfs_item.move_func_list_idx]
                             .num_move_funcs)
                     {
-                        the_soft_dfs_info->move_func_list_idx++;
-                        the_soft_dfs_info->move_func_idx = 0;
+                        dfs_item.move_func_list_idx++;
+                        dfs_item.move_func_idx = 0;
                         break;
                     }
                 } while ((local_shuffling_type != FCS_NO_SHUFFLING) ||
@@ -994,17 +979,15 @@ static inline int fc_solve_soft_dfs_do_solve(
             }
 
             const_AUTO(num_states, derived_list.num_states);
-            if (num_states >
-                the_soft_dfs_info->derived_states_random_indexes_max_size)
+            if (num_states > dfs_item.derived_states_random_indexes_max_size)
             {
-                the_soft_dfs_info->derived_states_random_indexes_max_size =
-                    num_states;
-                the_soft_dfs_info->derived_states_random_indexes = SREALLOC(
-                    the_soft_dfs_info->derived_states_random_indexes,
-                    the_soft_dfs_info->derived_states_random_indexes_max_size);
+                dfs_item.derived_states_random_indexes_max_size = num_states;
+                dfs_item.derived_states_random_indexes =
+                    SREALLOC(dfs_item.derived_states_random_indexes,
+                        dfs_item.derived_states_random_indexes_max_size);
             }
             fcs_rating_with_index_t *const rand_array =
-                the_soft_dfs_info->derived_states_random_indexes;
+                dfs_item.derived_states_random_indexes;
 
             VERIFY_PTR_STATE_TRACE0("Verify Panter");
 
@@ -1077,15 +1060,15 @@ static inline int fc_solve_soft_dfs_do_solve(
 
             // We just performed a test, so the index of the first state that
             // ought to be checked in this depth is 0.
-            the_soft_dfs_info->current_state_index = 0;
+            dfs_item.current_state_index = 0;
         }
 
         const_AUTO(num_states, derived_list.num_states);
         fcs_derived_states_list_item_t *const derived_states =
             derived_list.states;
-        var_AUTO(state_idx, the_soft_dfs_info->current_state_index - 1);
+        var_AUTO(state_idx, dfs_item.current_state_index - 1);
         const fcs_rating_with_index_t *rand_int_ptr =
-            the_soft_dfs_info->derived_states_random_indexes + state_idx;
+            dfs_item.derived_states_random_indexes + state_idx;
         VERIFY_PTR_STATE_TRACE0("Verify Klondike");
 
         while (++state_idx < num_states)
@@ -1106,6 +1089,8 @@ static inline int fc_solve_soft_dfs_do_solve(
                     instance->i__num_checked_states;
 #endif
                 VERIFY_PTR_STATE_AND_DERIVED_TRACE0("Verify [aft set_visit]");
+                dfs_item.current_state_index = state_idx;
+                DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i = dfs_item;
                 // I'm using current_state_indexes[depth]-1 because we already
                 // increased it by one, so now it refers to the next state.
                 if (unlikely(++DEPTH() >= by_depth_max_depth))
@@ -1113,17 +1098,14 @@ static inline int fc_solve_soft_dfs_do_solve(
                     curr_by_depth_unit++;
                     RECALC_BY_DEPTH_LIMITS();
                 }
-                the_soft_dfs_info->current_state_index = state_idx;
-                the_soft_dfs_info->derived_states_list = derived_list;
-                ++the_soft_dfs_info;
+                dfs_item = DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i;
                 ASSIGN_ptr_state(single_derived_state);
-                the_soft_dfs_info->state = PTR_STATE;
+                dfs_item.state = PTR_STATE;
                 VERIFY_PTR_STATE_AND_DERIVED_TRACE0("Verify after recurse");
 
-                the_soft_dfs_info->move_func_list_idx = 0;
-                the_soft_dfs_info->move_func_idx = 0;
-                the_soft_dfs_info->current_state_index = 0;
-                derived_list = the_soft_dfs_info->derived_states_list;
+                dfs_item.move_func_list_idx = 0;
+                dfs_item.move_func_idx = 0;
+                dfs_item.current_state_index = 0;
                 derived_list.num_states = 0;
 
                 calculate_real_depth(calc_real_depth, PTR_STATE);
@@ -1138,7 +1120,7 @@ static inline int fc_solve_soft_dfs_do_solve(
 #endif
                 if (check_if_limits_exceeded())
                 {
-                    the_soft_dfs_info->derived_states_list = derived_list;
+                    DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i = dfs_item;
                     TRACE0("Returning FCS_STATE_SUSPEND_PROCESS (inside "
                            "current_state_index)");
                     return FCS_STATE_SUSPEND_PROCESS;
@@ -1146,7 +1128,7 @@ static inline int fc_solve_soft_dfs_do_solve(
                 goto main_loop;
             }
         }
-        the_soft_dfs_info->current_state_index = num_states;
+        dfs_item.current_state_index = num_states;
     }
     // We need to bump the number of iterations so it will be ready with
     // a fresh iterations number for the next scan that takes place.
@@ -1155,7 +1137,7 @@ static inline int fc_solve_soft_dfs_do_solve(
 
     return FCS_STATE_IS_NOT_SOLVEABLE;
 }
-
+#undef derived_list
 #undef state
 
 #undef ptr_state_key

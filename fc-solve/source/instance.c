@@ -63,15 +63,15 @@ static inline void soft_thread_clean_soft_dfs(
 
     for (; info_ptr < max_info_ptr; info_ptr++)
     {
-        free(info_ptr->derived_states_list.states);
-        free(info_ptr->derived_states_random_indexes);
+        free(info_ptr->i.derived_states_list.states);
+        free(info_ptr->i.derived_states_random_indexes);
     }
     for (; info_ptr < dfs_max_info_ptr; info_ptr++)
     {
-        if (likely(info_ptr->derived_states_list.states))
+        if (likely(info_ptr->i.derived_states_list.states))
         {
-            free(info_ptr->derived_states_list.states);
-            free(info_ptr->derived_states_random_indexes);
+            free(info_ptr->i.derived_states_list.states);
+            free(info_ptr->i.derived_states_random_indexes);
         }
     }
 

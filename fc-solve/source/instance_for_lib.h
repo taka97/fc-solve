@@ -908,7 +908,8 @@ static inline void fc_solve_soft_thread_init_soft_dfs(
     DFS_VAR(soft_thread, depth) = 0;
     fc_solve_increase_dfs_max_depth(soft_thread);
     DFS_VAR(soft_thread, soft_dfs_info)
-    [0].state = FCS_STATE_keyval_pair_to_collectible(instance->state_copy_ptr);
+    [0].i.state =
+        FCS_STATE_keyval_pair_to_collectible(instance->state_copy_ptr);
     fc_solve_rand_init(
         &(DFS_VAR(soft_thread, rand_gen)), DFS_VAR(soft_thread, rand_seed));
 
