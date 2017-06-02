@@ -748,7 +748,9 @@ static inline int fc_solve_soft_dfs_do_solve(
 #define DEPTH() (*depth_ptr)
     ssize_t *const depth_ptr = &(DFS_VAR(soft_thread, depth));
 
-    var_AUTO(dfs_item, (DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()]).i);
+    var_AUTO(
+        the_soft_dfs_info, &(DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()]));
+    var_AUTO(dfs_item, the_soft_dfs_info->i);
 
     ssize_t dfs_max_depth = DFS_VAR(soft_thread, dfs_max_depth);
     const_SLOT(enable_pruning, soft_thread);
@@ -811,6 +813,7 @@ static inline int fc_solve_soft_dfs_do_solve(
             /* Because the address of DFS_VAR(soft_thread, soft_dfs_info) may
              * be changed
              * */
+            the_soft_dfs_info = &(DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()]);
             dfs_max_depth = DFS_VAR(soft_thread, dfs_max_depth);
         }
 
@@ -829,12 +832,12 @@ static inline int fc_solve_soft_dfs_do_solve(
                     MARK_AS_DEAD_END(PTR_STATE);
                 }
 
-                DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i = dfs_item;
+                the_soft_dfs_info->i = dfs_item;
                 if (unlikely(--DEPTH() < 0))
                 {
                     break;
                 }
-                dfs_item = DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i;
+                dfs_item = (--the_soft_dfs_info)->i;
                 ASSIGN_ptr_state(dfs_item.state);
                 VERIFY_PTR_STATE_TRACE0("Verify Foo");
                 soft_thread->num_vacant_freecells =
@@ -1087,7 +1090,7 @@ static inline int fc_solve_soft_dfs_do_solve(
 #endif
                 VERIFY_PTR_STATE_AND_DERIVED_TRACE0("Verify [aft set_visit]");
                 dfs_item.current_state_index = state_idx;
-                DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i = dfs_item;
+                the_soft_dfs_info->i = dfs_item;
                 // I'm using current_state_indexes[depth]-1 because we already
                 // increased it by one, so now it refers to the next state.
                 if (unlikely(++DEPTH() >= by_depth_max_depth))
@@ -1095,7 +1098,7 @@ static inline int fc_solve_soft_dfs_do_solve(
                     curr_by_depth_unit++;
                     RECALC_BY_DEPTH_LIMITS();
                 }
-                dfs_item = DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i;
+                dfs_item = (++the_soft_dfs_info)->i;
                 ASSIGN_ptr_state(single_derived_state);
                 dfs_item.state = PTR_STATE;
                 VERIFY_PTR_STATE_AND_DERIVED_TRACE0("Verify after recurse");
@@ -1117,7 +1120,7 @@ static inline int fc_solve_soft_dfs_do_solve(
 #endif
                 if (check_if_limits_exceeded())
                 {
-                    DFS_VAR(soft_thread, soft_dfs_info)[DEPTH()].i = dfs_item;
+                    the_soft_dfs_info->i = dfs_item;
                     TRACE0("Returning FCS_STATE_SUSPEND_PROCESS (inside "
                            "current_state_index)");
                     return FCS_STATE_SUSPEND_PROCESS;
