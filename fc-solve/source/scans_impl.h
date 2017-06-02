@@ -397,16 +397,13 @@ static inline void calculate_real_depth(const fcs_bool_t calc_real_depth,
 
 #ifdef DEBUG
 #define TRACE0(message)                                                        \
-    fcs_trace("%s. Depth=%ld ; the_soft_Depth=%ld ; Iters=%ld ; "              \
+    fcs_trace("%s. Depth=%ld ; Iters=%ld ; "                                   \
               "move_func_list_idx=%ld ; move_func_idx=%d ; "                   \
               "current_state_index=%d ; num_states=%ld\n",                     \
         message, (long)DFS_VAR(soft_thread, depth),                            \
-        (long)(the_soft_dfs_info - DFS_VAR(soft_thread, soft_dfs_info)),       \
         (long)(instance->i__num_checked_states),                               \
-        (long)the_soft_dfs_info->move_func_list_idx,                           \
-        the_soft_dfs_info->move_func_idx,                                      \
-        the_soft_dfs_info->current_state_index,                                \
-        (long)(derived_list.num_states))
+        (long)dfs_item.move_func_list_idx, dfs_item.move_func_idx,             \
+        dfs_item.current_state_index, (long)(derived_list.num_states))
 
 #define VERIFY_STATE_SANITY() verify_state_sanity(&FCS_SCANS_the_state)
 
@@ -875,7 +872,7 @@ static inline int fc_solve_soft_dfs_do_solve(
                         ((DEPTH() == 0) ? 0 : FCS_S_VISITED_ITER(DFS_VAR(
                                                   soft_thread,
                                                   soft_dfs_info)[DEPTH() - 1]
-                                                                     .state))
+                                                                     .i.state))
 #endif
                         );
                 }
