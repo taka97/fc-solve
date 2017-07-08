@@ -59,7 +59,7 @@ static inline int FccEntryPointNode_compare(
 }
 
 RB_HEAD(FccEntryPointList, FccEntryPointNode);
-const FccEntryPointList FccEntryPointList_init =
+static const FccEntryPointList FccEntryPointList_init =
     RB_INITIALIZER(&(instance->fcc_entry_points));
 
 typedef struct
@@ -501,12 +501,12 @@ static inline void instance_check_key(fcs_dbm_solver_thread_t *const thread,
 
             const_SLOT(moves_to_state_len, instance);
             const size_t added_moves_to_output =
-                moves_to_state_len + trace_num - 1;
+                moves_to_state_len + (size_t)trace_num - 1;
             instance_alloc_num_moves(instance, added_moves_to_output);
             unsigned char *const moves_to_state = instance->moves_to_state;
             for (int i = trace_num - 1; i > 0; i--)
             {
-                moves_to_state[moves_to_state_len + trace_num - 1 - i] =
+                moves_to_state[moves_to_state_len + (size_t)trace_num - 1 - i] =
                     get_move_from_parent_to_child(instance,
                         &(thread->delta_stater), trace[i], trace[i - 1]);
             }
@@ -702,8 +702,8 @@ int main(int argc, char *argv[])
     while (getline(&instance.fingerprint_line, &instance.fingerprint_line_size,
                fingerprint_fh) != -1)
 #else
-    while (fgets(instance.fingerprint_line, instance.fingerprint_line_size - 1,
-        fingerprint_fh))
+    while (fgets(instance.fingerprint_line,
+        (int)instance.fingerprint_line_size - 1, fingerprint_fh))
 #endif
     {
         FccEntryPointNode *const entry_point = fcs_compact_alloc_ptr(

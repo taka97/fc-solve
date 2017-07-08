@@ -101,12 +101,16 @@ static inline void fc_solve_debondt_delta_stater__init_card_states(
     }
 }
 
+#ifdef FCS_USE_INT128_FOR_VAR_BASE
+#define fc_solve_debondt_delta_stater_release(self)
+#else
 static inline void fc_solve_debondt_delta_stater_release(
     fc_solve_debondt_delta_stater_t *const self)
 {
     fc_solve_var_base_reader_release(&(self->r));
     fc_solve_var_base_writer_release(&(self->w));
 }
+#endif
 
 static inline void fc_solve_debondt_delta_stater_set_derived(
     fc_solve_debondt_delta_stater_t *const self, fcs_state_t *const state)
@@ -177,7 +181,8 @@ static void fc_solve_debondt_delta_stater_encode_composite(
 
     for (int suit_idx = 0; suit_idx < FCS_NUM_SUITS; suit_idx++)
     {
-        const unsigned long rank = fcs_foundation_value(*derived, suit_idx);
+        const unsigned long rank =
+            (unsigned long)fcs_foundation_value(*derived, suit_idx);
 
         fc_solve_var_base_writer_write(writer, FOUNDATION_BASE, rank);
 
@@ -189,7 +194,7 @@ static void fc_solve_debondt_delta_stater_encode_composite(
 #define CARD_STATE(card) self->card_states[CARD_POS(card)]
 #define SET_CARD_STATE(card, opt) CARD_STATE(card) = (opt)
 #define RS_STATE(rank, suit_idx) CARD_STATE(fcs_make_card(rank, suit_idx))
-            RS_STATE(r, suit_idx) = OPT_DONT_CARE;
+            RS_STATE((int)r, suit_idx) = OPT_DONT_CARE;
         }
     }
 
@@ -290,7 +295,7 @@ static void fc_solve_debondt_delta_stater_encode_composite(
     {
         for (int suit_idx = 0; suit_idx < FCS_NUM_SUITS; suit_idx++)
         {
-            const unsigned long opt = RS_STATE(rank, suit_idx);
+            const unsigned long opt = (unsigned long)RS_STATE(rank, suit_idx);
             unsigned long base;
 
             if (IS_BAKERS_DOZEN())
@@ -370,7 +375,7 @@ static void fc_solve_debondt_delta_stater_decode(
 
         for (unsigned long rank = 1; rank <= foundation_rank; ++rank)
         {
-            RS_STATE(rank, suit_idx) =
+            RS_STATE((int)rank, suit_idx) =
                 (IS_BAKERS_DOZEN() ? OPT__BAKERS_DOZEN__IN_FOUNDATION
                                    : OPT_IN_FOUNDATION);
         }
@@ -456,7 +461,7 @@ static void fc_solve_debondt_delta_stater_decode(
 
                 if (existing_opt < 0)
                 {
-                    RS_STATE(rank, suit_idx) = item_opt;
+                    RS_STATE(rank, suit_idx) = (int)item_opt;
 
                     if (!IS_BAKERS_DOZEN())
                     {

@@ -56,7 +56,9 @@ static inline void fcs_derived_state_list__recycle(
     *p_list = NULL;
 }
 
-#define MAKE_MOVE(src, dest) ((fcs_fcc_move_t)((src) | ((dest) << 4)))
+#define MAKE_MOVE(src, dest)                                                   \
+    ((fcs_fcc_move_t)(                                                         \
+        ((fcs_fcc_move_t)(src)) | (((fcs_fcc_move_t)(dest)) << 4)))
 #define COL2MOVE(idx) (idx)
 #define FREECELL2MOVE(idx) (idx + 8)
 #define FOUND2MOVE(idx) ((idx) + (8 + 4))
@@ -167,7 +169,7 @@ static inline int calc_foundation_to_put_card_on(
             }
             if (other_deck_idx == (INSTANCE_DECKS_NUM << 2))
             {
-                return (deck << 2) + suit;
+                return (int)((deck << 2) + suit);
             }
         }
     }
@@ -339,7 +341,7 @@ static inline int horne_prune__simple(
 }
 
 static inline fcs_bool_t card_cannot_be_placed(const fcs_state_t *const s,
-    const uint16_t ds, const fcs_card_t card, const int sequences_are_built_by)
+    const size_t ds, const fcs_card_t card, const int sequences_are_built_by)
 {
     const_AUTO(col, fcs_state_get_col(*s, ds));
     const_AUTO(col_len, fcs_col_len(col));
@@ -349,7 +351,6 @@ static inline fcs_bool_t card_cannot_be_placed(const fcs_state_t *const s,
 
 #define the_state (init_state_kv_ptr->s)
 static inline fcs_bool_t is_state_solved(
-    const fcs_dbm_variant_type_t local_variant,
     fcs_state_keyval_pair_t *const init_state_kv_ptr)
 {
     for (int suit = 0; suit < DECKS_NUM * 4; suit++)
@@ -372,16 +373,16 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
     const fcs_bool_t perform_horne_prune)
 {
     fcs_derived_state_t *ptr_new_state;
-    int empty_stack_idx = -1;
+    size_t empty_stack_idx = LOCAL_STACKS_NUM;
     const int sequences_are_built_by = CALC_SEQUENCES_ARE_BUILT_BY();
 #define new_state (ptr_new_state->state.s)
-    if (is_state_solved(local_variant, init_state_kv_ptr))
+    if (is_state_solved(init_state_kv_ptr))
     {
         return TRUE;
     }
 
     /* Move top stack cards to foundations. */
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    for (size_t stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; ++stack_idx)
     {
         const_AUTO(col, fcs_state_get_col(the_state, stack_idx));
         const_AUTO(cards_num, fcs_col_len(col));
@@ -446,7 +447,7 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
         ((local_variant == FCS_DBM_VARIANT_BAKERS_DOZEN) ? 1 : 0);
 
     /* Move stack card on top of a parent */
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    for (size_t stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; ++stack_idx)
     {
         const_AUTO(col, fcs_state_get_col(the_state, stack_idx));
         const_AUTO(cards_num, fcs_col_len(col));
@@ -456,10 +457,11 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
         }
         const_AUTO(card, fcs_col_get_card(col, cards_num - 1));
 
-        for (int ds = 0; ds < LOCAL_STACKS_NUM; ++ds)
+        for (size_t ds = 0; ds < LOCAL_STACKS_NUM; ++ds)
         {
-            if (ds == stack_idx || card_cannot_be_placed(&the_state, ds, card,
-                                       sequences_are_built_by))
+            if (ds == stack_idx ||
+                card_cannot_be_placed(&the_state, (uint_fast16_t)ds, card,
+                    sequences_are_built_by))
             {
                 continue;
             }
@@ -475,14 +477,14 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
     }
 
     /* Move freecell card on top of a parent */
-    for (int fc_idx = 0; fc_idx < LOCAL_FREECELLS_NUM; fc_idx++)
+    for (size_t fc_idx = 0; fc_idx < LOCAL_FREECELLS_NUM; fc_idx++)
     {
         const_AUTO(card, fcs_freecell_card(the_state, fc_idx));
         if (!fcs_card_is_valid(card))
         {
             continue;
         }
-        for (int ds = 0; ds < LOCAL_STACKS_NUM; ++ds)
+        for (size_t ds = 0; ds < LOCAL_STACKS_NUM; ++ds)
         {
             if (card_cannot_be_placed(
                     &the_state, ds, card, sequences_are_built_by))
@@ -500,10 +502,10 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
     }
 
     if ((local_variant != FCS_DBM_VARIANT_BAKERS_DOZEN) &&
-        (empty_stack_idx >= 0))
+        (empty_stack_idx < LOCAL_STACKS_NUM))
     {
         /* Stack Card to Empty Stack */
-        for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+        for (size_t stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; ++stack_idx)
         {
             const_AUTO(col, fcs_state_get_col(the_state, stack_idx));
             const_AUTO(cards_num, fcs_col_len(col));
@@ -548,7 +550,7 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
     if (empty_fc_idx >= 0)
     {
         /* Stack Card to Empty Freecell */
-        for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+        for (size_t stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; ++stack_idx)
         {
             const_AUTO(col, fcs_state_get_col(the_state, stack_idx));
             const_AUTO(cards_num, fcs_col_len(col));

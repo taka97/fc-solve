@@ -35,7 +35,7 @@
 
 typedef int CARD;
 
-const int NUM_CARDS = (4 * 13);
+#define NUM_CARDS (4 * 13)
 #define SUIT(card) ((card) % 4)
 #define VALUE(card) ((card) / 4)
 
@@ -68,8 +68,9 @@ static void card_to_string(char *const s, const CARD card,
 int main(int argc, char *argv[])
 {
     CARD card[MAXCOL][7]; /* current layout of cards, CARDs are ints */
-    int num_cards_left = NUM_CARDS; /*  cards left to be chosen in shuffle */
-    CARD deck[NUM_CARDS];           /* deck of 52 unique cards */
+    /*  cards left to be chosen in shuffle */
+    unsigned num_cards_left = NUM_CARDS;
+    CARD deck[NUM_CARDS]; /* deck of 52 unique cards */
     fcs_bool_t print_ts = FALSE;
 
     int arg = 1;

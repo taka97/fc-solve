@@ -26,7 +26,7 @@ static const int mod_table[] = {0, 2, 1};
 static inline void build_decoding_table(void)
 {
     for (int i = 0; i < 64; i++)
-        decoding_table[(unsigned char)encoding_table[i]] = i;
+        decoding_table[(unsigned char)encoding_table[i]] = (char)i;
 }
 
 static void base64_encode(const unsigned char *data, const size_t input_length,
@@ -51,7 +51,7 @@ static void base64_encode(const unsigned char *data, const size_t input_length,
     }
 
     for (int i = 0; i < mod_table[input_length % 3]; i++)
-        encoded_data[*output_length - 1 - i] = '=';
+        encoded_data[*output_length - 1 - (size_t)i] = '=';
 
     encoded_data[*output_length] = '\0';
 }
@@ -71,13 +71,14 @@ static int base64_decode(const char *data, const size_t input_length,
     for (size_t i = 0, j = 0; i < input_length;)
     {
 #define DECODE()                                                               \
-    (data[i] == '=' ? 0 & i++                                                  \
-                    : decoding_table[(size_t)(unsigned char)(data[i++])])
+    (data[i] == '='                                                            \
+            ? (uint32_t)(0 & i++)                                              \
+            : (uint32_t)decoding_table[(size_t)(unsigned char)(data[i++])])
 
-        const uint32_t sextet_a = DECODE();
-        const uint32_t sextet_b = DECODE();
-        const uint32_t sextet_c = DECODE();
-        const uint32_t sextet_d = DECODE();
+        const uint32_t sextet_a = (uint32_t)DECODE();
+        const uint32_t sextet_b = (uint32_t)DECODE();
+        const uint32_t sextet_c = (uint32_t)DECODE();
+        const uint32_t sextet_d = (uint32_t)DECODE();
 #undef DECODE
 
         const uint32_t triple = (sextet_a << 3 * 6) + (sextet_b << 2 * 6) +

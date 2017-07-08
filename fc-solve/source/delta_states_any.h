@@ -43,9 +43,8 @@ static inline void fc_solve_delta_stater_init(
     const size_t num_columns, const int num_freecells,
     const int sequences_are_built_by)
 {
-    return fc_solve_debondt_delta_stater_init(delta,
-        FCS_DBM_VARIANT_2FC_FREECELL, init_state, num_columns, num_freecells,
-        sequences_are_built_by);
+    fc_solve_debondt_delta_stater_init(delta, FCS_DBM_VARIANT_2FC_FREECELL,
+        init_state, num_columns, num_freecells, sequences_are_built_by);
 }
 #endif
 #define fc_solve_delta_stater_release(a)                                       \

@@ -281,7 +281,7 @@ static void calc_trace(fcs_dbm_record_t *const ptr_initial_record,
 #endif
     }
 #undef GROW_BY
-    *ptr_trace_num = trace_num;
+    *ptr_trace_num = (int)trace_num;
     *ptr_trace = trace;
 }
 
