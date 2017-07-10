@@ -148,10 +148,11 @@ static inline int calc_foundation_to_put_card_on(
     const int sequences_are_built_by = CALC_SEQUENCES_ARE_BUILT_BY();
 #endif
     const int_fast32_t rank = fcs_card_rank(card);
-    const int_fast32_t suit = fcs_card_suit(card);
+    const uint_fast32_t suit = fcs_card_suit(card);
     for (uint_fast32_t deck = 0; deck < INSTANCE_DECKS_NUM; ++deck)
     {
-        if (fcs_foundation_value(*ptr_state, (deck << 2) + suit) == rank - 1)
+        const_AUTO(foundation, (deck << 2) + suit);
+        if (fcs_foundation_value(*ptr_state, foundation) == rank - 1)
         {
             uint_fast32_t other_deck_idx;
 
@@ -169,7 +170,7 @@ static inline int calc_foundation_to_put_card_on(
             }
             if (other_deck_idx == (INSTANCE_DECKS_NUM << 2))
             {
-                return (int)((deck << 2) + suit);
+                return (int)foundation;
             }
         }
     }

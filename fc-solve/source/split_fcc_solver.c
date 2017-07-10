@@ -481,7 +481,8 @@ static inline void instance_check_key(fcs_dbm_solver_thread_t *const thread,
                     instance->fingerprint_fh);
 #else
                 fgets(instance->fingerprint_line,
-                    instance->fingerprint_line_size, instance->fingerprint_fh);
+                    (int)instance->fingerprint_line_size,
+                    instance->fingerprint_fh);
 #endif
                 char *const moves_to_state_enc =
                     strchr(strchr(instance->fingerprint_line, ' ') + 1, ' ') +
@@ -504,7 +505,7 @@ static inline void instance_check_key(fcs_dbm_solver_thread_t *const thread,
                 moves_to_state_len + (size_t)trace_num - 1;
             instance_alloc_num_moves(instance, added_moves_to_output);
             unsigned char *const moves_to_state = instance->moves_to_state;
-            for (int i = trace_num - 1; i > 0; i--)
+            for (size_t i = trace_num - 1; i != 0; --i)
             {
                 moves_to_state[moves_to_state_len + (size_t)trace_num - 1 - i] =
                     get_move_from_parent_to_child(instance,

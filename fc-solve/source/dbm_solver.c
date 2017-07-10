@@ -630,7 +630,7 @@ int main(int argc, char *argv[])
 #ifdef HAVE_GETLINE
             while (getline(&line, &line_size, intermediate_in_fh) >= 0)
 #else
-            while (fgets(line, line_size - 1, intermediate_in_fh))
+            while (fgets(line, (int)(line_size - 1), intermediate_in_fh))
 #endif
             {
                 if (strchr(line, '|') != NULL)
