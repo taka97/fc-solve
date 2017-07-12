@@ -491,7 +491,7 @@ ENDIF ()
 
 SHLOMIF_FINALIZE_FLAGS()
 
-# ADD_DEFINITIONS("-Weverything -Wno-language-extension-token -Wno-format-nonliteral -Wno-padded -Wno-gnu-statement-expression -Wno-unused-parameter -Wno-vla -Wno-extra-semi -Wno-cast-align -Wno-used-but-marked-unused")
+# ADD_DEFINITIONS("-Weverything -Wno-language-extension-token -Wno-format-nonliteral -Wno-padded -Wno-gnu-statement-expression -Wno-unused-parameter -Wno-vla -Wno-extra-semi -Wno-cast-align -Wno-used-but-marked-unused -Wno-cast-qual")
 
 IF (FCS_TRACE_MEM)
     ADD_DEFINITIONS("-DFCS_TRACE_MEM=1")

@@ -173,33 +173,33 @@ void fc_solve_state_as_string(char *output_s, const fcs_state_t *const state,
     output_s += sprintf(output_s, __VA_ARGS__)
 #define append_char(c) *(output_s++) = (c)
 
-    int stack_locs[MAX_NUM_STACKS];
-    int freecell_locs[MAX_NUM_FREECELLS];
+    size_t stack_locs[MAX_NUM_STACKS];
+    size_t freecell_locs[MAX_NUM_FREECELLS];
 
     if (canonized_order_output)
     {
-        for (int i = 0; i < STACKS_NUM__VAL; i++)
+        for (size_t i = 0; i < STACKS_NUM__VAL; i++)
         {
             stack_locs[i] = i;
         }
-        for (int i = 0; i < FREECELLS_NUM__VAL; i++)
+        for (size_t i = 0; i < FREECELLS_NUM__VAL; i++)
         {
             freecell_locs[i] = i;
         }
     }
     else
     {
-        for (int i = 0; i < STACKS_NUM__VAL; i++)
+        for (size_t i = 0; i < STACKS_NUM__VAL; i++)
         {
             stack_locs[(int)(state_locs->stack_locs[i])] = i;
         }
-        for (int i = 0; i < FREECELLS_NUM__VAL; i++)
+        for (size_t i = 0; i < FREECELLS_NUM__VAL; i++)
         {
             freecell_locs[(int)(state_locs->fc_locs[i])] = i;
         }
     }
 
-    for (int i = 0; i < (DECKS_NUM__VAL << 2); i++)
+    for (size_t i = 0; i < (DECKS_NUM__VAL << 2); i++)
     {
         rank2str(
             fcs_foundation_value(*state, i), founds[i] PASS_T(display_10_as_t));
@@ -256,7 +256,7 @@ void fc_solve_state_as_string(char *output_s, const fcs_state_t *const state,
         append_char('\n');
         append_char('\n');
 
-        for (int s = 0; s < STACKS_NUM__VAL; s++)
+        for (size_t s = 0; s < STACKS_NUM__VAL; s++)
         {
             fc_solve_append_string_sprintf("%s", " -- ");
         }
@@ -275,10 +275,10 @@ void fc_solve_state_as_string(char *output_s, const fcs_state_t *const state,
 
         for (size_t card_idx = 0; card_idx < max_num_cards; ++card_idx)
         {
-            for (int s = 0; s < STACKS_NUM__VAL; s++)
+            for (size_t s = 0; s < STACKS_NUM__VAL; s++)
             {
                 const_AUTO(col, fcs_state_get_col(*state, stack_locs[s]));
-                const int col_len = fcs_col_len(col);
+                const size_t col_len = (size_t)fcs_col_len(col);
                 if (card_idx >= col_len)
                 {
                     fc_solve_append_string_sprintf("%s", "    ");
@@ -298,7 +298,7 @@ void fc_solve_state_as_string(char *output_s, const fcs_state_t *const state,
 #endif
     {
         fc_solve_append_string_sprintf("%s", "Foundations:");
-        for (int i = 0; i < (DECKS_NUM__VAL << 2); i += 4)
+        for (size_t i = 0; i < (DECKS_NUM__VAL << 2); i += 4)
         {
             fc_solve_append_string_sprintf(" H-%s C-%s D-%s S-%s", founds[i],
                 founds[i + 1], founds[i + 2], founds[i + 3]);
@@ -320,7 +320,7 @@ void fc_solve_state_as_string(char *output_s, const fcs_state_t *const state,
             }
         }
 #else
-        const int max_freecell_idx = FREECELLS_NUM__VAL - 1;
+        const int max_freecell_idx = (int)FREECELLS_NUM__VAL - 1;
 #endif
 
         if (max_freecell_idx >= 0)
@@ -340,10 +340,10 @@ void fc_solve_state_as_string(char *output_s, const fcs_state_t *const state,
         }
         append_char('\n');
 
-        for (int s = 0; s < STACKS_NUM__VAL; ++s)
+        for (size_t s = 0; s < STACKS_NUM__VAL; ++s)
         {
             const_AUTO(col, fcs_state_get_col(*state, stack_locs[s]));
-            const size_t col_len = fcs_col_len(col);
+            const size_t col_len = (size_t)fcs_col_len(col);
             append_char(':');
 
             for (size_t card_idx = 0; card_idx < col_len; ++card_idx)
