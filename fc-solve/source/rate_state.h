@@ -7,14 +7,12 @@
  *
  * Copyright (c) 2000 Shlomi Fish
  */
-/*
- * rate_state.h - for rating states.
- */
+// rate_state.h - for rating states.
 #pragma once
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <stddef.h>
 
 #define FCS_BEFS_SEQS_OVER_RENEGADE_CARDS_EXPONENT 1.3
 
@@ -26,7 +24,11 @@ extern const fc_solve_seq_cards_power_type_t
 #define FCS_SEQS_OVER_RENEGADE_POWER(n)                                        \
     pow(n, FCS_BEFS_SEQS_OVER_RENEGADE_CARDS_EXPONENT)
 #else
-#define FCS_SEQS_OVER_RENEGADE_POWER(n) fc_solve_seqs_over_cards_lookup[(n)]
+static inline fc_solve_seq_cards_power_type_t FCS_SEQS_OVER_RENEGADE_POWER(
+    const size_t n)
+{
+    return fc_solve_seqs_over_cards_lookup[n];
+}
 #endif
 
 #ifdef __cplusplus

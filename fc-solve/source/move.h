@@ -123,7 +123,7 @@ static inline void fc_solve_move_stack_normalize(fcs_move_stack_t *const moves,
     FCS_STATE__DUP_keyval_pair(s_and_info, *init_state);
 
 #ifdef INDIRECT_STACK_STATES
-    for (int i = 0; i < STACKS_NUM__VAL; i++)
+    for (size_t i = 0; i < STACKS_NUM__VAL; i++)
     {
         fcs_copy_stack(
             s_and_info.s, s_and_info.info, i, indirect_stacks_buffer);
@@ -215,8 +215,9 @@ static inline int fc_solve_move__convert_freecell_num(const int fc_idx)
 
 static inline char fc_solve__freecell_to_char(const int fc_idx)
 {
-    return 'a' + fc_solve_move__convert_freecell_num(fc_idx);
+    return 'a' + (char)fc_solve_move__convert_freecell_num(fc_idx);
 }
+
 static inline void fc_solve_move_to_string_w_state(char *const string,
     fcs_state_keyval_pair_t *const state, const fcs_move_t move,
     const int standard_notation)

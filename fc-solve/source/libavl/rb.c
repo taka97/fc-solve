@@ -74,8 +74,6 @@ static inline enum rb_color rb_set_color(struct rb_node *const node, const enum 
 }
 #endif
 
-#define NODEPTR_SET_COLOR(p, b) rb_set_color((p), (b))
-
 /* Creates and returns a new table
    with comparison function |compare| using parameter |param|
    and memory allocator |allocator|.
@@ -308,7 +306,7 @@ rb_delete (struct rb_table *tree, const void *item)
       int dir = cmp > 0;
 
       pa[k] = p;
-      da[k++] = dir;
+      da[k++] = (unsigned char)dir;
 
       p = rb_process_link(p->rb_mylink[dir]);
       if (p == NULL)

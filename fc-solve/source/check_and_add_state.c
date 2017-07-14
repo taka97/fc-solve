@@ -37,7 +37,7 @@ static inline void fc_solve_hash_rehash(fc_solve_hash_t *const hash)
 
     var_AUTO(entries, hash->entries);
     fc_solve_hash_symlink_t *const new_entries =
-        calloc(new_size, sizeof(new_entries[0]));
+        calloc((size_t)new_size, sizeof(new_entries[0]));
 
     /* Copy the items to the new hash while not allocating them again */
     for (int i = 0; i < old_size; i++)
@@ -265,8 +265,8 @@ static inline void fc_solve_cache_stacks(
         const int col_len = (fcs_col_len(column) + 1);
 
         char *const new_ptr =
-            (char *)fcs_compact_alloc_ptr(stacks_allocator, col_len);
-        memcpy(new_ptr, column, col_len);
+            (char *)fcs_compact_alloc_ptr(stacks_allocator, (size_t)col_len);
+        memcpy(new_ptr, column, (size_t)col_len);
         *(current_stack) = new_ptr;
         column = fcs_state_get_col(*new_state_key, i);
 
@@ -298,7 +298,8 @@ static inline void fc_solve_cache_stacks(
 #endif
 
         cached_stack = fc_solve_hash_insert(&(instance->stacks_hash), column,
-            perl_hash_function((ub1 *)*(current_stack), col_len)
+            (fc_solve_hash_value_t)perl_hash_function(
+                (ub1 *)*(current_stack), (ul)col_len)
 #ifdef FCS_ENABLE_SECONDARY_HASH_VALUE
                 ,
             hash_value_int
@@ -496,18 +497,20 @@ fcs_bool_t fc_solve_check_and_add_state(
         hash_value_int &= (~(1 << ((sizeof(hash_value_int) << 3) - 1)));
     }
 #endif
-    return HANDLE_existing_void(fc_solve_hash_insert(&(instance->hash),
+
 #ifdef FCS_RCS_STATES
-        new_state->val, new_state->key,
+#define A new_state->val, new_state->key
 #else
-        FCS_STATE_kv_to_collectible(new_state),
+#define A FCS_STATE_kv_to_collectible(new_state)
 #endif
-        perl_hash_function((ub1 *)(new_state_key), sizeof(*(new_state_key)))
 #ifdef FCS_ENABLE_SECONDARY_HASH_VALUE
-            ,
-        hash_value_int
+#define B , hash_value_int
+#else
+#define B
 #endif
-        ));
+    return HANDLE_existing_void(fc_solve_hash_insert(&(instance->hash), A,
+        (fc_solve_hash_value_t)perl_hash_function(
+            (ub1 *)(new_state_key), sizeof(*(new_state_key))) B));
 #elif (FCS_STATE_STORAGE == FCS_STATE_STORAGE_GOOGLE_DENSE_HASH)
     void *existing_void;
     if (!fc_solve_states_google_hash_insert(instance->hash,

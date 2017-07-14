@@ -127,7 +127,7 @@ typedef struct
             (state_val).stacks_copy_on_write_flags |= (1 << idx);              \
             const_AUTO(copy_stack_col, fcs_state_get_col((state_key), idx));   \
             memcpy(&buffer[idx << 7], copy_stack_col,                          \
-                fcs_col_len(copy_stack_col) + 1);                              \
+                (size_t)(fcs_col_len(copy_stack_col) + 1));                    \
             fcs_state_get_col((state_key), idx) = &buffer[idx << 7];           \
         }                                                                      \
     }

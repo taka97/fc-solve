@@ -908,12 +908,17 @@ static inline void fc_solve_soft_thread_update_initial_cards_val(
     for (int a = 0; a < INSTANCE_STACKS_NUM; a++)
     {
         const_AUTO(col, fcs_state_get_col(*s, a));
-        cards_under_sequences +=
-            FCS_SEQS_OVER_RENEGADE_POWER(update_col_cards_under_sequences(
+        const int cards_num = fcs_col_len(col);
+        if (cards_num <= 1)
+        {
+            continue;
+        }
+        cards_under_sequences += FCS_SEQS_OVER_RENEGADE_POWER(
+            (size_t)update_col_cards_under_sequences(
 #ifndef FCS_FREECELL_ONLY
                 sequences_are_built_by,
 #endif
-                col, fcs_col_len(col) - 1));
+                col, cards_num - 1));
     }
     soft_thread->initial_cards_under_sequences_value = cards_under_sequences;
 }
@@ -946,16 +951,18 @@ static inline fcs_tests_order_t tests_order_dup(fcs_tests_order_t *const orig)
 {
     const_SLOT(num_groups, orig);
     fcs_tests_order_t ret = (fcs_tests_order_t){.num_groups = num_groups,
-        .groups = memdup(orig->groups,
-            sizeof(orig->groups[0]) *
-                ((num_groups & (~(MOVES_GROW_BY - 1))) + MOVES_GROW_BY))};
+        .groups = memdup(
+            orig->groups, sizeof(orig->groups[0]) *
+                              ((num_groups & (size_t)(~(MOVES_GROW_BY - 1))) +
+                                  MOVES_GROW_BY))};
 
-    for (int i = 0; i < num_groups; i++)
+    for (size_t i = 0; i < num_groups; ++i)
     {
-        ret.groups[i].order_group_moves = memdup(
-            ret.groups[i].order_group_moves,
-            sizeof(ret.groups[i].order_group_moves[0]) *
-                ((ret.groups[i].num & (~(MOVES_GROW_BY - 1))) + MOVES_GROW_BY));
+        ret.groups[i].order_group_moves =
+            memdup(ret.groups[i].order_group_moves,
+                sizeof(ret.groups[i].order_group_moves[0]) *
+                    ((ret.groups[i].num & (size_t)(~(MOVES_GROW_BY - 1))) +
+                        MOVES_GROW_BY));
     }
 
     return ret;
