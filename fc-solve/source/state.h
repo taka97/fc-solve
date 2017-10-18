@@ -105,12 +105,33 @@ typedef char fcs_locs_t;
 #elif defined(INDIRECT_STACK_STATES) // #ifdef COMPACT_STATES
 typedef struct
 {
+    unsigned indirect : 1;
+    unsigned len : 7;
+} fcs_len_byte;
+#define fcs_col_len(col) ((((fcs_len_byte *)(col))[0]).len)
+typedef struct
+{
     fcs_cards_column_t columns[MAX_NUM_STACKS];
     fcs_card_t freecells[MAX_NUM_FREECELLS];
     fcs_state_foundation_t foundations[MAX_NUM_DECKS * 4];
 } fcs_state_t;
 
-#define fcs_state_get_col(state, col_idx) ((state).columns[(col_idx)])
+#define fcs_raw_state_get_col(state, col_idx) ((state).columns[(col_idx)])
+#define fcs_state_get_col(state, col_idx)                                      \
+    (fc_solve__state_get_col__worker(&state, (col_idx)))
+static inline fcs_cards_column_t fc_solve__state_get_col__worker(
+    fcs_state_t *s, const int col_idx)
+{
+    fcs_cards_column_t *col = &fcs_raw_state_get_col(*s, col_idx);
+    if (((size_t)*col) & 1)
+    {
+        return (fcs_cards_column_t)col;
+    }
+    else
+    {
+        return *col;
+    }
+}
 
 #define fcs_freecell_card(state, f) ((state).freecells[(f)])
 
@@ -121,10 +142,19 @@ typedef struct
         if (!((state_val).stacks_copy_on_write_flags & (1 << idx)))            \
         {                                                                      \
             (state_val).stacks_copy_on_write_flags |= (1 << idx);              \
-            const_AUTO(copy_stack_col, fcs_state_get_col((state_key), idx));   \
-            memcpy(&buffer[idx << 7], copy_stack_col,                          \
-                fcs_col_len(copy_stack_col) + 1);                              \
-            fcs_state_get_col((state_key), idx) = &buffer[idx << 7];           \
+            const_AUTO(                                                        \
+                copy_stack_col, &fcs_raw_state_get_col((state_key), idx));     \
+            if ((size_t)(*copy_stack_col) & 1)                                 \
+            {                                                                  \
+                memcpy(&buffer[idx << 7], copy_stack_col,                      \
+                    sizeof(copy_stack_col));                                   \
+            }                                                                  \
+            else                                                               \
+            {                                                                  \
+                memcpy(&buffer[idx << 7], *copy_stack_col,                     \
+                    fcs_col_len(*copy_stack_col) + 1);                         \
+            }                                                                  \
+            fcs_raw_state_get_col((state_key), idx) = &buffer[idx << 7];       \
         }                                                                      \
     }
 
@@ -161,6 +191,7 @@ typedef uint8_t fcs_locs_t;
 
 #if defined(COMPACT_STATES)
 
+#define fcs_col_len(col) (((col)[0]))
 #define fcs_duplicate_state_extra(dest_info)
 #define fcs_copy_stack(state_key, state_val, idx, buffer)
 
@@ -183,7 +214,6 @@ static inline fcs_card_t fcs_make_card(const int rank, const int suit)
 #define fcs_card2char(c) (c)
 #define fcs_char2card(c) (c)
 
-#define fcs_col_len(col) (((col)[0]))
 #define fcs_col_get_card(col, card_idx) ((col)[(card_idx) + 1])
 #define fcs_state_col_len(s, i) fcs_col_len(fcs_state_get_col((s), (i)))
 #define fcs_state_col_is_empty(s, i) (fcs_state_col_len((s), (i)) == 0)
@@ -600,6 +630,7 @@ static inline void fc_solve_state_init_proto(
     {
         memset(state->s.columns[i] = &indirect_stacks_buffer[i << 7], '\0',
             MAX_NUM_DECKS * 52 + 1);
+        state->s.columns[i][0] |= 1;
     }
     for (; i < MAX_NUM_STACKS; i++)
     {
@@ -954,11 +985,32 @@ static inline int fc_solve_card_compare(
 static inline int fc_solve_stack_compare_for_comparison(
     const void *const v_s1, const void *const v_s2)
 {
-    const fcs_card_t *const s1 = (const fcs_card_t *const)v_s1;
-    const fcs_card_t *const s2 = (const fcs_card_t *const)v_s2;
+    const_AUTO(bit1, (const size_t)v_s1 & 1);
+    const_AUTO(bit2, (const size_t)v_s2 & 1);
+    int l1, l2;
+    const fcs_card_t *s1;
+    const fcs_card_t *s2;
+    if (bit1)
+    {
+        s1 = (const fcs_card_t *)&v_s1;
+    }
+    else
+    {
+        s1 = (const fcs_card_t *)v_s1;
+    }
+    if (bit2)
+    {
+        s2 = (const fcs_card_t *)&v_s2;
+    }
+    else
+    {
+        s2 = (const fcs_card_t *)v_s2;
+    }
+    l1 = s1[0] >> 1;
+    l2 = s2[0] >> 1;
 
     {
-        const int min_len = min(s1[0], s2[0]);
+        const int min_len = min(l1, l2);
         for (int a = 1; a <= min_len; a++)
         {
             const int ret = fc_solve_card_compare(s1[a], s2[a]);
@@ -975,11 +1027,11 @@ static inline int fc_solve_stack_compare_for_comparison(
      * of the other state representation mechanisms.
      * */
     /* For some reason this code is faster than s1[0]-s2[0] */
-    if (s1[0] < s2[0])
+    if (l1 < l2)
     {
         return -1;
     }
-    else if (s1[0] > s2[0])
+    else if (l1 > l2)
     {
         return 1;
     }

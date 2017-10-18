@@ -1386,7 +1386,7 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_freecell_card_to_parent)
         for (int ds = 0; ds < LOCAL_STACKS_NUM; ds++)
         {
             var_AUTO(dest_col, fcs_state_get_col(state, ds));
-            const_AUTO(l, fcs_col_len(dest_col));
+            const unsigned l = fcs_col_len(dest_col);
             if (!l)
             {
                 continue;

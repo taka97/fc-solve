@@ -261,6 +261,13 @@ static inline void fc_solve_cache_stacks(
 
         var_AUTO(column, fcs_state_get_col(*(new_state_key), i));
         const int col_len = (fcs_col_len(column) + 1);
+        if (col_len <= sizeof(*current_stack))
+        {
+            memset(((char *)current_stack), '\0', sizeof(*current_stack));
+            memcpy(((char *)current_stack), column, col_len);
+            ((size_t *)current_stack)[0] |= 1;
+            continue;
+        }
 
         char *const new_ptr =
             (char *)fcs_compact_alloc_ptr(stacks_allocator, col_len);

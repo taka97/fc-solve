@@ -89,7 +89,7 @@ DLLEXPORT void fc_solve_moves_processed_gen(fcs_moves_processed_t *const ret,
             for (i = 0; i < 8; i++)
             {
                 var_AUTO(col, fcs_state_get_col(pos, i));
-                const_AUTO(l, fcs_col_len(col));
+                const unsigned l = fcs_col_len(col);
                 if (l && fc_solve_fc_pro__can_be_moved(
                              &pos, fcs_col_get_card(col, l - 1)))
                 {

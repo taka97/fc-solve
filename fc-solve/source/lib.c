@@ -20,6 +20,7 @@
 #ifdef DEBUG
 static void verify_state_sanity(const fcs_state_t *const ptr_state)
 {
+    return;
 #ifndef NDEBUG
     for (int i = 0; i < 8; i++)
     {
@@ -557,6 +558,16 @@ static inline void fc_solve_start_instance_process_with_board(
         instance->hard_threads,
 #endif
         &pass_copy, &no_use);
+
+#if 0
+#ifdef INDIRECT_STACK_STATES
+    state_copy_ptr->info.stacks_copy_on_write_flags = 0;
+    for (int i = 0; i < INSTANCE_STACKS_NUM; i++)
+    {
+        fcs_copy_stack(state_copy_ptr->s, state_copy_ptr->info, i, ind_buf);
+    }
+#endif
+#endif
 
 #ifndef FCS_SINGLE_HARD_THREAD
     instance->current_hard_thread = instance->hard_threads;
@@ -1703,7 +1714,7 @@ static inline fc_solve_solve_process_ret_t run_hard_thread(
                     char *dest = &(
                         pats_scan->current_pos.indirect_stacks_buffer[i << 7]);
                     memmove(dest, src_col, fcs_col_len(src_col) + 1);
-                    fcs_state_get_col(pats_scan->current_pos.s, i) = dest;
+                    fcs_raw_state_get_col(pats_scan->current_pos.s, i) = dest;
                 }
 #endif
                 fc_solve_pats__initialize_solving_process(pats_scan);

@@ -492,7 +492,7 @@ static void fc_solve_debondt_delta_stater_decode(
 
         fcs_cards_column_t col = fcs_state_get_col(*ret, col_idx);
         const_AUTO(orig_col, fcs_state_get_col(*init_state, col_idx));
-        const_AUTO(orig_col_len, fcs_col_len(orig_col));
+        const unsigned orig_col_len = fcs_col_len(orig_col);
 
         if (orig_col_len)
         {

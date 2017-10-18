@@ -76,7 +76,7 @@ static inline void fcs_derived_state_list__recycle(
             fcs_state_get_col((ptr_new_state->state.s), copy_col_idx));        \
         memcpy(&(ptr_new_state->indirect_stacks_buffer[copy_col_idx << 7]),    \
             copy_stack_col, (size_t)(fcs_col_len(copy_stack_col)) + 1);        \
-        fcs_state_get_col((ptr_new_state->state.s), copy_col_idx) =            \
+        fcs_raw_state_get_col((ptr_new_state->state.s), copy_col_idx) =        \
             &(ptr_new_state->indirect_stacks_buffer[copy_col_idx << 7]);       \
     }
 
@@ -342,7 +342,7 @@ static inline fcs_bool_t card_cannot_be_placed(const fcs_state_t *const s,
     const uint16_t ds, const fcs_card_t card, const int sequences_are_built_by)
 {
     const_AUTO(col, fcs_state_get_col(*s, ds));
-    const_AUTO(col_len, fcs_col_len(col));
+    const unsigned col_len = fcs_col_len(col);
     return ((col_len == 0) ||
             (!fcs_is_parent_card(card, fcs_col_get_card(col, col_len - 1))));
 }
@@ -384,7 +384,7 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
     for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
     {
         const_AUTO(col, fcs_state_get_col(the_state, stack_idx));
-        const_AUTO(cards_num, fcs_col_len(col));
+        const unsigned cards_num = fcs_col_len(col);
         if (cards_num == 0)
         {
             empty_stack_idx = stack_idx;
@@ -449,7 +449,7 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
     for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
     {
         const_AUTO(col, fcs_state_get_col(the_state, stack_idx));
-        const_AUTO(cards_num, fcs_col_len(col));
+        const unsigned cards_num = fcs_col_len(col);
         if (cards_num <= cards_num_min_limit)
         {
             continue;
@@ -506,7 +506,7 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
         for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
         {
             const_AUTO(col, fcs_state_get_col(the_state, stack_idx));
-            const_AUTO(cards_num, fcs_col_len(col));
+            const unsigned cards_num = fcs_col_len(col);
             /* Bug fix: if there's only one card in a column, there's no
              * point moving it to a new empty column.
              * */
@@ -551,7 +551,7 @@ static inline fcs_bool_t instance_solver_thread_calc_derived_states(
         for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
         {
             const_AUTO(col, fcs_state_get_col(the_state, stack_idx));
-            const_AUTO(cards_num, fcs_col_len(col));
+            const unsigned cards_num = fcs_col_len(col);
             if (cards_num <= cards_num_min_limit)
             {
                 continue;

@@ -870,7 +870,7 @@ static inline void fc_solve_soft_thread_update_initial_cards_val(
     for (int a = 0; a < INSTANCE_STACKS_NUM; a++)
     {
         const_AUTO(col, fcs_state_get_col(*s, a));
-        const_AUTO(col_len, fcs_col_len(col));
+        const unsigned col_len = fcs_col_len(col);
         if (col_len <= 1)
         {
             continue;

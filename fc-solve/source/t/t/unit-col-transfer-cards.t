@@ -16,16 +16,25 @@ use FC_Solve::InlineWrap (
 
 typedef struct
 {
+    DECLARE_IND_BUF_T(indirect_stacks_buffer);
     fcs_state_keyval_pair_t state;
     fcs_state_locs_struct_t locs;
-    DECLARE_IND_BUF_T(indirect_stacks_buffer);
 } StateInC;
 
+static inline StateInC * deref(SV * const obj) {
+    IV ret = SvIV(SvRV(obj));
+    ret += 16-ret%16;
+    return (StateInC *)ret;
+}
 SV* _proto_new(const char * input_state_string) {
         SV*      obj_ref = newSViv(0);
         SV*      obj = newSVrv(obj_ref, "FC_Solve::FCS_Perl_State");
         StateInC * s;
-        New(42, s, 1, StateInC);
+        Newx(s, 2, StateInC);
+        sv_setiv(obj, (IV)s);
+        SvREADONLY_on(obj);
+
+        s = deref(obj_ref);
 
         fc_solve_init_locs (&(s->locs));
         fc_solve_initial_user_state_to_c(
@@ -36,13 +45,7 @@ SV* _proto_new(const char * input_state_string) {
             1,
             s->indirect_stacks_buffer
         );
-        sv_setiv(obj, (IV)s);
-        SvREADONLY_on(obj);
         return obj_ref;
-}
-
-static inline StateInC * deref(SV * const obj) {
-    return (StateInC*)SvIV(SvRV(obj));
 }
 
 static inline fcs_state_keyval_pair_t * q(SV * const obj) {
