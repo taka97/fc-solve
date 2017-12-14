@@ -72,19 +72,20 @@ sub all_info
     return Text::Sprintf::Named->new(
         {
             fmt => join( "",
-                map { "$_ [%(blurb)s] ===\n{{{{{{\n%($_)s\n}}}}}}\n\n" } (@fields) )
+                map { "$_ [%(blurb)s] ===\n{{{{{{\n%($_)s\n}}}}}}\n\n" }
+                    (@fields) )
         }
-        )->format(
+    )->format(
         {
             args => {
-                blurb => scalar($self->blurb),
+                blurb => scalar( $self->blurb ),
                 map {
                     my $name = $_;
                     ( $name => $self->_stringify_value($name) )
                 } @fields
             }
         }
-        );
+    );
 }
 
 sub emit_all
@@ -190,8 +191,10 @@ sub run_tests
     my $tatzer_args       = $args->{'tatzer_args'};
     my $cmake_args        = $args->{'cmake_args'};
     my $prepare_dist_args = $args->{'prepare_dist_args'};
+    my $website_args      = $args->{'website_args'};
 
-    if ( 1 != grep { $_ } ( $tatzer_args, $cmake_args, $prepare_dist_args ) )
+    if ( 1 != grep { $_ }
+        ( $tatzer_args, $cmake_args, $prepare_dist_args, $website_args ) )
     {
         die
 "One and only one of tatzer_args or cmake_args or prepare_dist_args must be specified.";
@@ -231,6 +234,22 @@ sub run_tests
         chdir($cwd);
         rmtree( 'dbm_fcs_for_sub', 0, $SAFE );
         unlink('dbm_fcs_for_sub.tar.xz');
+    }
+    elsif ($website_args)
+    {
+        chdir('../site/wml');
+        run_cmd(
+            "$blurb_base : ./gen-helpers",
+            { cmd => [ $^X, 'gen-helpers.pl' ] }
+        );
+        run_cmd( "$blurb_base : make",
+            { cmd => [ 'make', "-j$NUM_PROCESSORS", ] } );
+        if ( not $args->{do_not_test} )
+        {
+            run_cmd( "$blurb_base : test", { cmd => [ 'make', 'test', ] } );
+        }
+
+        chdir($cwd);
     }
     else
     {
@@ -314,6 +333,9 @@ sub reg_prep
         { prepare_dist_args => { base => $base, args => [] } } );
 }
 
+reg_tatzer_test( "Default", () );
+reg_test( 'Website #1', { website_args => [] } );
+
 reg_test(
     "No int128",
     { cmake_args => [ '-DFCS_AVOID_INT128=1', '-DFCS_ENABLE_DBM_SOLVER=1', ] }
@@ -344,7 +366,6 @@ reg_test(
 reg_test( "Plain CMake Default", { cmake_args => [], run_perltidy => 1, } );
 reg_test( "Non-Debondt Delta States",
     { cmake_args => ['-DFCS_DISABLE_DEBONDT_DELTA_STATES=1'] } );
-reg_tatzer_test( "Default", () );
 reg_tatzer_test( "--rcs", qw(--rcs) );
 
 reg_lt_test( "libavl2 with COMPACT_STATES",
