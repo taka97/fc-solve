@@ -333,6 +333,7 @@ sub reg_prep
         { prepare_dist_args => { base => $base, args => [] } } );
 }
 
+reg_lt_test( "-l n2t with --disable-patsolve", '--disable-patsolve', );
 reg_tatzer_test( "Default", () );
 reg_test( 'Website #1', { website_args => [] } );
 
@@ -348,7 +349,6 @@ reg_prep( "prepare_dist vendu",
     'prepare_vendu_depth_dbm_fc_solver_self_contained_package.pl' );
 reg_prep( "prepare_dist pbs",
     'prepare_pbs_dbm_solver_self_contained_package.pl' );
-reg_lt_test( "-l n2t with --disable-patsolve", '--disable-patsolve', );
 reg_test(
     "build_only: maximum speed preset",
     {
