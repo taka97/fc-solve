@@ -35,5 +35,5 @@ perl:
 python:
     - "3.5"
 script:
-    - export FC_SOLVE__MULT_CONFIG_TESTS__TRACE=1 FC_SOLVE__MULT_CONFIG_TESTS__DOCKER=1 ; set -o pipefail ; cd fc-solve/source ; . /home/travis/build/shlomif/fc-solve/emsdk/emsdk_env.sh && perl ../scripts/multi_config_tests.pl 2>&1 | zenfilter --count-step=500 --last=500 --filter='^Running:.*?\[\s*idx\s*=\s*[0-9]+\s*/\s*[0-9]+'
+    - export FC_SOLVE__MULT_CONFIG_TESTS__TRACE=1 FC_SOLVE__MULT_CONFIG_TESTS__DOCKER=1 ; set -o pipefail ; cd fc-solve/source ; . /home/travis/build/shlomif/fc-solve/emsdk/emsdk-portable/emsdk_env.sh && perl ../scripts/multi_config_tests.pl 2>&1 | zenfilter --count-step=500 --last=500 --filter='^Running:.*?\[\s*idx\s*=\s*[0-9]+\s*/\s*[0-9]+'
 sudo: required
