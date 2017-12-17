@@ -7,7 +7,6 @@ python:
 before_install:
     - sudo apt-get update -qq
     - sudo apt-get install -y asciidoc cmake cmake-data cpanminus gperf libgmp-dev libgoogle-perftools-dev libperl-dev mercurial ninja-build python3 python3-setuptools perl python3-pip silversearcher-ag valgrind wml
-    - docker run -dit --name emscripten -v $(pwd):/src trzeci/emscripten:sdk-incoming-64bit bash
       # Temporary workaround for a problem in running the Inline::C test
       # suite with latest EU::MM - install Inline::C with no tests.
       #     - https://github.com/ingydotnet/inline-c-pm/issues/49 .
@@ -21,6 +20,15 @@ before_install:
 install:
     - ls /home/travis/build/shlomif/fc-solve/fc-solve/source/../site/wml/../../source/main.c || true
     - ls /home/travis/build/shlomif/fc-solve/fc-solve/source/../site/wml/../../source/*.[ch] || true
+    - mkdir emsdk && pushd emsdk && \
+      wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz \
+      && tar -xf emsdk-portable.tar.gz \
+      && pushd emsdk-portable \
+      && ./emsdk update \
+      && ./emsdk install latest \
+      && ./emsdk activate latest \
+      && popd \
+      && popd
     - which python3
     - python3 --version
     - sudo -H `which python3` -m pip install cffi
@@ -35,7 +43,5 @@ perl:
 python:
     - "3.5"
 script:
-    - export FC_SOLVE__MULT_CONFIG_TESTS__TRACE=1 FC_SOLVE__MULT_CONFIG_TESTS__DOCKER=1 ; set -o pipefail ; cd fc-solve/source ; perl ../scripts/multi_config_tests.pl 2>&1 | zenfilter --count-step=500 --last=500 --filter='^Running:.*?\[\s*idx\s*=\s*[0-9]+\s*/\s*[0-9]+'
+    - export FC_SOLVE__MULT_CONFIG_TESTS__TRACE=1 FC_SOLVE__MULT_CONFIG_TESTS__DOCKER=1 ; set -o pipefail ; cd fc-solve/source ; . /home/travis/build/shlomif/fc-solve/emsdk/emsdk_env.sh && perl ../scripts/multi_config_tests.pl 2>&1 | zenfilter --count-step=500 --last=500 --filter='^Running:.*?\[\s*idx\s*=\s*[0-9]+\s*/\s*[0-9]+'
 sudo: required
-services:
-    - docker

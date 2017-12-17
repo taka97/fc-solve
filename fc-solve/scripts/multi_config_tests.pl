@@ -242,7 +242,8 @@ sub run_tests
             $ENV{FC_SOLVE__MULT_CONFIG_TESTS__DOCKER}
             ? "$cwd/../scripts/dockerized-emscripten/:"
             : "";
-        local $ENV{PATH} = $PATH_PREFIX . $ENV{PATH};
+
+        # local $ENV{PATH} = $PATH_PREFIX . $ENV{PATH};
         chdir($DIR);
         local $ENV{PWD} = $DIR;
         run_cmd(
@@ -255,7 +256,7 @@ sub run_tests
         #                 qq#cd "$DIR" && make#,
         #                 )
         # run_cmd( "$blurb_base : make_foo", { cmd => [ 'make', ] } );
-        if ( $ENV{FC_SOLVE__MULT_CONFIG_TESTS__DOCKER} )
+        if (0)    # if ( $ENV{FC_SOLVE__MULT_CONFIG_TESTS__DOCKER} )
         {
             my $P =
 qq#/home/travis/build/shlomif/fc-solve/fc-solve/source/../site/wml/../../source#;
