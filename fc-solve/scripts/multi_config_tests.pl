@@ -373,7 +373,7 @@ sub reg_prep
 
 reg_lt_test( "-l n2t with --disable-patsolve", '--disable-patsolve', );
 reg_tatzer_test( "Default", () );
-reg_test( 'Website #1', { website_args => [] } );
+reg_test( 'Website No. 1', { website_args => [] } );
 
 reg_test(
     "No int128",
