@@ -30,18 +30,8 @@
 
 #endif
 
-static inline int find_empty_stack(fcs_kv_state_t raw_state_raw,
-    const int start_from, const int local_stacks_num)
-{
-    for (int ret = start_from; ret < local_stacks_num; ret++)
-    {
-        if (fcs_state_col_is_empty(state, ret))
-        {
-            return ret;
-        }
-    }
-    return -1;
-}
+#define find_empty_stack(raw_state_raw, start_from, local_stacks_num)          \
+    (start_from)
 
 /*
  * Throughout this code the following local variables are used to quickly
@@ -121,20 +111,16 @@ static inline void sort_derived_states(
 DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_freecell_cards_to_founds)
 {
     tests_define_accessors_no_stacks(tests_state_context_val);
+    const_SLOT(num_vacant_freecells, soft_thread);
 
 #ifndef HARD_CODED_NUM_FREECELLS
     SET_GAME_PARAMS();
 #endif
 
     /* Now check the same for the free cells */
-    for (int fc = 0; fc < LOCAL_FREECELLS_NUM; fc++)
+    for (int fc = num_vacant_freecells; fc < LOCAL_FREECELLS_NUM; fc++)
     {
         const fcs_card_t card = fcs_freecell_card(state, fc);
-
-        if (fcs_card_is_empty(card))
-        {
-            continue;
-        }
         for (int deck = 0; deck < INSTANCE_DECKS_NUM; deck++)
         {
             if (fcs_foundation_value(state, deck * 4 + fcs_card_suit(card)) !=
@@ -342,6 +328,7 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_freecell_cards_on_top_of_stacks)
 {
     MOVE_FUNCS__define_common();
     HARD__SET_GAME_PARAMS();
+    const_SLOT(num_vacant_freecells, soft_thread);
 
     const fcs_game_limit_t num_vacant_slots =
         calc_num_vacant_slots(soft_thread, tests__is_filled_by_any_card());
@@ -354,15 +341,13 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_freecell_cards_on_top_of_stacks)
     /* Let's try to put cards in the freecells on top of stacks */
 
     /* Scan the freecells */
-    for (int fc = 0; fc < LOCAL_FREECELLS_NUM; fc++)
+    for (int fc = num_vacant_freecells; fc < LOCAL_FREECELLS_NUM; fc++)
     {
         const fcs_card_t src_card = fcs_freecell_card(state, fc);
 
         /* If the freecell is not empty and dest_card is its parent
          * */
         if (!(
-                /* The Cell should not be empty. */
-                fcs_card_is_valid(src_card) &&
                 /* We cannot put a king anywhere. */
                 (!fcs_card_is_king(src_card))))
         {
@@ -677,7 +662,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_stack_cards_to_different_stacks)
      * Note that it does not involve moving cards lower than king   *
      * to empty stacks                                              */
 
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    for (int stack_idx = num_vacant_stacks; stack_idx < LOCAL_STACKS_NUM;
+         stack_idx++)
     {
         col_seqs_iter_t iter = col_seqs_iter__create(&state,
             stack_idx PASS_sequences_are_built_by(sequences_are_built_by));
@@ -760,7 +746,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_sequences_to_free_stacks)
 
     /* Now try to move sequences to empty stacks */
     const int ds = find_empty_stack(raw_state_raw, 0, LOCAL_STACKS_NUM);
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    for (int stack_idx = num_vacant_stacks; stack_idx < LOCAL_STACKS_NUM;
+         stack_idx++)
     {
         col_seqs_iter_t iter = col_seqs_iter__create(&state,
             stack_idx PASS_sequences_are_built_by(sequences_are_built_by));
@@ -864,21 +851,13 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_freecell_cards_to_empty_stack)
     {
         return;
     }
-    int stack_idx;
-    for (stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
-    {
-        if (fcs_state_col_is_empty(state, stack_idx))
-        {
-            break;
-        }
-    }
-
-    for (int fc = 0; fc < LOCAL_FREECELLS_NUM; fc++)
+    const_SLOT(num_vacant_freecells, soft_thread);
+    const int stack_idx = 0;
+    for (int fc = num_vacant_freecells; fc < LOCAL_FREECELLS_NUM; fc++)
     {
         const fcs_card_t card = fcs_freecell_card(state, fc);
 #define SHOULD_SKIP_FC_CARD(card)                                              \
-    (fcs_card_is_empty(card) ||                                                \
-        (IS_FILLED_BY_KINGS_ONLY() && !fcs_card_is_king(card)))
+    ((IS_FILLED_BY_KINGS_ONLY() && !fcs_card_is_king(card)))
         if (SHOULD_SKIP_FC_CARD(card))
         {
             continue;
@@ -918,34 +897,22 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_fc_to_empty_and_put_on_top)
     {
         return;
     }
-    int dest_stack_idx;
-    for (dest_stack_idx = 0; dest_stack_idx < LOCAL_STACKS_NUM;
-         dest_stack_idx++)
-    {
-        if (fcs_state_col_is_empty(state, dest_stack_idx))
-        {
-            break;
-        }
-    }
-
-    for (int fc = 0; fc < LOCAL_FREECELLS_NUM; fc++)
+    const int dest_stack_idx = 0;
+    for (int fc = num_vacant_freecells; fc < LOCAL_FREECELLS_NUM; fc++)
     {
         const fcs_card_t src_card = fcs_freecell_card(state, fc);
         if (SHOULD_SKIP_FC_CARD(src_card))
         {
             continue;
         }
-        for (int dest_fc = 0; dest_fc < LOCAL_FREECELLS_NUM; ++dest_fc)
+        for (int dest_fc = num_vacant_freecells; dest_fc < LOCAL_FREECELLS_NUM;
+             ++dest_fc)
         {
             if (dest_fc == fc)
             {
                 continue;
             }
             const fcs_card_t dest_card = fcs_freecell_card(state, dest_fc);
-            if (fcs_card_is_empty(dest_card))
-            {
-                continue;
-            }
             if (!unlikely(fcs_is_parent_card(dest_card, src_card)))
             {
                 continue;
@@ -1024,7 +991,8 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_cards_to_a_different_parent)
     /* This time try to move cards that are already on top of a parent to a
      * different parent */
 
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    for (int stack_idx = num_vacant_stacks; stack_idx < LOCAL_STACKS_NUM;
+         stack_idx++)
     {
         var_AUTO(col, fcs_state_get_col(state, stack_idx));
         const int cards_num = fcs_col_len(col);
@@ -1151,6 +1119,7 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_empty_stack_into_freecells)
         return;
     }
     FC__STACKS__SET_PARAMS();
+    const_SLOT(num_vacant_stacks, soft_thread);
     const fcs_game_limit_t num_vacant_freecells =
         soft_thread->num_vacant_freecells;
 
@@ -1158,16 +1127,17 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_empty_stack_into_freecells)
      * cards can
      * inhabit it */
 
-    if ((!num_vacant_freecells) || soft_thread->num_vacant_stacks)
+    if ((!num_vacant_freecells) || num_vacant_stacks)
     {
         return;
     }
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    for (int stack_idx = num_vacant_stacks; stack_idx < LOCAL_STACKS_NUM;
+         stack_idx++)
     {
         var_AUTO(col, fcs_state_get_col(state, stack_idx));
         const int cards_num = fcs_col_len(col);
 
-        if ((!cards_num) || (cards_num > num_vacant_freecells))
+        if (cards_num > num_vacant_freecells)
         {
             continue;
         }
@@ -1178,24 +1148,15 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_empty_stack_into_freecells)
 
         const_AUTO(new_src_col, fcs_state_get_col(new_state_key, stack_idx));
 
-        int b = 0;
-        for (int c = 0; c < cards_num; ++c, ++b)
+        for (int c = 0; c < cards_num; ++c)
         {
-            /* Find a vacant freecell */
-            for (; b < LOCAL_FREECELLS_NUM; ++b)
-            {
-                if (fcs_freecell_is_empty(new_state_key, b))
-                {
-                    break;
-                }
-            }
             fcs_card_t top_card;
             fcs_col_pop_card(new_src_col, top_card);
 
-            fcs_put_card_in_freecell(new_state_key, b, top_card);
+            fcs_put_card_in_freecell(new_state_key, c, top_card);
 
             fcs_move_stack_non_seq_push(
-                moves, FCS_MOVE_TYPE_STACK_TO_FREECELL, stack_idx, b);
+                moves, FCS_MOVE_TYPE_STACK_TO_FREECELL, stack_idx, c);
         }
 
         sfs_check_state_end();
@@ -1210,22 +1171,15 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_card_to_empty_stack)
     {
         return;
     }
-    if (soft_thread->num_vacant_stacks == 0)
+    const_SLOT(num_vacant_stacks, soft_thread);
+    if (num_vacant_stacks == 0)
     {
         return;
     }
     STACKS__SET_PARAMS();
-    int empty_stack_idx;
-    for (empty_stack_idx = 0; empty_stack_idx < LOCAL_STACKS_NUM;
-         empty_stack_idx++)
-    {
-        if (fcs_state_col_is_empty(state, empty_stack_idx))
-        {
-            break;
-        }
-    }
-
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    const int empty_stack_idx = 0;
+    for (int stack_idx = num_vacant_stacks; stack_idx < LOCAL_STACKS_NUM;
+         stack_idx++)
     {
         var_AUTO(col, fcs_state_get_col(state, stack_idx));
         const int cards_num = fcs_col_len(col);
@@ -1262,8 +1216,10 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_card_to_parent)
     MOVE_FUNCS__define_common();
     STACKS__SET_PARAMS();
     const int num_cards_in_col_threshold = CALC_num_cards_in_col_threshold();
+    const_SLOT(num_vacant_stacks, soft_thread);
 
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    for (int stack_idx = num_vacant_stacks; stack_idx < LOCAL_STACKS_NUM;
+         stack_idx++)
     {
         var_AUTO(col, fcs_state_get_col(state, stack_idx));
         const int cards_num = fcs_col_len(col);
@@ -1274,7 +1230,7 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_card_to_parent)
         }
         const fcs_card_t card = fcs_col_get_card(col, cards_num - 1);
 
-        for (int ds = 0; ds < LOCAL_STACKS_NUM; ds++)
+        for (int ds = num_vacant_stacks; ds < LOCAL_STACKS_NUM; ds++)
         {
             if (ds == stack_idx)
             {
@@ -1282,12 +1238,6 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_card_to_parent)
             }
 
             var_AUTO(dest_col, fcs_state_get_col(state, ds));
-            const int dest_cards_num = fcs_col_len(dest_col);
-
-            if (!dest_cards_num)
-            {
-                continue;
-            }
             const fcs_card_t dest_card =
                 fcs_col_get_card(dest_col, fcs_col_len(dest_col) - 1);
             if (!fcs_is_parent_card(card, dest_card))
@@ -1310,6 +1260,7 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_card_to_freecell)
     tests_define_accessors();
     MOVE_FUNCS__define_empty_stacks_fill();
     FC__STACKS__SET_PARAMS();
+    const_SLOT(num_vacant_stacks, soft_thread);
     const fcs_game_limit_t num_vacant_freecells =
         soft_thread->num_vacant_freecells;
 
@@ -1320,16 +1271,9 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_card_to_freecell)
 
     const int num_cards_in_col_threshold = CALC_num_cards_in_col_threshold();
 
-    int ds;
-    for (ds = 0; ds < LOCAL_FREECELLS_NUM; ds++)
-    {
-        if (fcs_freecell_is_empty(state, ds))
-        {
-            break;
-        }
-    }
-
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    const int ds = 0;
+    for (int stack_idx = num_vacant_stacks; stack_idx < LOCAL_STACKS_NUM;
+         stack_idx++)
     {
         var_AUTO(col, fcs_state_get_col(state, stack_idx));
         const int cards_num = fcs_col_len(col);
@@ -1358,23 +1302,15 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_freecell_card_to_parent)
     tests_define_accessors();
     MOVE_FUNCS__define_seqs_built_by();
     FC__STACKS__SET_PARAMS();
-    for (int fc = 0; fc < LOCAL_FREECELLS_NUM; fc++)
+    const_SLOT(num_vacant_freecells, soft_thread);
+    const_SLOT(num_vacant_stacks, soft_thread);
+    for (int fc = num_vacant_freecells; fc < LOCAL_FREECELLS_NUM; fc++)
     {
         const fcs_card_t card = fcs_freecell_card(state, fc);
-
-        if (fcs_card_is_empty(card))
-        {
-            continue;
-        }
-
-        for (int ds = 0; ds < LOCAL_STACKS_NUM; ds++)
+        for (int ds = num_vacant_stacks; ds < LOCAL_STACKS_NUM; ds++)
         {
             var_AUTO(dest_col, fcs_state_get_col(state, ds));
             const_AUTO(l, fcs_col_len(dest_col));
-            if (!l)
-            {
-                continue;
-            }
             const fcs_card_t dest_card = fcs_col_get_card(dest_col, l - 1);
             if (!fcs_is_parent_card(card, dest_card))
             {
@@ -1398,6 +1334,7 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_freecell_card_to_empty_stack)
 {
     tests_define_accessors();
     MOVE_FUNCS__define_empty_stacks_fill();
+    const_SLOT(num_vacant_freecells, soft_thread);
     FC__STACKS__SET_PARAMS();
     if (IS_FILLED_BY_NONE())
     {
@@ -1411,12 +1348,11 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_atomic_move_freecell_card_to_empty_stack)
     /* Find a vacant stack */
     const int ds = find_empty_stack(raw_state_raw, 0, LOCAL_STACKS_NUM);
 
-    for (int fc = 0; fc < LOCAL_FREECELLS_NUM; fc++)
+    for (int fc = num_vacant_freecells; fc < LOCAL_FREECELLS_NUM; fc++)
     {
         const fcs_card_t card = fcs_freecell_card(state, fc);
 
-        if (fcs_card_is_empty(card) ||
-            (IS_FILLED_BY_KINGS_ONLY() && (!fcs_card_is_king(card))))
+        if ((IS_FILLED_BY_KINGS_ONLY() && (!fcs_card_is_king(card))))
         {
             continue;
         }
