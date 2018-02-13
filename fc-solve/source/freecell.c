@@ -963,7 +963,7 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_fc_to_empty_and_put_on_top)
                 fcs_move_stack_non_seq_push(
                     moves, FCS_MOVE_TYPE_FREECELL_TO_STACK, fc, dest_stack_idx);
                 const int cols_indexes[3] = {stack_idx, -1, -1};
-                int col_put = 0;
+                int col_put = dest_stack_idx+1;
                 empty_two_cols_from_new_state(soft_thread,
                     ptr_new_state SFS__PASS_MOVE_STACK(moves), cols_indexes,
                     col_num_cards, 0, &col_put);
