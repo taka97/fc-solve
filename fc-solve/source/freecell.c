@@ -481,14 +481,14 @@ DECLARE_MOVE_FUNCTION(
 {
     MOVE_FUNCS__define_common();
     FC__STACKS__SET_PARAMS();
+    const_SLOT(num_vacant_stacks, soft_thread);
     const fcs_game_limit_t num_vacant_slots_plus_1 =
         calc_num_vacant_slots(soft_thread, tests__is_filled_by_any_card()) + 1;
 
-    /*
-     * Now let's try to move a stack card to a parent card which is found
-     * on the same stack.
-     * */
-    for (int stack_idx = 0; stack_idx < LOCAL_STACKS_NUM; stack_idx++)
+    // Now let's try to move a stack card to a parent card which is found
+    // on the same stack.
+    for (int stack_idx = num_vacant_stacks; stack_idx < LOCAL_STACKS_NUM;
+         stack_idx++)
     {
         var_AUTO(col, fcs_state_get_col(state, stack_idx));
         const int cards_num = fcs_col_len(col);
