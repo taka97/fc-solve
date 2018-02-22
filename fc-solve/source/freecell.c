@@ -248,8 +248,7 @@ static inline empty_two_cols_ret_t empty_two_cols_from_new_state(
 
         fcs_push_1card_seq(moves_ptr, col_idx_val, *col_put);
 
-        ret = (empty_two_cols_ret_t){
-            .src_idx = *col_put, .is_col = TRUE};
+        ret = (empty_two_cols_ret_t){.src_idx = *col_put, .is_col = TRUE};
         --(*col_num_cards);
         ++(*col_put);
     }
@@ -963,7 +962,7 @@ DECLARE_MOVE_FUNCTION(fc_solve_sfs_move_fc_to_empty_and_put_on_top)
                 fcs_move_stack_non_seq_push(
                     moves, FCS_MOVE_TYPE_FREECELL_TO_STACK, fc, dest_stack_idx);
                 const int cols_indexes[3] = {stack_idx, -1, -1};
-                int col_put = dest_stack_idx+1;
+                int col_put = dest_stack_idx + 1;
                 empty_two_cols_from_new_state(soft_thread,
                     ptr_new_state SFS__PASS_MOVE_STACK(moves), cols_indexes,
                     col_num_cards, 0, &col_put);
