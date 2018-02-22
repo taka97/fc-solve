@@ -72,10 +72,6 @@ __PACKAGE__->populate(
             args => { deal => 17, theme => [ "-l", "looking-glass", ], },
             msg  => "Freecell Deal No. 17 with the lg preset",
         },
-        '17_lg' => {
-            args => { deal => 17, theme => [ "-l", "looking-glass", ], },
-            msg => "Freecell Dal No. 17 with the lg preset",
-        },
         '1941_as' => {
             args => { deal => 1941, theme => [ "-l", "amateur-star", ], },
             msg  => "Freecell Deal No. 1941 with the amateur-star preset",
