@@ -706,6 +706,101 @@ static inline void fc_solve_recycle_instance(
 #endif
 }
 
+#define SOFT_DFS_DEPTH_GROW_BY 64
+static void fc_solve_increase_dfs_max_depth(
+    fc_solve_soft_thread_t *const soft_thread)
+{
+    const_AUTO(new_dfs_max_depth,
+        DFS_VAR(soft_thread, dfs_max_depth) + SOFT_DFS_DEPTH_GROW_BY);
+    DFS_VAR(soft_thread, soft_dfs_info) =
+        SREALLOC(DFS_VAR(soft_thread, soft_dfs_info), new_dfs_max_depth);
+    memset(DFS_VAR(soft_thread, soft_dfs_info) +
+               DFS_VAR(soft_thread, dfs_max_depth),
+        '\0',
+        SOFT_DFS_DEPTH_GROW_BY * sizeof(*DFS_VAR(soft_thread, soft_dfs_info)));
+
+    DFS_VAR(soft_thread, dfs_max_depth) = new_dfs_max_depth;
+}
+
+static inline void fc_solve_soft_thread_init_soft_dfs(
+    fc_solve_soft_thread_t *const soft_thread)
+{
+    fc_solve_instance_t *const instance = fcs_st_instance(soft_thread);
+    // Allocate some space for the states at depth 0.
+    DFS_VAR(soft_thread, depth) = 0;
+    fc_solve_increase_dfs_max_depth(soft_thread);
+    DFS_VAR(soft_thread, soft_dfs_info)
+    [0].state = FCS_STATE_keyval_pair_to_collectible(&instance->state_copy);
+    fc_solve_rand_init(
+        &(DFS_VAR(soft_thread, rand_gen)), DFS_VAR(soft_thread, rand_seed));
+
+    if (!DFS_VAR(soft_thread, moves_by_depth).by_depth_units)
+    {
+        const_SLOT(master_to_randomize, soft_thread);
+        fcs_moves_by_depth_array *const arr_ptr =
+            &(DFS_VAR(soft_thread, moves_by_depth));
+        arr_ptr->by_depth_units = SMALLOC(arr_ptr->by_depth_units,
+            (arr_ptr->num_units = soft_thread->by_depth_moves_order.num));
+
+        const fcs_by_depth_moves_order *const by_depth_moves_order =
+            soft_thread->by_depth_moves_order.by_depth_moves;
+
+        var_AUTO(unit, arr_ptr->by_depth_units);
+        const_AUTO(depth_num, soft_thread->by_depth_moves_order.num);
+        for (size_t depth_idx = 0; depth_idx < depth_num; ++depth_idx, ++unit)
+        {
+            unit->max_depth = by_depth_moves_order[depth_idx].max_depth;
+
+            fcs_moves_group *const tests_order_groups =
+                by_depth_moves_order[depth_idx].moves_order.groups;
+
+            const_AUTO(tests_order_num,
+                by_depth_moves_order[depth_idx].moves_order.num);
+
+            const_AUTO(moves_list_of_lists, &(unit->move_funcs));
+
+            *moves_list_of_lists = (typeof(*moves_list_of_lists)){
+                .num = 0,
+                .groups = SMALLOC(moves_list_of_lists->groups, tests_order_num),
+            };
+
+            for (size_t group_idx = 0; group_idx < tests_order_num; ++group_idx)
+            {
+                size_t num = 0;
+                fcs_move_func *tests_list = NULL;
+                add_to_move_funcs_list(&tests_list, &num,
+                    tests_order_groups[group_idx].move_funcs,
+                    tests_order_groups[group_idx].num);
+                /* TODO : convert to C99 struct initializers. */
+                const_AUTO(tests_list_struct_ptr,
+                    &(moves_list_of_lists->groups[moves_list_of_lists->num++]));
+
+                const fcs_moves_group_kind shuffling_type =
+                    (master_to_randomize
+                            ? tests_order_groups[group_idx].shuffling_type
+                            : FCS_NO_SHUFFLING);
+                *tests_list_struct_ptr = (typeof(*tests_list_struct_ptr)){
+                    .move_funcs = tests_list,
+                    .num = num,
+                    .shuffling_type = shuffling_type,
+                };
+
+                if (shuffling_type == FCS_WEIGHTING)
+                {
+                    tests_list_struct_ptr->weighting =
+                        tests_order_groups[group_idx].weighting;
+
+                    fc_solve_initialize_befs_rater(
+                        soft_thread, &(tests_list_struct_ptr->weighting));
+                }
+            }
+
+            moves_list_of_lists->groups =
+                SREALLOC(moves_list_of_lists->groups, moves_list_of_lists->num);
+        }
+    }
+}
+
 #ifdef FCS_WITH_MOVES
 static inline void fc_solve__setup_optimization_thread__helper(
     fc_solve_instance_t *const instance,
@@ -735,6 +830,7 @@ static inline void fc_solve__setup_optimization_thread__helper(
     soft_thread->is_optimize_scan = TRUE;
     soft_thread->is_befs = FALSE;
     STRUCT_TURN_ON_FLAG(soft_thread, FCS_SOFT_THREAD_IS_A_COMPLETE_SCAN);
+    fc_solve_soft_thread_init_soft_dfs(soft_thread);
     fc_solve_soft_thread_init_befs_or_bfs(soft_thread);
     STRUCT_TURN_ON_FLAG(soft_thread, FCS_SOFT_THREAD_INITIALIZED);
     STRUCT_TURN_ON_FLAG(instance, FCS_RUNTIME_IN_OPTIMIZATION_THREAD);
@@ -1005,22 +1101,6 @@ static inline void free_states(fc_solve_instance_t *const instance)
 #endif
 #endif
 #endif
-
-#define SOFT_DFS_DEPTH_GROW_BY 64
-static void fc_solve_increase_dfs_max_depth(
-    fc_solve_soft_thread_t *const soft_thread)
-{
-    const_AUTO(new_dfs_max_depth,
-        DFS_VAR(soft_thread, dfs_max_depth) + SOFT_DFS_DEPTH_GROW_BY);
-    DFS_VAR(soft_thread, soft_dfs_info) =
-        SREALLOC(DFS_VAR(soft_thread, soft_dfs_info), new_dfs_max_depth);
-    memset(DFS_VAR(soft_thread, soft_dfs_info) +
-               DFS_VAR(soft_thread, dfs_max_depth),
-        '\0',
-        SOFT_DFS_DEPTH_GROW_BY * sizeof(*DFS_VAR(soft_thread, soft_dfs_info)));
-
-    DFS_VAR(soft_thread, dfs_max_depth) = new_dfs_max_depth;
-}
 
 /*
  * fc_solve_soft_dfs_do_solve() is the event loop of the
@@ -1472,85 +1552,6 @@ static inline int fc_solve_soft_dfs_do_solve(
     DEPTH() = -1;
 
     return FCS_STATE_IS_NOT_SOLVEABLE;
-}
-
-static inline void fc_solve_soft_thread_init_soft_dfs(
-    fc_solve_soft_thread_t *const soft_thread)
-{
-    fc_solve_instance_t *const instance = fcs_st_instance(soft_thread);
-    // Allocate some space for the states at depth 0.
-    DFS_VAR(soft_thread, depth) = 0;
-    fc_solve_increase_dfs_max_depth(soft_thread);
-    DFS_VAR(soft_thread, soft_dfs_info)
-    [0].state = FCS_STATE_keyval_pair_to_collectible(&instance->state_copy);
-    fc_solve_rand_init(
-        &(DFS_VAR(soft_thread, rand_gen)), DFS_VAR(soft_thread, rand_seed));
-
-    if (!DFS_VAR(soft_thread, moves_by_depth).by_depth_units)
-    {
-        const_SLOT(master_to_randomize, soft_thread);
-        fcs_moves_by_depth_array *const arr_ptr =
-            &(DFS_VAR(soft_thread, moves_by_depth));
-        arr_ptr->by_depth_units = SMALLOC(arr_ptr->by_depth_units,
-            (arr_ptr->num_units = soft_thread->by_depth_moves_order.num));
-
-        const fcs_by_depth_moves_order *const by_depth_moves_order =
-            soft_thread->by_depth_moves_order.by_depth_moves;
-
-        var_AUTO(unit, arr_ptr->by_depth_units);
-        const_AUTO(depth_num, soft_thread->by_depth_moves_order.num);
-        for (size_t depth_idx = 0; depth_idx < depth_num; ++depth_idx, ++unit)
-        {
-            unit->max_depth = by_depth_moves_order[depth_idx].max_depth;
-
-            fcs_moves_group *const tests_order_groups =
-                by_depth_moves_order[depth_idx].moves_order.groups;
-
-            const_AUTO(tests_order_num,
-                by_depth_moves_order[depth_idx].moves_order.num);
-
-            const_AUTO(moves_list_of_lists, &(unit->move_funcs));
-
-            *moves_list_of_lists = (typeof(*moves_list_of_lists)){
-                .num = 0,
-                .groups = SMALLOC(moves_list_of_lists->groups, tests_order_num),
-            };
-
-            for (size_t group_idx = 0; group_idx < tests_order_num; ++group_idx)
-            {
-                size_t num = 0;
-                fcs_move_func *tests_list = NULL;
-                add_to_move_funcs_list(&tests_list, &num,
-                    tests_order_groups[group_idx].move_funcs,
-                    tests_order_groups[group_idx].num);
-                /* TODO : convert to C99 struct initializers. */
-                const_AUTO(tests_list_struct_ptr,
-                    &(moves_list_of_lists->groups[moves_list_of_lists->num++]));
-
-                const fcs_moves_group_kind shuffling_type =
-                    (master_to_randomize
-                            ? tests_order_groups[group_idx].shuffling_type
-                            : FCS_NO_SHUFFLING);
-                *tests_list_struct_ptr = (typeof(*tests_list_struct_ptr)){
-                    .move_funcs = tests_list,
-                    .num = num,
-                    .shuffling_type = shuffling_type,
-                };
-
-                if (shuffling_type == FCS_WEIGHTING)
-                {
-                    tests_list_struct_ptr->weighting =
-                        tests_order_groups[group_idx].weighting;
-
-                    fc_solve_initialize_befs_rater(
-                        soft_thread, &(tests_list_struct_ptr->weighting));
-                }
-            }
-
-            moves_list_of_lists->groups =
-                SREALLOC(moves_list_of_lists->groups, moves_list_of_lists->num);
-        }
-    }
 }
 
 /*

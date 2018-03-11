@@ -448,7 +448,6 @@ struct fc_solve_soft_thread_struct
         struct
         {
             fcs__positions_by_rank_t befs_positions_by_rank;
-            fcs_move_func *moves_list, *moves_list_end;
             struct
             {
                 struct

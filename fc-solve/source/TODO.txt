@@ -179,11 +179,6 @@ total-number-of-cards-in-the-foundations or maximal foundation value.
 * Set up a +-dto2+ like scheme for +--method a-star+ where we change the tests
 order based on the depth/etc.
 
-* Work on HYBRID_STACKS_STATES where if the stacks are shorter than 8 cards,
-then one can store them in the normally pointer bytes, by specifying whether
-the stack is a pointer or a direct stack using the low bit. (An improvement
-to INDIRECT_STACK_STATES).
-
 [id="to_be_considered"]
 To be considered
 ----------------

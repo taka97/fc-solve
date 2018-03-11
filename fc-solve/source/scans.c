@@ -290,27 +290,6 @@ void fc_solve_soft_thread_init_befs_or_bfs(
         fc_solve_initialize_bfs_queue(soft_thread);
     }
 
-    if (!BEFS_M_VAR(soft_thread, moves_list))
-    {
-        size_t num = 0;
-        fcs_move_func *moves_list = NULL;
-
-        for (size_t group_idx = 0;
-             group_idx < soft_thread->by_depth_moves_order.by_depth_moves[0]
-                             .moves_order.num;
-             ++group_idx)
-        {
-            add_to_move_funcs_list(&moves_list, &num,
-                soft_thread->by_depth_moves_order.by_depth_moves[0]
-                    .moves_order.groups[group_idx]
-                    .move_funcs,
-                soft_thread->by_depth_moves_order.by_depth_moves[0]
-                    .moves_order.groups[group_idx]
-                    .num);
-        }
-        BEFS_M_VAR(soft_thread, moves_list) = moves_list;
-        BEFS_M_VAR(soft_thread, moves_list_end) = moves_list + num;
-    }
     BEFS_M_VAR(soft_thread, first_state_to_check) =
         FCS_STATE_keyval_pair_to_collectible(
             &fcs_st_instance(soft_thread)->state_copy);
@@ -355,10 +334,17 @@ fc_solve_solve_process_ret_t fc_solve_befs_or_bfs_do_solve(
     fc_solve_solve_process_ret_t error_code;
     fcs_derived_states_list_t derived = {.num_states = 0, .states = NULL};
 
-    const fcs_move_func *const moves_list = BEFS_M_VAR(soft_thread, moves_list);
-    const fcs_move_func *const moves_list_end =
-        BEFS_M_VAR(soft_thread, moves_list_end);
-
+    fcs_moves_order the_moves_list;
+    ssize_t by_depth_max_depth, by_depth_min_depth;
+#define THE_MOVE_FUNCS_LIST the_moves_list
+#define RECALC_BY_DEPTH_LIMITS()                                               \
+    {                                                                          \
+        by_depth_max_depth = GET_DEPTH(curr_by_depth_unit);                    \
+        by_depth_min_depth = (curr_by_depth_unit == by_depth_units)            \
+                                 ? 0                                           \
+                                 : GET_DEPTH(curr_by_depth_unit - 1);          \
+        the_moves_list = curr_by_depth_unit->move_funcs;                       \
+    }
     DECLARE_STATE();
     PTR_STATE = BEFS_M_VAR(soft_thread, first_state_to_check);
     FCS_ASSIGN_STATE_KEY();
@@ -397,6 +383,15 @@ fc_solve_solve_process_ret_t fc_solve_befs_or_bfs_do_solve(
        priority queue. */
     int8_t *const befs_positions_by_rank =
         (BEFS_M_VAR(soft_thread, befs_positions_by_rank));
+    const_AUTO(
+        by_depth_units, DFS_VAR(soft_thread, moves_by_depth).by_depth_units);
+    fcs_moves_by_depth_unit_t *curr_by_depth_unit = by_depth_units;
+#define DEPTH() (calc_depth(PTR_STATE))
+#define GET_DEPTH(ptr) ((ptr)->max_depth)
+    for (; (DEPTH() >= GET_DEPTH(curr_by_depth_unit)); ++curr_by_depth_unit)
+    {
+    }
+    RECALC_BY_DEPTH_LIMITS();
 
     while (PTR_STATE != NULL)
     {
@@ -501,16 +496,27 @@ fc_solve_solve_process_ret_t fc_solve_befs_or_bfs_do_solve(
 #endif
         );
 
-        TRACE0("perform_tests");
-        /*
-         * Do all the tests at one go, because that is the way it should be
-         * done for BFS and BeFS.
-         */
-        derived.num_states = 0;
-        for (const fcs_move_func *move_func_ptr = moves_list;
-             move_func_ptr < moves_list_end; move_func_ptr++)
+        while (unlikely(DEPTH() < by_depth_min_depth))
         {
-            move_func_ptr->f(soft_thread, pass, &derived);
+            --curr_by_depth_unit;
+            RECALC_BY_DEPTH_LIMITS();
+        }
+        while (unlikely(DEPTH() >= by_depth_max_depth))
+        {
+            ++curr_by_depth_unit;
+            RECALC_BY_DEPTH_LIMITS();
+        }
+        TRACE0("perform_moves");
+        // Do all the moves at one go, because that is the way it should be
+        // done for BFS and BeFS.
+        derived.num_states = 0;
+        for (size_t i = 0; i < THE_MOVE_FUNCS_LIST.num; ++i)
+        {
+            for (size_t j = 0; j < THE_MOVE_FUNCS_LIST.groups[i].num; ++j)
+            {
+                THE_MOVE_FUNCS_LIST.groups[i].move_funcs[j].f(
+                    soft_thread, pass, &derived);
+            }
         }
 
         if (is_a_complete_scan)
